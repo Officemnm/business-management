@@ -1,0 +1,232 @@
+@import "tailwindcss";
+
+/* ══════════════════════════════════════
+   Rose & Ivory — Clean Premium Palette
+══════════════════════════════════════ */
+:root {
+  --rose:         #8b3a5a;
+  --rose-mid:     #a84f70;
+  --rose-light:   #d4899f;
+  --rose-pale:    #f7eaee;
+  --rose-glow:    rgba(139, 58, 90, 0.12);
+
+  --text-dark:    #1a0f14;
+  --text-body:    #3d2e35;
+  --text-muted:   #8a7078;
+  --text-faint:   #b8a8ae;
+
+  --border:       rgba(139, 58, 90, 0.15);
+  --border-hover: rgba(139, 58, 90, 0.28);
+  --border-focus: #8b3a5a;
+
+  --error:        #b91c1c;
+  --error-glow:   rgba(185, 28, 28, 0.09);
+
+  --shadow-card:
+    0 0 0 1px rgba(139,58,90,0.07),
+    0 4px 8px  rgba(26,15,20,0.05),
+    0 16px 48px rgba(26,15,20,0.09),
+    0 40px 80px rgba(26,15,20,0.05);
+
+  --shadow-btn:   0 3px 16px rgba(139,58,90,0.32);
+  --shadow-btn-h: 0 6px 28px rgba(139,58,90,0.44);
+}
+
+/* ── Reset ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { height: 100%; }
+
+body {
+  font-family: var(--font-kalpurush), 'Georgia', ui-serif, serif;
+  color: var(--text-body);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  min-height: 100%;
+}
+
+/* ── Page — column flex, NO pattern ── */
+.page-wrap {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 16px 24px;
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(155deg, #fdf6f8 0%, #faf5f0 50%, #f8f4f6 100%);
+}
+
+/* Subtle ambient glow */
+.page-wrap::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 60% 45% at 20% 15%, rgba(212,137,159,0.14) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 45% at 82% 82%, rgba(247,234,238,0.50) 0%, transparent 60%);
+  pointer-events: none;
+}
+
+/* ── Card ── */
+.card {
+  position: relative;
+  z-index: 10;
+  width: 100%;
+  max-width: 390px;
+  background: rgba(255, 253, 251, 0.96);
+  border-radius: 3px;
+  padding: 36px 32px 30px;
+  box-shadow: var(--shadow-card);
+  border: 1px solid rgba(235, 220, 225, 0.90);
+}
+
+/* ── Mobile overrides ── */
+@media (max-width: 480px) {
+  .page-wrap { padding: 20px 12px 16px; }
+  .card { padding: 26px 18px 22px; border-radius: 6px; }
+  .btn { padding: 12px 16px; font-size: 0.80rem; }
+  .lbl { font-size: 0.68rem; }
+  .field { font-size: 0.85rem; }
+}
+
+/* Rose hairline top accent */
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 12%; right: 12%;
+  height: 1.5px;
+  background: linear-gradient(90deg, transparent, var(--rose-light), transparent);
+}
+
+/* ── Label ── */
+.lbl {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 400;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+
+/* ── Input — bottom border only ── */
+.field-wrap { position: relative; }
+
+.field-icon {
+  position: absolute;
+  left: 0; top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-faint);
+  pointer-events: none;
+  display: flex; align-items: center;
+  transition: color 0.2s;
+}
+.field-wrap:focus-within .field-icon { color: var(--rose); }
+
+.field {
+  display: block; width: 100%;
+  padding: 11px 10px 11px 26px;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--border);
+  border-radius: 0;
+  color: var(--text-dark);
+  font-family: var(--font-kalpurush), ui-serif, serif;
+  font-size: 0.9rem;
+  outline: none; box-shadow: none;
+  -webkit-appearance: none; appearance: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.field::placeholder { color: var(--text-faint); opacity: 0.65; }
+.field:hover:not(:focus)  { border-color: var(--border-hover); }
+.field:focus {
+  border-color: var(--border-focus);
+  box-shadow: 0 1px 0 var(--rose-light);
+}
+.field.err { border-color: var(--error); }
+.field.err:focus { box-shadow: 0 1px 0 rgba(185,28,28,0.5); }
+.field-pr { padding-right: 30px; }
+
+/* Eye button */
+.eye-btn {
+  position: absolute; right: 0; top: 50%;
+  transform: translateY(-50%);
+  background: none; border: none; padding: 3px;
+  cursor: pointer; color: var(--text-faint);
+  display: flex; align-items: center;
+  transition: color 0.18s; outline: none;
+}
+.eye-btn:hover { color: var(--rose); }
+
+/* ── Error ── */
+.err-txt {
+  font-size: 0.72rem;
+  color: var(--error);
+  margin-top: 5px;
+  letter-spacing: 0.01em;
+}
+
+/* ── Checkbox ── */
+.cb {
+  -webkit-appearance: none; appearance: none;
+  width: 14px; height: 14px;
+  border: 1px solid var(--border);
+  border-radius: 2px; background: transparent;
+  cursor: pointer; flex-shrink: 0; position: relative;
+  transition: border-color 0.18s, background 0.18s; outline: none;
+}
+.cb:checked { background: var(--rose); border-color: var(--rose); }
+.cb:checked::after {
+  content: ''; position: absolute;
+  left: 3px; top: 0.5px;
+  width: 5px; height: 8.5px;
+  border: 1.5px solid #fff;
+  border-top: none; border-left: none;
+  transform: rotate(45deg);
+}
+
+/* ── Button ── */
+.btn {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  width: 100%; padding: 13px 20px;
+  background: var(--rose);
+  color: #fff; border: none; border-radius: 2px;
+  font-family: var(--font-kalpurush), ui-serif, serif;
+  font-size: 0.85rem; font-weight: 400;
+  letter-spacing: 0.10em; text-transform: uppercase;
+  cursor: pointer; position: relative; overflow: hidden;
+  box-shadow: var(--shadow-btn);
+  transition: background 0.22s, box-shadow 0.22s, transform 0.14s;
+  outline: none;
+}
+.btn::after {
+  content: ''; position: absolute;
+  inset: 0 0 auto 0; height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent);
+}
+.btn:hover:not(:disabled) { background: var(--rose-mid); box-shadow: var(--shadow-btn-h); transform: translateY(-1px); }
+.btn:active:not(:disabled) { transform: translateY(0); }
+.btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
+
+/* ── Spinner ── */
+@keyframes spin { to { transform: rotate(360deg); } }
+.spinner {
+  display: inline-block; width: 14px; height: 14px; flex-shrink: 0;
+  border: 1.5px solid rgba(255,255,255,0.3); border-top-color: #fff;
+  border-radius: 50%; animation: spin 0.75s linear infinite;
+}
+
+/* ── Footer ── */
+.footer {
+  position: relative; z-index: 10;
+  margin-top: 18px; text-align: center;
+  font-size: 0.70rem; color: var(--text-faint);
+  line-height: 1.8; letter-spacing: 0.04em;
+}
+.footer strong { color: var(--rose-light); font-weight: 400; }
+
+/* ── Misc ── */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-thumb { background: rgba(139,58,90,0.2); border-radius: 2px; }
+::selection { background: rgba(139,58,90,0.15); color: var(--text-dark); }
