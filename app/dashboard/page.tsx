@@ -6,8 +6,13 @@ import { useRouter } from "next/navigation";
 import {
   LayoutDashboard, ShoppingBag, Users, TrendingUp, Package,
   Bell, Settings, LogOut, Menu, X, ChevronUp, ChevronDown,
-  Star, ArrowUpRight, Sparkles, DollarSign, Eye, ShoppingCart
+  Star, ArrowUpRight, Sparkles, DollarSign, Eye, ShoppingCart,
+  Wallet, PiggyBank, Clock, RotateCcw
 } from "lucide-react";
+import UserManagement from "./UserManagement";
+import CardDetail from "./CardDetail";
+import CustomerManagement from "./CustomerManagement";
+import ProductManagement from "./ProductManagement";
 
 /* ── useWindowWidth ── */
 function useWindowWidth() {
@@ -52,6 +57,10 @@ const stats = [
   { id: "orders", label: "মোট অর্ডার", value: 1842, prefix: "", suffix: "টি", icon: ShoppingCart, color: "#2563eb", bg: "rgba(37,99,235,0.08)", trend: "+8.1%", up: true },
   { id: "customers", label: "গ্রাহক", value: 4291, prefix: "", suffix: "জন", icon: Users, color: "#059669", bg: "rgba(5,150,105,0.08)", trend: "+5.3%", up: true },
   { id: "products", label: "পণ্য", value: 136, prefix: "", suffix: "টি", icon: Package, color: "#d97706", bg: "rgba(217,119,6,0.08)", trend: "-2.1%", up: false },
+  { id: "dailySales", label: "দৈনিক বিক্রি", value: 15420, prefix: "৳", suffix: "", icon: Wallet, color: "#7c3aed", bg: "rgba(124,58,237,0.08)", trend: "+10.3%", up: true },
+  { id: "profit", label: "মুনাফা", value: 89200, prefix: "৳", suffix: "", icon: PiggyBank, color: "#0891b2", bg: "rgba(8,145,178,0.08)", trend: "+18.5%", up: true },
+  { id: "pending", label: "পেন্ডিং অর্ডার", value: 47, prefix: "", suffix: "টি", icon: Clock, color: "#ea580c", bg: "rgba(234,88,12,0.08)", trend: "-6.2%", up: true },
+  { id: "returns", label: "রিটার্ন", value: 12, prefix: "", suffix: "টি", icon: RotateCcw, color: "#dc2626", bg: "rgba(220,38,38,0.08)", trend: "-8.4%", up: true },
 ];
 
 const recentOrders = [
@@ -70,12 +79,12 @@ const topProducts = [
 ];
 
 const navItems = [
-  { icon: LayoutDashboard, label: "ড্যাশবোর্ড", active: true },
-  { icon: ShoppingBag, label: "অর্ডার", active: false },
-  { icon: Package, label: "পণ্যসমূহ", active: false },
-  { icon: Users, label: "গ্রাহক", active: false },
-  { icon: TrendingUp, label: "রিপোর্ট", active: false },
-  { icon: Settings, label: "সেটিংস", active: false },
+  { icon: LayoutDashboard, label: "ড্যাশবোর্ড", section: "dashboard" },
+  { icon: ShoppingBag, label: "অর্ডার", section: "orders" },
+  { icon: Package, label: "পণ্যসমূহ", section: "products" },
+  { icon: Users, label: "ব্যবহারকারী", section: "users" },
+  { icon: TrendingUp, label: "রিপোর্ট", section: "reports" },
+  { icon: Settings, label: "সেটিংস", section: "settings" },
 ];
 
 export default function DashboardPage() {
@@ -84,11 +93,17 @@ export default function DashboardPage() {
   const isMobile = width < 768;
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [notif, setNotif] = useState(3);
+  const [activeSection, setActiveSection] = useState("dashboard");
 
   // On desktop default open, mobile default closed
   useEffect(() => { setSidebarOpen(!isMobile); }, [isMobile]);
 
   const closeSidebar = useCallback(() => { if (isMobile) setSidebarOpen(false); }, [isMobile]);
+
+  const handleLogout = async () => {
+    await fetch("/api/auth/logout", { method: "POST" });
+    router.push("/");
+  };
 
   const containerV = { hidden: {}, visible: { transition: { staggerChildren: 0.07 } } };
   const itemV = { hidden: { opacity: 0, y: 18 }, visible: { opacity: 1, y: 0, transition: { duration: 0.45, ease: [0.22, 1, 0.36, 1] as const } } };
@@ -153,30 +168,33 @@ export default function DashboardPage() {
 
             {/* Nav */}
             <nav style={{ flex: 1, padding: "14px 10px" }}>
-              {navItems.map((n, i) => (
-                <motion.button key={n.label}
-                  initial={{ opacity: 0, x: -16 }} animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.08 + i * 0.05 }}
-                  onClick={closeSidebar}
-                  whileHover={{ x: 3, backgroundColor: "rgba(139,58,90,0.06)" }}
-                  style={{
-                    display: "flex", alignItems: "center", gap: 10,
-                    width: "100%", padding: "11px 14px", marginBottom: 3,
-                    borderRadius: 8, border: "none", cursor: "pointer",
-                    background: n.active ? "rgba(139,58,90,0.10)" : "transparent",
-                    color: n.active ? "#8b3a5a" : "#3d2e35",
-                    fontSize: "0.83rem", letterSpacing: "0.02em", textAlign: "left",
-                  }}>
-                  <n.icon size={16} style={{ flexShrink: 0, opacity: n.active ? 1 : 0.6 }} />
-                  {n.label}
-                  {n.active && <motion.div layoutId="nav-dot" style={{ marginLeft: "auto", width: 5, height: 5, borderRadius: "50%", background: "#8b3a5a" }} />}
-                </motion.button>
-              ))}
+              {navItems.map((n, i) => {
+                const isActive = activeSection === n.section;
+                return (
+                  <motion.button key={n.label}
+                    initial={{ opacity: 0, x: -16 }} animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.08 + i * 0.05 }}
+                    onClick={() => { setActiveSection(n.section); closeSidebar(); }}
+                    whileHover={{ x: 3, backgroundColor: "rgba(139,58,90,0.06)" }}
+                    style={{
+                      display: "flex", alignItems: "center", gap: 10,
+                      width: "100%", padding: "11px 14px", marginBottom: 3,
+                      borderRadius: 8, border: "none", cursor: "pointer",
+                      background: isActive ? "rgba(139,58,90,0.10)" : "transparent",
+                      color: isActive ? "#8b3a5a" : "#3d2e35",
+                      fontSize: "0.83rem", letterSpacing: "0.02em", textAlign: "left",
+                    }}>
+                    <n.icon size={16} style={{ flexShrink: 0, opacity: isActive ? 1 : 0.6 }} />
+                    {n.label}
+                    {isActive && <motion.div layoutId="nav-dot" style={{ marginLeft: "auto", width: 5, height: 5, borderRadius: "50%", background: "#8b3a5a" }} />}
+                  </motion.button>
+                );
+              })}
             </nav>
 
             {/* Logout */}
             <div style={{ padding: "14px 10px", borderTop: "1px solid rgba(139,58,90,0.08)" }}>
-              <motion.button whileHover={{ x: 3 }} onClick={() => router.push("/")}
+              <motion.button whileHover={{ x: 3 }} onClick={handleLogout}
                 style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", padding: "11px 14px", borderRadius: 8, border: "none", cursor: "pointer", background: "transparent", color: "#8a7078", fontSize: "0.83rem" }}>
                 <LogOut size={15} style={{ opacity: 0.65 }} />
                 লগ আউট
@@ -236,14 +254,37 @@ export default function DashboardPage() {
 
         {/* Content */}
         <main style={{ flex: 1, padding: isMobile ? "16px 12px 32px" : "24px 24px 40px", overflowY: "auto" }}>
+          {activeSection === "users" && <UserManagement />}
+
+          {/* Customer Management Page */}
+          {activeSection === "customers" && (
+            <CustomerManagement onBack={() => setActiveSection("dashboard")} />
+          )}
+
+          {/* Product Management Page */}
+          {activeSection === "products" && (
+            <ProductManagement onBack={() => setActiveSection("dashboard")} />
+          )}
+
+          {/* Card Detail Pages (exclude customers & products — have their own pages) */}
+          {!["customers", "products"].includes(activeSection) && stats.map(s => s.id).includes(activeSection) && (
+            <CardDetail
+              key={activeSection}
+              {...stats.find(s => s.id === activeSection)!}
+              onBack={() => setActiveSection("dashboard")}
+            />
+          )}
 
           {/* Stats Grid — 2 cols on mobile, 4 on desktop */}
+          {activeSection === "dashboard" && <>
           <motion.div variants={containerV} initial="hidden" animate="visible"
             style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr 1fr" : "repeat(4,1fr)", gap: isMobile ? 10 : 16, marginBottom: isMobile ? 14 : 22 }}>
             {stats.map(s => (
               <motion.div key={s.id} variants={itemV}
-                whileHover={{ y: -3, boxShadow: "0 10px 32px rgba(26,15,20,0.10)" }}
-                style={{ background: "rgba(255,253,251,0.97)", borderRadius: 12, padding: isMobile ? "14px 12px" : "20px 18px", border: "1px solid rgba(235,220,225,0.80)", boxShadow: "0 2px 12px rgba(26,15,20,0.05)" }}>
+                onClick={() => setActiveSection(s.id)}
+                whileHover={{ y: -3, boxShadow: "0 10px 32px rgba(26,15,20,0.10)", cursor: "pointer" }}
+                whileTap={{ scale: 0.97 }}
+                style={{ background: "rgba(255,253,251,0.97)", borderRadius: 12, padding: isMobile ? "14px 12px" : "20px 18px", border: "1px solid rgba(235,220,225,0.80)", boxShadow: "0 2px 12px rgba(26,15,20,0.05)", cursor: "pointer", position: "relative", overflow: "hidden" }}>
                 <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 10 }}>
                   <div style={{ position: "relative", width: isMobile ? 36 : 42, height: isMobile ? 36 : 42, borderRadius: 10, background: s.bg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                     <PulsingRing color={s.color} />
@@ -258,6 +299,12 @@ export default function DashboardPage() {
                   <Counter to={s.value} prefix={s.prefix} suffix={s.suffix} />
                 </div>
                 <div style={{ fontSize: "0.68rem", color: "#8a7078", marginTop: 5 }}>{s.label}</div>
+                {/* Hover shimmer */}
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  whileHover={{ opacity: 1 }}
+                  style={{ position: "absolute", inset: 0, borderRadius: 12, background: `linear-gradient(135deg, ${s.color}05, ${s.color}0a)`, pointerEvents: "none" }}
+                />
               </motion.div>
             ))}
           </motion.div>
@@ -370,6 +417,7 @@ export default function DashboardPage() {
               </motion.div>
             </motion.div>
           </div>
+          </> }
         </main>
       </div>
     </div>

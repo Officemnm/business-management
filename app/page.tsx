@@ -46,19 +46,33 @@ export default function LoginPage() {
     return ok;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validate()) return;
     setIsLoading(true);
-    if (timer.current) clearTimeout(timer.current);
-    timer.current = setTimeout(() => {
-      if (form.username === "admin" && form.password === "1234") {
-        router.push("/dashboard");
-      } else {
+    setErrors(p => ({ ...p, general: "" }));
+
+    try {
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username: form.username, password: form.password }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setErrors(p => ({ ...p, general: data.error || "লগইন ব্যর্থ হয়েছে।" }));
         setIsLoading(false);
-        setErrors(p => ({ ...p, general: "ব্যবহারকারীর নাম বা পাসওয়ার্ড ভুল হয়েছে।" }));
+        return;
       }
-    }, 1500);
+
+      // Redirect based on role
+      router.push("/dashboard");
+    } catch {
+      setErrors(p => ({ ...p, general: "সার্ভারে সংযোগ ব্যর্থ হয়েছে।" }));
+      setIsLoading(false);
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
