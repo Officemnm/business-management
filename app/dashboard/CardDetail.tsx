@@ -193,7 +193,7 @@ export default function CardDetail({ id, label, icon: Icon, color, bg, trend, up
   const containerV = { hidden: {}, visible: { transition: { staggerChildren: 0.06 } } };
   const itemV = {
     hidden: { opacity: 0, y: 14 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.22, 1, 0.36, 1] } },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: [0.22, 1, 0.36, 1] as const } },
   };
 
   return (
