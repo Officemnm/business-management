@@ -13,6 +13,7 @@ import UserManagement from "./UserManagement";
 import CardDetail from "./CardDetail";
 import CustomerManagement from "./CustomerManagement";
 import ProductManagement from "./ProductManagement";
+import NewOrderCreation from "./NewOrderCreation";
 
 /* ── useWindowWidth ── */
 function useWindowWidth() {
@@ -57,7 +58,7 @@ const stats = [
   { id: "orders", label: "মোট অর্ডার", value: 1842, prefix: "", suffix: "টি", icon: ShoppingCart, color: "#2563eb", bg: "rgba(37,99,235,0.08)", trend: "+8.1%", up: true },
   { id: "customers", label: "গ্রাহক", value: 4291, prefix: "", suffix: "জন", icon: Users, color: "#059669", bg: "rgba(5,150,105,0.08)", trend: "+5.3%", up: true },
   { id: "products", label: "পণ্য", value: 136, prefix: "", suffix: "টি", icon: Package, color: "#d97706", bg: "rgba(217,119,6,0.08)", trend: "-2.1%", up: false },
-  { id: "dailySales", label: "দৈনিক বিক্রি", value: 15420, prefix: "৳", suffix: "", icon: Wallet, color: "#7c3aed", bg: "rgba(124,58,237,0.08)", trend: "+10.3%", up: true },
+  { id: "dailySales", label: "নতুন অর্ডার", value: 15420, prefix: "", suffix: "টি", icon: ShoppingCart, color: "#7c3aed", bg: "rgba(124,58,237,0.08)", trend: "+10.3%", up: true },
   { id: "profit", label: "মুনাফা", value: 89200, prefix: "৳", suffix: "", icon: PiggyBank, color: "#0891b2", bg: "rgba(8,145,178,0.08)", trend: "+18.5%", up: true },
   { id: "pending", label: "পেন্ডিং অর্ডার", value: 47, prefix: "", suffix: "টি", icon: Clock, color: "#ea580c", bg: "rgba(234,88,12,0.08)", trend: "-6.2%", up: true },
   { id: "returns", label: "রিটার্ন", value: 12, prefix: "", suffix: "টি", icon: RotateCcw, color: "#dc2626", bg: "rgba(220,38,38,0.08)", trend: "-8.4%", up: true },
@@ -266,8 +267,13 @@ export default function DashboardPage() {
             <ProductManagement onBack={() => setActiveSection("dashboard")} />
           )}
 
+          {/* New Order creation */}
+          {activeSection === "dailySales" && (
+            <NewOrderCreation onBack={() => setActiveSection("dashboard")} />
+          )}
+
           {/* Card Detail Pages (exclude customers & products — have their own pages) */}
-          {!["customers", "products"].includes(activeSection) && stats.map(s => s.id).includes(activeSection) && (
+          {!["customers", "products", "dailySales"].includes(activeSection) && stats.map(s => s.id).includes(activeSection) && (
             <CardDetail
               key={activeSection}
               {...stats.find(s => s.id === activeSection)!}
