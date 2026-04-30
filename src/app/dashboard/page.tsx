@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { ShoppingCart, Users, Package, CreditCard, Clock, TrendingUp, ArrowRight, Truck, CheckCircle2, AlertCircle } from "lucide-react";
+import { ShoppingCart, Users, Package, CreditCard, Clock, TrendingUp, Truck, CheckCircle2, AlertCircle, CalendarDays } from "lucide-react";
+import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, BarChart, Bar } from "recharts";
 
 interface Stats {
   totalOrders: number;
@@ -14,6 +15,8 @@ interface Stats {
   todayDelivered: number;
   todayPending: number;
 }
+
+interface ChartDay { date: string; revenue: number; orders: number; }
 
 interface Activity {
   _id: string;
@@ -30,6 +33,7 @@ interface Activity {
 
 export default function DashboardPage() {
   const [stats, setStats] = useState<Stats | null>(null);
+  const [chartData, setChartData] = useState<ChartDay[]>([]);
   const [activity, setActivity] = useState<Activity[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -38,6 +42,7 @@ export default function DashboardPage() {
       .then((r) => r.json())
       .then((data) => {
         setStats(data.stats);
+        setChartData(data.chartData || []);
         setActivity(data.recentActivity || []);
       })
       .catch(() => {})
@@ -56,29 +61,78 @@ export default function DashboardPage() {
 
   return (
     <div>
-      {/* Today Summary Banner */}
-      <div className="rounded-2xl p-5 mb-5" style={{ background: "linear-gradient(135deg, #66a80f 0%, #4d7c0f 100%)" }}>
-        <div className="flex items-center gap-2 mb-3">
-          <TrendingUp size={18} color="#fff" />
-          <h2 className="text-[15px] font-bold text-white">আজকের সারাংশ</h2>
-          <span className="text-[11px] ml-auto text-white/70">{todayLabel}</span>
+      {/* Today Summary — minimal */}
+      <div className="flex items-center justify-between mb-5">
+        <div>
+          <h2 className="text-[18px] font-bold" style={{ color: "var(--text-primary)" }}>ড্যাশবোর্ড</h2>
+          <p className="text-[12px] mt-0.5 flex items-center gap-1.5" style={{ color: "var(--text-muted)" }}>
+            <CalendarDays size={12} /> {todayLabel}
+          </p>
         </div>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          <div className="rounded-xl p-3" style={{ background: "rgba(255,255,255,0.15)" }}>
-            <p className="text-[11px] text-white/70">অর্ডার</p>
-            <p className="text-[22px] font-bold text-white">{stats?.todayOrders || 0}</p>
+        <div className="flex items-center gap-4">
+          <div className="text-right">
+            <p className="text-[10px] font-medium" style={{ color: "var(--text-muted)" }}>আজকের বিক্রি</p>
+            <p className="text-[18px] font-extrabold" style={{ color: "#66a80f" }}>৳{stats?.todayRevenue || 0}</p>
           </div>
-          <div className="rounded-xl p-3" style={{ background: "rgba(255,255,255,0.15)" }}>
-            <p className="text-[11px] text-white/70">বিক্রি</p>
-            <p className="text-[22px] font-bold text-white">৳{stats?.todayRevenue || 0}</p>
+        </div>
+      </div>
+
+      {/* Today mini stats */}
+      <div className="grid grid-cols-4 gap-2 mb-5">
+        {[
+          { label: "অর্ডার", value: stats?.todayOrders || 0, color: "#66a80f" },
+          { label: "ডেলিভারড", value: stats?.todayDelivered || 0, color: "#16a34a" },
+          { label: "পেন্ডিং", value: stats?.todayPending || 0, color: "#d97706" },
+          { label: "বাকি", value: `৳${stats?.totalDue || 0}`, color: "#dc2626" },
+        ].map((s) => (
+          <div key={s.label} className="rounded-xl p-3 text-center" style={{ background: "var(--bg-card)", border: "1px solid var(--border-color)" }}>
+            <p className="text-[18px] font-extrabold" style={{ color: s.color }}>{s.value}</p>
+            <p className="text-[10px] font-medium mt-0.5" style={{ color: "var(--text-muted)" }}>{s.label}</p>
           </div>
-          <div className="rounded-xl p-3" style={{ background: "rgba(255,255,255,0.15)" }}>
-            <p className="text-[11px] text-white/70">ডেলিভারড</p>
-            <p className="text-[22px] font-bold text-white">{stats?.todayDelivered || 0}</p>
+        ))}
+      </div>
+
+      {/* Charts Row */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-5">
+        {/* Revenue Chart */}
+        <div className="rounded-xl p-4" style={{ background: "var(--bg-card)", border: "1px solid var(--border-color)" }}>
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-[13px] font-bold" style={{ color: "var(--text-primary)" }}>৭ দিনের বিক্রি</h3>
+            <TrendingUp size={14} style={{ color: "var(--text-muted)" }} />
           </div>
-          <div className="rounded-xl p-3" style={{ background: "rgba(255,255,255,0.15)" }}>
-            <p className="text-[11px] text-white/70">পেন্ডিং</p>
-            <p className="text-[22px] font-bold text-white">{stats?.todayPending || 0}</p>
+          <div style={{ height: 180 }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={chartData}>
+                <defs>
+                  <linearGradient id="revGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#66a80f" stopOpacity={0.2} />
+                    <stop offset="100%" stopColor="#66a80f" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <XAxis dataKey="date" tick={{ fontSize: 10, fill: "var(--text-muted)" }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fontSize: 10, fill: "var(--text-muted)" }} axisLine={false} tickLine={false} width={40} />
+                <Tooltip contentStyle={{ background: "var(--bg-card)", border: "1px solid var(--border-color)", borderRadius: 8, fontSize: 12 }} />
+                <Area type="monotone" dataKey="revenue" stroke="#66a80f" strokeWidth={2} fill="url(#revGrad)" name="বিক্রি" />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        {/* Orders Chart */}
+        <div className="rounded-xl p-4" style={{ background: "var(--bg-card)", border: "1px solid var(--border-color)" }}>
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-[13px] font-bold" style={{ color: "var(--text-primary)" }}>৭ দিনের অর্ডার</h3>
+            <ShoppingCart size={14} style={{ color: "var(--text-muted)" }} />
+          </div>
+          <div style={{ height: 180 }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={chartData}>
+                <XAxis dataKey="date" tick={{ fontSize: 10, fill: "var(--text-muted)" }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fontSize: 10, fill: "var(--text-muted)" }} axisLine={false} tickLine={false} width={25} allowDecimals={false} />
+                <Tooltip contentStyle={{ background: "var(--bg-card)", border: "1px solid var(--border-color)", borderRadius: 8, fontSize: 12 }} />
+                <Bar dataKey="orders" fill="#66a80f" radius={[4, 4, 0, 0]} name="অর্ডার" />
+              </BarChart>
+            </ResponsiveContainer>
           </div>
         </div>
       </div>
@@ -86,80 +140,65 @@ export default function DashboardPage() {
       {/* Stats Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 mb-5">
         {[
-          { label: "মোট অর্ডার", value: stats?.totalOrders || 0, icon: ShoppingCart, color: "#66a80f", bg: "#f0fdf4" },
-          { label: "মোট কাস্টমার", value: stats?.totalCustomers || 0, icon: Users, color: "#2563eb", bg: "#eff6ff" },
-          { label: "মোট প্রডাক্ট", value: stats?.totalProducts || 0, icon: Package, color: "#7c3aed", bg: "#f5f3ff" },
-          { label: "মোট বিক্রি", value: `৳${stats?.totalRevenue || 0}`, icon: TrendingUp, color: "#059669", bg: "#ecfdf5" },
-          { label: "মোট বাকি", value: `৳${stats?.totalDue || 0}`, icon: CreditCard, color: "#dc2626", bg: "#fef2f2" },
+          { label: "মোট অর্ডার", value: stats?.totalOrders || 0, icon: ShoppingCart, color: "#66a80f" },
+          { label: "মোট কাস্টমার", value: stats?.totalCustomers || 0, icon: Users, color: "#2563eb" },
+          { label: "মোট প্রডাক্ট", value: stats?.totalProducts || 0, icon: Package, color: "#7c3aed" },
+          { label: "মোট বিক্রি", value: `৳${stats?.totalRevenue || 0}`, icon: TrendingUp, color: "#059669" },
+          { label: "মোট বাকি", value: `৳${stats?.totalDue || 0}`, icon: CreditCard, color: "#dc2626" },
         ].map((card) => {
           const Icon = card.icon;
           return (
-            <div key={card.label} className="rounded-xl p-4 transition-shadow duration-200"
-              style={{ background: "var(--bg-card)", border: "1px solid var(--border-color)", boxShadow: "0 1px 3px rgba(0,0,0,0.04)" }}>
-              <div className="flex items-center justify-between mb-3">
-                <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: card.bg }}>
-                  <Icon size={20} style={{ color: card.color }} strokeWidth={1.5} />
+            <div key={card.label} className="rounded-xl p-3.5"
+              style={{ background: "var(--bg-card)", border: "1px solid var(--border-color)" }}>
+              <div className="flex items-center gap-2.5">
+                <Icon size={16} style={{ color: card.color }} strokeWidth={1.5} />
+                <div>
+                  <p className="text-[17px] font-extrabold leading-tight" style={{ color: "var(--text-primary)" }}>{card.value}</p>
+                  <p className="text-[10px] font-medium" style={{ color: "var(--text-muted)" }}>{card.label}</p>
                 </div>
-                <ArrowRight size={14} style={{ color: "var(--text-muted)" }} />
               </div>
-              <p className="text-[22px] font-extrabold leading-tight" style={{ color: "var(--text-primary)" }}>{card.value}</p>
-              <p className="text-[11px] mt-1 font-medium" style={{ color: "var(--text-muted)" }}>{card.label}</p>
             </div>
           );
         })}
       </div>
 
       {/* Recent Orders */}
-      <div className="rounded-xl overflow-hidden" style={{ background: "var(--bg-card)", border: "1px solid var(--border-color)", boxShadow: "0 1px 3px rgba(0,0,0,0.04)" }}>
-        <div className="flex items-center justify-between px-5 py-4" style={{ borderBottom: "1px solid var(--border-color)" }}>
+      <div className="rounded-xl overflow-hidden" style={{ background: "var(--bg-card)", border: "1px solid var(--border-color)" }}>
+        <div className="flex items-center justify-between px-5 py-3.5" style={{ borderBottom: "1px solid var(--border-color)" }}>
           <div className="flex items-center gap-2">
-            <Clock size={16} style={{ color: "#66a80f" }} strokeWidth={1.5} />
-            <h3 className="text-[14px] font-bold" style={{ color: "var(--text-primary)" }}>সাম্প্রতিক অর্ডার</h3>
+            <Clock size={14} style={{ color: "var(--text-muted)" }} strokeWidth={1.5} />
+            <h3 className="text-[13px] font-bold" style={{ color: "var(--text-primary)" }}>সাম্প্রতিক অর্ডার</h3>
           </div>
-          <span className="text-[11px] font-medium" style={{ color: "var(--text-muted)" }}>{activity.length} অর্ডার</span>
+          <span className="text-[10px] font-medium" style={{ color: "var(--text-muted)" }}>{activity.length} টি</span>
         </div>
 
         {activity.length === 0 ? (
           <div className="px-5 py-16 text-center">
-            <ShoppingCart size={36} className="mx-auto mb-3" style={{ color: "var(--text-muted)" }} strokeWidth={1} />
-            <p className="text-sm" style={{ color: "var(--text-muted)" }}>কোনো অর্ডার নেই</p>
+            <ShoppingCart size={32} className="mx-auto mb-2" style={{ color: "var(--text-muted)" }} strokeWidth={1} />
+            <p className="text-[12px]" style={{ color: "var(--text-muted)" }}>কোনো অর্ডার নেই</p>
           </div>
         ) : (
           <div>
             {activity.map((item, idx) => {
               const ds = item.deliveryStatus || "pending";
               return (
-                <div key={item._id} className="flex items-center gap-3 px-5 py-3.5" style={{ borderTop: idx > 0 ? "1px solid var(--border-color)" : "none" }}>
-                  {/* Status icon */}
-                  <div className="w-9 h-9 rounded-full flex items-center justify-center shrink-0"
+                <div key={item._id} className="flex items-center gap-3 px-5 py-3" style={{ borderTop: idx > 0 ? "1px solid var(--border-color)" : "none" }}>
+                  <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0"
                     style={{ background: ds === "delivered" ? "#f0fdf4" : ds === "not_delivered" ? "#fef2f2" : "#fffbeb" }}>
-                    {ds === "delivered" ? <CheckCircle2 size={16} style={{ color: "#16a34a" }} /> :
-                     ds === "not_delivered" ? <AlertCircle size={16} style={{ color: "#dc2626" }} /> :
-                     <Truck size={16} style={{ color: "#d97706" }} />}
+                    {ds === "delivered" ? <CheckCircle2 size={14} style={{ color: "#16a34a" }} /> :
+                     ds === "not_delivered" ? <AlertCircle size={14} style={{ color: "#dc2626" }} /> :
+                     <Truck size={14} style={{ color: "#d97706" }} />}
                   </div>
-
-                  {/* Info */}
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <p className="text-[13px] font-bold truncate" style={{ color: "var(--text-primary)" }}>{item.customerName}</p>
-                      <span className="text-[10px] px-2 py-0.5 rounded-full font-semibold shrink-0"
-                        style={{
-                          background: item.status === "completed" ? "#f0fdf4" : item.status === "cancelled" ? "#fef2f2" : "#fffbeb",
-                          color: item.status === "completed" ? "#16a34a" : item.status === "cancelled" ? "#dc2626" : "#d97706",
-                        }}>
-                        {item.status === "completed" ? "সম্পন্ন" : item.status === "cancelled" ? "বাতিল" : "পেন্ডিং"}
-                      </span>
-                    </div>
-                    <p className="text-[11px] mt-0.5" style={{ color: "var(--text-muted)" }}>
-                      {item.itemCount} পণ্য &middot; {item.createdBy} &middot; {new Date(item.createdAt).toLocaleTimeString("bn-BD", { hour: "2-digit", minute: "2-digit" })}
+                    <p className="text-[12px] font-bold truncate" style={{ color: "var(--text-primary)" }}>{item.customerName}</p>
+                    <p className="text-[10px]" style={{ color: "var(--text-muted)" }}>
+                      {item.itemCount} পণ্য · {new Date(item.createdAt).toLocaleTimeString("bn-BD", { hour: "2-digit", minute: "2-digit" })}
                     </p>
                   </div>
-
-                  {/* Amount */}
                   <div className="text-right shrink-0">
-                    <p className="text-[14px] font-bold" style={{ color: "#66a80f" }}>৳{item.totalAmount}</p>
+                    <p className="text-[13px] font-bold" style={{ color: "var(--text-primary)" }}>৳{item.totalAmount}</p>
                     {item.dueAmount > 0 && (
-                      <p className="text-[10px] font-semibold" style={{ color: "#dc2626" }}>বাকি ৳{item.dueAmount}</p>
+                      <p className="text-[9px] font-semibold" style={{ color: "#dc2626" }}>বাকি ৳{item.dueAmount}</p>
                     )}
                   </div>
                 </div>

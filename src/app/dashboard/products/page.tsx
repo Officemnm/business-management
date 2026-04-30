@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Trash2, Package, Tag } from "lucide-react";
+import { Trash2, Package, Tag, Pencil, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import toast from "react-hot-toast";
@@ -23,6 +23,16 @@ export default function AllProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // Edit modal state
+  const [editProduct, setEditProduct] = useState<Product | null>(null);
+  const [editName, setEditName] = useState("");
+  const [editCategory, setEditCategory] = useState("");
+  const [editBuyPrice, setEditBuyPrice] = useState<number | string>(0);
+  const [editSellPrice, setEditSellPrice] = useState<number | string>(0);
+  const [editStock, setEditStock] = useState<number | string>(0);
+  const [editUnit, setEditUnit] = useState("");
+  const [editSaving, setEditSaving] = useState(false);
+
   const loadData = () => {
     fetch("/api/dashboard/products")
       .then((r) => r.json())
@@ -34,12 +44,49 @@ export default function AllProductsPage() {
     loadData();
   }, []);
 
+  const openEdit = (p: Product) => {
+    setEditProduct(p);
+    setEditName(p.name);
+    setEditCategory(p.category);
+    setEditBuyPrice(p.buyPrice);
+    setEditSellPrice(p.sellPrice);
+    setEditStock(p.stock);
+    setEditUnit(p.unit);
+  };
+
+  const handleEditSave = async () => {
+    if (!editProduct) return;
+    if (!editName.trim()) { toast.error("প্রডাক্টের নাম আবশ্যক"); return; }
+    setEditSaving(true);
+    try {
+      const res = await fetch(`/api/dashboard/products/${editProduct._id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: editName.trim(),
+          category: editCategory.trim(),
+          buyPrice: Number(editBuyPrice) || 0,
+          sellPrice: Number(editSellPrice) || 0,
+          stock: Number(editStock) || 0,
+          unit: editUnit.trim() || "পিস",
+        }),
+      });
+      if (!res.ok) throw new Error();
+      toast.success("প্রডাক্ট আপডেট হয়েছে");
+      setEditProduct(null);
+      loadData();
+    } catch { toast.error("আপডেট ব্যর্থ"); }
+    finally { setEditSaving(false); }
+  };
+
   const handleDelete = async (id: string) => {
     if (!confirm("মুছে ফেলতে চান?")) return;
     await fetch(`/api/dashboard/products/${id}`, { method: "DELETE" });
     toast.success("প্রডাক্ট মুছে ফেলা হয়েছে");
     loadData();
   };
+
+  const inputStyle = "w-full h-10 px-3 rounded-lg text-sm outline-none";
 
   if (loading) {
     return (
@@ -157,22 +204,96 @@ export default function AllProductsPage() {
                   </span>
                 </div>
 
-                {/* Delete */}
-                <button
-                  onClick={() => handleDelete(p._id)}
-                  className="w-full h-8 rounded-lg text-[12px] font-medium flex items-center justify-center gap-1.5 cursor-pointer transition-colors duration-150"
-                  style={{
-                    background: "var(--bg-input)",
-                    color: "var(--text-muted)",
-                    border: "1px solid var(--border-color)",
-                  }}
-                >
-                  <Trash2 size={12} />
-                  মুছুন
-                </button>
+                {/* Actions */}
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => openEdit(p)}
+                    className="flex-1 h-8 rounded-lg text-[12px] font-medium flex items-center justify-center gap-1.5 cursor-pointer transition-colors duration-150"
+                    style={{
+                      background: "var(--bg-input)",
+                      color: "var(--text-secondary)",
+                      border: "1px solid var(--border-color)",
+                    }}
+                  >
+                    <Pencil size={11} />
+                    এডিট
+                  </button>
+                  <button
+                    onClick={() => handleDelete(p._id)}
+                    className="h-8 px-3 rounded-lg text-[12px] font-medium flex items-center justify-center gap-1.5 cursor-pointer transition-colors duration-150"
+                    style={{
+                      background: "#fef2f2",
+                      color: "#dc2626",
+                      border: "1px solid #fecaca",
+                    }}
+                  >
+                    <Trash2 size={11} />
+                  </button>
+                </div>
               </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Edit Product Modal */}
+      {editProduct && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center" style={{ background: "rgba(0,0,0,0.5)" }}>
+          <div className="w-[92%] max-w-md rounded-2xl max-h-[85vh] overflow-y-auto" style={{ background: "var(--bg-card)" }}>
+            <div className="flex items-center justify-between px-5 py-4 sticky top-0" style={{ background: "var(--bg-card)", borderBottom: "1px solid var(--border-color)" }}>
+              <h3 className="text-[15px] font-bold" style={{ color: "var(--text-primary)" }}>প্রডাক্ট সম্পাদনা</h3>
+              <button onClick={() => setEditProduct(null)} className="cursor-pointer" style={{ color: "var(--text-muted)" }}><X size={18} /></button>
+            </div>
+            <div className="p-5 flex flex-col gap-4">
+              {editProduct.image && (
+                <div className="flex justify-center">
+                  <Image src={editProduct.image} alt={editProduct.name} width={120} height={120} className="rounded-lg" style={{ objectFit: "contain" }} unoptimized />
+                </div>
+              )}
+              <div>
+                <label className="block text-[11px] font-medium mb-1" style={{ color: "var(--text-secondary)" }}>নাম</label>
+                <input value={editName} onChange={(e) => setEditName(e.target.value)} className={inputStyle}
+                  style={{ background: "var(--bg-input)", color: "var(--text-primary)", border: "1px solid var(--border-color)" }} />
+              </div>
+              <div>
+                <label className="block text-[11px] font-medium mb-1" style={{ color: "var(--text-secondary)" }}>ক্যাটাগরি</label>
+                <input value={editCategory} onChange={(e) => setEditCategory(e.target.value)} className={inputStyle}
+                  style={{ background: "var(--bg-input)", color: "var(--text-primary)", border: "1px solid var(--border-color)" }} />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[11px] font-medium mb-1" style={{ color: "var(--text-secondary)" }}>ক্রয় মূল্য</label>
+                  <input type="number" value={editBuyPrice} onChange={(e) => setEditBuyPrice(e.target.value === "" ? "" : Number(e.target.value))}
+                    onFocus={(e) => e.target.select()} className={inputStyle} min={0}
+                    style={{ background: "var(--bg-input)", color: "var(--text-primary)", border: "1px solid var(--border-color)" }} />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-medium mb-1" style={{ color: "var(--text-secondary)" }}>বিক্রয় মূল্য</label>
+                  <input type="number" value={editSellPrice} onChange={(e) => setEditSellPrice(e.target.value === "" ? "" : Number(e.target.value))}
+                    onFocus={(e) => e.target.select()} className={inputStyle} min={0}
+                    style={{ background: "var(--bg-input)", color: "var(--text-primary)", border: "1px solid var(--border-color)" }} />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[11px] font-medium mb-1" style={{ color: "var(--text-secondary)" }}>স্টক</label>
+                  <input type="number" value={editStock} onChange={(e) => setEditStock(e.target.value === "" ? "" : Number(e.target.value))}
+                    onFocus={(e) => e.target.select()} className={inputStyle}
+                    style={{ background: "var(--bg-input)", color: "var(--text-primary)", border: "1px solid var(--border-color)" }} />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-medium mb-1" style={{ color: "var(--text-secondary)" }}>ইউনিট</label>
+                  <input value={editUnit} onChange={(e) => setEditUnit(e.target.value)} className={inputStyle}
+                    style={{ background: "var(--bg-input)", color: "var(--text-primary)", border: "1px solid var(--border-color)" }} />
+                </div>
+              </div>
+              <button onClick={handleEditSave} disabled={editSaving}
+                className="w-full h-11 rounded-xl text-[13px] font-semibold text-white cursor-pointer disabled:opacity-50"
+                style={{ background: "#66a80f" }}>
+                {editSaving ? "সংরক্ষণ হচ্ছে..." : "আপডেট করুন"}
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

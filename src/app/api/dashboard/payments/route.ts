@@ -30,11 +30,11 @@ export async function POST(req: NextRequest) {
     const collectedBy = req.headers.get("x-user-name") || "unknown";
 
     const { customerId, customerName, amount, note } = body;
-    if (!customerId || !amount || amount <= 0) {
+    if (!customerId || amount === undefined || amount === 0) {
       return NextResponse.json({ error: "Invalid data" }, { status: 400 });
     }
 
-    // Create payment record
+    // Create payment record (negative amount = manual due added)
     const payment = await Payment.create({
       customer: customerId,
       customerName,
@@ -43,10 +43,13 @@ export async function POST(req: NextRequest) {
       collectedBy,
     });
 
-    // Reduce customer totalDue
-    await Customer.findByIdAndUpdate(customerId, {
-      $inc: { totalDue: -amount },
-    });
+    // Only reduce customer totalDue for positive payments (collections)
+    // Negative amounts (manual due) are handled by the customer update endpoint
+    if (amount > 0) {
+      await Customer.findByIdAndUpdate(customerId, {
+        $inc: { totalDue: -amount },
+      });
+    }
 
     return NextResponse.json(payment, { status: 201 });
   } catch (error) {

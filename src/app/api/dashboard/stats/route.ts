@@ -30,6 +30,24 @@ export async function GET() {
     const todayDelivered = todayOrders.filter((o) => o.deliveryStatus === "delivered").length;
     const todayPending = todayOrders.filter((o) => o.deliveryStatus !== "delivered" && o.deliveryStatus !== "not_delivered").length;
 
+    // Last 7 days data for charts
+    const last7Days: { date: string; revenue: number; orders: number }[] = [];
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      const dayStart = new Date(d); dayStart.setHours(0, 0, 0, 0);
+      const dayEnd = new Date(d); dayEnd.setHours(23, 59, 59, 999);
+      const dayOrders = allOrders.filter((o) => {
+        const ct = new Date(o.createdAt);
+        return ct >= dayStart && ct <= dayEnd;
+      });
+      last7Days.push({
+        date: d.toLocaleDateString("bn-BD", { day: "numeric", month: "short" }),
+        revenue: dayOrders.reduce((s, o) => s + (o.totalAmount || 0), 0),
+        orders: dayOrders.length,
+      });
+    }
+
     // Recent activity
     const recentOrders = await Order.find().sort({ createdAt: -1 }).limit(15).lean();
 
@@ -45,6 +63,7 @@ export async function GET() {
         todayDelivered,
         todayPending,
       },
+      chartData: last7Days,
       recentActivity: recentOrders.map((o) => ({
         _id: o._id,
         customerName: o.customerName,

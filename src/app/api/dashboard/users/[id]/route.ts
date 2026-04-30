@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import dbConnect from "@/lib/db";
 import User from "@/models/User";
+import bcrypt from "bcryptjs";
 
 export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -12,7 +13,15 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
     await dbConnect();
     const { id } = await params;
     const body = await req.json();
-    delete body.password;
+
+    // Handle password change
+    if (body.newPassword) {
+      body.password = await bcrypt.hash(body.newPassword, 10);
+      delete body.newPassword;
+    } else {
+      delete body.password;
+      delete body.newPassword;
+    }
 
     const user = await User.findByIdAndUpdate(id, body, { new: true }).select("-password");
     if (!user) return NextResponse.json({ error: "User not found" }, { status: 404 });

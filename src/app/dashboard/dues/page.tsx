@@ -178,23 +178,31 @@ export default function DuesPage() {
                             <Calendar size={12} style={{ color: "var(--text-muted)" }} />
                             <span className="text-[11px] font-bold" style={{ color: "var(--text-primary)" }}>{dateLabel}</span>
                           </div>
-                          <span className="text-[11px] font-bold" style={{ color: "#16a34a" }}>৳{dayTotal}</span>
+                          <span className="text-[11px] font-bold" style={{ color: dayTotal >= 0 ? "#16a34a" : "#dc2626" }}>
+                            {dayTotal >= 0 ? `৳${dayTotal}` : `- ৳${Math.abs(dayTotal)}`}
+                          </span>
                         </div>
                         {/* Payment entries */}
-                        {dayPayments.map((p, i) => (
-                          <div key={p._id} className="flex items-center justify-between px-3 py-2.5" style={{ borderTop: i > 0 ? "1px solid var(--border-color)" : "1px solid var(--border-color)" }}>
+                        {dayPayments.map((p, i) => {
+                          const isDebit = p.amount < 0;
+                          return (
+                          <div key={p._id} className="flex items-center justify-between px-3 py-2.5" style={{ borderTop: "1px solid var(--border-color)" }}>
                             <div>
-                              <p className="text-[12px] font-semibold" style={{ color: "#16a34a" }}>৳{p.amount} কালেক্ট</p>
+                              <p className="text-[12px] font-semibold" style={{ color: isDebit ? "#dc2626" : "#16a34a" }}>
+                                {isDebit ? `৳${Math.abs(p.amount)} বকেয়া যোগ` : `৳${p.amount} কালেক্ট`}
+                              </p>
                               <p className="text-[10px]" style={{ color: "var(--text-muted)" }}>
                                 {new Date(p.createdAt).toLocaleTimeString("bn-BD", { hour: "2-digit", minute: "2-digit" })}
-                                {p.collectedBy && ` · ${p.collectedBy}`}
+                                {p.note && ` · ${p.note}`}
+                                {p.collectedBy && p.collectedBy !== "unknown" && ` · ${p.collectedBy}`}
                               </p>
                             </div>
-                            <div className="w-7 h-7 rounded-full flex items-center justify-center" style={{ background: "#f0fdf4" }}>
-                              <CheckCircle2 size={14} style={{ color: "#16a34a" }} />
+                            <div className="w-7 h-7 rounded-full flex items-center justify-center" style={{ background: isDebit ? "#fef2f2" : "#f0fdf4" }}>
+                              {isDebit ? <Banknote size={14} style={{ color: "#dc2626" }} /> : <CheckCircle2 size={14} style={{ color: "#16a34a" }} />}
                             </div>
                           </div>
-                        ))}
+                          );
+                        })}
                       </div>
                     );
                   })}

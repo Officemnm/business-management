@@ -1,14 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Plus, Package, Tag, X, ShoppingBag, ArrowLeft, Check, Eye, Pencil, Calendar, BarChart3, Trash2, Clock, User, Hash, Truck, Ban, CheckCircle2 } from "lucide-react";
+import { Plus, Package, Tag, X, ShoppingBag, ArrowLeft, Check, Eye, Pencil, Calendar, BarChart3, Trash2, Clock, User, Hash, Truck, Ban, CheckCircle2, RotateCcw, MapPin } from "lucide-react";
 import Image from "next/image";
 import toast from "react-hot-toast";
 
-interface Customer { _id: string; name: string; phone: string; }
+interface Customer { _id: string; name: string; phone: string; address?: string; }
 interface Product { _id: string; name: string; sellPrice: number; stock: number; category: string; image?: string; unit: string; }
 interface OrderItem { product: string; productName: string; quantity: number; unitPrice: number; total: number; remark: string; image?: string; }
-interface Order { _id: string; customer?: string; customerName: string; items: OrderItem[]; totalAmount: number; paidAmount: number; dueAmount: number; status: string; deliveryStatus?: string; deliveryNote?: string; createdBy: string; createdAt: string; }
+interface Order { _id: string; customer?: string; customerName: string; customerAddress?: string; items: OrderItem[]; totalAmount: number; paidAmount: number; dueAmount: number; returnAmount?: number; finalAmount?: number; returnItems?: { productName: string; amount: number }[]; status: string; deliveryStatus?: string; deliveryNote?: string; createdBy: string; createdAt: string; }
 
 export default function OrdersPage() {
   const [orders, setOrders] = useState<Order[]>([]);
@@ -24,6 +24,9 @@ export default function OrdersPage() {
   const [paidAmount, setPaidAmount] = useState(0);
   const [note, setNote] = useState("");
   const [submitting, setSubmitting] = useState(false);
+
+  // Delivery tab filter
+  const [deliveryTab, setDeliveryTab] = useState<"pending" | "delivered">("pending");
 
   // Date filter — default to today
   const [filterDate, setFilterDate] = useState(() => {
@@ -44,6 +47,10 @@ export default function OrdersPage() {
   const [deliveryPaid, setDeliveryPaid] = useState<number | string>("");
   const [deliveryReason, setDeliveryReason] = useState("");
   const [deliverySaving, setDeliverySaving] = useState(false);
+
+  // Return items state
+  const [returnItems, setReturnItems] = useState<{ productName: string; amount: number | string }[]>([]);
+  const returnTotal = returnItems.reduce((s, r) => s + (Number(r.amount) || 0), 0);
 
   // Catalog modal state
   const [showCatalog, setShowCatalog] = useState(false);
@@ -162,6 +169,7 @@ export default function OrdersPage() {
         body: JSON.stringify({
           customer: selectedCustomer || undefined,
           customerName: customerName.trim(),
+          customerAddress: selectedCustomer ? customers.find((c) => c._id === selectedCustomer)?.address || "" : "",
           items: items.map(({ product, productName, quantity, unitPrice, total, remark }) => ({ product, productName, quantity, unitPrice, total, remark })),
           totalAmount, paidAmount, dueAmount,
           note,
@@ -360,14 +368,21 @@ export default function OrdersPage() {
     if (!viewOrder) return;
     setDeliverySaving(true);
     try {
+      const validReturns = returnItems.filter((r) => r.productName.trim() && Number(r.amount) > 0)
+        .map((r) => ({ productName: r.productName.trim(), amount: Number(r.amount) }));
       const res = await fetch(`/api/dashboard/orders/${viewOrder._id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ deliveryStatus: "delivered", paidAmount: Number(deliveryPaid) || 0 }),
+        body: JSON.stringify({
+          deliveryStatus: "delivered",
+          paidAmount: Number(deliveryPaid) || 0,
+          returnAmount: returnTotal,
+          returnItems: validReturns,
+        }),
       });
       if (!res.ok) throw new Error();
       toast.success("ডেলিভারি সম্পন্ন");
-      setViewOrder(null); setDeliveryAction("none"); setDeliveryPaid("");
+      setViewOrder(null); setDeliveryAction("none"); setDeliveryPaid(""); setReturnItems([]);
       fetchOrders(filterDate);
     } catch { toast.error("আপডেট ব্যর্থ"); }
     finally { setDeliverySaving(false); }
@@ -441,15 +456,36 @@ export default function OrdersPage() {
 
             <div className="flex flex-col gap-2 p-3 rounded-lg mb-4" style={{ background: "var(--bg-input)" }}>
               <div className="flex justify-between text-[13px]"><span style={{ color: "var(--text-secondary)" }}>মোট</span><b style={{ color: "var(--text-primary)" }}>৳{viewOrder.totalAmount}</b></div>
+              {viewOrder.returnAmount > 0 && (
+                <>
+                  <div className="flex justify-between text-[13px]"><span style={{ color: "var(--text-secondary)" }}>ফেরত</span><b style={{ color: "#d97706" }}>- ৳{viewOrder.returnAmount}</b></div>
+                  <div className="flex justify-between text-[13px]"><span style={{ color: "var(--text-secondary)" }}>চূড়ান্ত মোট</span><b style={{ color: "var(--text-primary)" }}>৳{viewOrder.finalAmount}</b></div>
+                </>
+              )}
               <div className="flex justify-between text-[13px]"><span style={{ color: "var(--text-secondary)" }}>পরিশোধ</span><b style={{ color: "#16a34a" }}>৳{viewOrder.paidAmount}</b></div>
               <div className="flex justify-between text-[13px]"><span style={{ color: "var(--text-secondary)" }}>বাকি</span><b style={{ color: viewOrder.dueAmount > 0 ? "#dc2626" : "var(--text-primary)" }}>৳{viewOrder.dueAmount}</b></div>
             </div>
+            {/* Return items list if exists */}
+            {viewOrder.returnItems?.length > 0 && (
+              <div className="mb-4 rounded-lg p-3" style={{ background: "#fffbeb", border: "1px solid #fef3c7" }}>
+                <div className="flex items-center gap-1.5 mb-2">
+                  <RotateCcw size={12} style={{ color: "#d97706" }} />
+                  <span className="text-[11px] font-bold" style={{ color: "#d97706" }}>ফেরত পণ্য</span>
+                </div>
+                {viewOrder.returnItems.map((ri: { productName: string; amount: number }, i: number) => (
+                  <div key={i} className="flex justify-between text-[12px] py-1" style={{ borderTop: i > 0 ? "1px solid #fef3c7" : "none" }}>
+                    <span style={{ color: "var(--text-primary)" }}>{ri.productName}</span>
+                    <span className="font-bold" style={{ color: "#d97706" }}>৳{ri.amount}</span>
+                  </div>
+                ))}
+              </div>
+            )}
             {viewOrder.note && <p className="mb-4 text-[12px]" style={{ color: "var(--text-muted)" }}>নোট: {viewOrder.note}</p>}
 
             {/* ===== DELIVERY ACTIONS ===== */}
             {ds === "pending" && deliveryAction === "none" && (
               <div className="flex gap-2">
-                <button onClick={() => { setDeliveryAction("complete"); setDeliveryPaid(""); }}
+                <button onClick={() => { setDeliveryAction("complete"); setDeliveryPaid(""); setReturnItems([]); }}
                   className="flex-1 h-11 rounded-xl text-[13px] font-semibold text-white cursor-pointer flex items-center justify-center gap-2"
                   style={{ background: "#16a34a" }}>
                   <CheckCircle2 size={16} /> ডেলিভারি সম্পন্ন
@@ -463,26 +499,76 @@ export default function OrdersPage() {
             )}
 
             {/* Delivery Complete Form */}
-            {ds === "pending" && deliveryAction === "complete" && (
+            {ds === "pending" && deliveryAction === "complete" && (() => {
+              const effectiveTotal = viewOrder.totalAmount - returnTotal;
+              const paid = Number(deliveryPaid) || 0;
+              const dueAfter = Math.max(0, effectiveTotal - paid);
+              return (
               <div className="rounded-xl p-4" style={{ background: "#f0fdf4", border: "1px solid #bbf7d0" }}>
                 <div className="flex items-center gap-2 mb-3">
                   <Truck size={16} style={{ color: "#16a34a" }} />
                   <h4 className="text-[13px] font-bold" style={{ color: "#16a34a" }}>ডেলিভারি সম্পন্ন করুন</h4>
                 </div>
+
+                {/* Return Items — optional */}
+                <div className="mb-3 rounded-lg p-3" style={{ background: "#fffbeb", border: "1px solid #fef3c7" }}>
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-1.5">
+                      <RotateCcw size={13} style={{ color: "#d97706" }} />
+                      <span className="text-[11px] font-bold" style={{ color: "#d97706" }}>পণ্য ফেরত (অপশনাল)</span>
+                    </div>
+                    <button type="button" onClick={() => setReturnItems([...returnItems, { productName: "", amount: "" }])}
+                      className="text-[10px] font-semibold px-2 py-0.5 rounded-full cursor-pointer"
+                      style={{ background: "#fef3c7", color: "#d97706", border: "1px solid #fde68a" }}>
+                      + যোগ করুন
+                    </button>
+                  </div>
+                  {returnItems.length === 0 && (
+                    <p className="text-[10px]" style={{ color: "var(--text-muted)" }}>কোনো পণ্য ফেরত না থাকলে এড়িয়ে যান</p>
+                  )}
+                  {returnItems.map((ri, idx) => (
+                    <div key={idx} className="flex items-center gap-2 mt-2">
+                      <input type="text" value={ri.productName} placeholder="পণ্যের নাম"
+                        onChange={(e) => { const n = [...returnItems]; n[idx] = { ...n[idx], productName: e.target.value }; setReturnItems(n); }}
+                        className="flex-1 h-8 px-2 rounded-md text-[11px] outline-none"
+                        style={{ background: "#fff", color: "var(--text-primary)", border: "1px solid #fde68a" }} />
+                      <input type="number" value={ri.amount} placeholder="৳ টাকা"
+                        onChange={(e) => { const n = [...returnItems]; n[idx] = { ...n[idx], amount: e.target.value === "" ? "" : Number(e.target.value) }; setReturnItems(n); }}
+                        onFocus={(e) => e.target.select()}
+                        className="w-24 h-8 px-2 rounded-md text-[11px] outline-none font-bold"
+                        style={{ background: "#fff", color: "var(--text-primary)", border: "1px solid #fde68a" }} min={0} />
+                      <button type="button" onClick={() => setReturnItems(returnItems.filter((_, i) => i !== idx))}
+                        className="cursor-pointer shrink-0" style={{ color: "#dc2626" }}>
+                        <X size={14} />
+                      </button>
+                    </div>
+                  ))}
+                  {returnTotal > 0 && (
+                    <div className="mt-2 pt-2 flex justify-between text-[11px] font-bold" style={{ borderTop: "1px dashed #fde68a", color: "#d97706" }}>
+                      <span>মোট ফেরত</span><span>৳{returnTotal}</span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Payment */}
                 <div className="mb-3">
-                  <label className="block text-[11px] font-medium mb-1" style={{ color: "var(--text-secondary)" }}>মোট টাকা: ৳{viewOrder.totalAmount}</label>
+                  <label className="block text-[11px] font-medium mb-1" style={{ color: "var(--text-secondary)" }}>
+                    {returnTotal > 0
+                      ? `মোট: ৳${viewOrder.totalAmount} − ফেরত: ৳${returnTotal} = ৳${effectiveTotal}`
+                      : `মোট টাকা: ৳${viewOrder.totalAmount}`}
+                  </label>
                   <label className="block text-[11px] font-medium mb-1" style={{ color: "var(--text-secondary)" }}>কত টাকা পেইড করেছে?</label>
                   <input type="number" value={deliveryPaid}
                     onChange={(e) => setDeliveryPaid(e.target.value === "" ? "" : Number(e.target.value))}
                     onFocus={(e) => e.target.select()}
                     placeholder="টাকার পরিমাণ লিখুন"
-                    min={0} max={viewOrder.totalAmount}
+                    min={0} max={effectiveTotal}
                     className="w-full h-10 px-3 rounded-lg text-sm outline-none font-bold"
                     style={{ background: "#fff", color: "var(--text-primary)", border: "1px solid #bbf7d0" }} />
                 </div>
-                {viewOrder.totalAmount - (Number(deliveryPaid) || 0) > 0 && (
+                {dueAfter > 0 && (
                   <div className="mb-3 px-3 py-2 rounded-lg" style={{ background: "#fef2f2" }}>
-                    <p className="text-[12px] font-semibold" style={{ color: "#dc2626" }}>বাকি থাকবে: ৳{viewOrder.totalAmount - (Number(deliveryPaid) || 0)}</p>
+                    <p className="text-[12px] font-semibold" style={{ color: "#dc2626" }}>বাকি থাকবে: ৳{dueAfter}</p>
                     <p className="text-[11px]" style={{ color: "#dc2626" }}>এই বাকি কাস্টমারের হিসাবে যোগ হবে</p>
                   </div>
                 )}
@@ -499,7 +585,8 @@ export default function OrdersPage() {
                   </button>
                 </div>
               </div>
-            )}
+              );
+            })()}
 
             {/* Delivery Failed Form */}
             {ds === "pending" && deliveryAction === "not_delivered" && (
@@ -776,6 +863,36 @@ export default function OrdersPage() {
         <span className="text-[12px] ml-auto" style={{ color: "var(--text-muted)" }}>{orders.length} অর্ডার</span>
       </div>
 
+      {/* Delivery Status Tabs */}
+      <div className="flex gap-2 mb-4">
+        <button onClick={() => setDeliveryTab("pending")}
+          className="flex-1 h-10 rounded-xl text-[13px] font-semibold cursor-pointer flex items-center justify-center gap-2 transition-colors"
+          style={{
+            background: deliveryTab === "pending" ? "#fffbeb" : "var(--bg-card)",
+            color: deliveryTab === "pending" ? "#d97706" : "var(--text-muted)",
+            border: deliveryTab === "pending" ? "1.5px solid #fde68a" : "1px solid var(--border-color)",
+          }}>
+          <Truck size={15} /> ডেলিভারি পেন্ডিং
+          <span className="text-[10px] px-1.5 py-0.5 rounded-full font-bold"
+            style={{ background: deliveryTab === "pending" ? "#fde68a" : "var(--bg-input)", color: deliveryTab === "pending" ? "#92400e" : "var(--text-muted)" }}>
+            {orders.filter((o) => (o.deliveryStatus || "pending") === "pending").length}
+          </span>
+        </button>
+        <button onClick={() => setDeliveryTab("delivered")}
+          className="flex-1 h-10 rounded-xl text-[13px] font-semibold cursor-pointer flex items-center justify-center gap-2 transition-colors"
+          style={{
+            background: deliveryTab === "delivered" ? "#f0fdf4" : "var(--bg-card)",
+            color: deliveryTab === "delivered" ? "#16a34a" : "var(--text-muted)",
+            border: deliveryTab === "delivered" ? "1.5px solid #bbf7d0" : "1px solid var(--border-color)",
+          }}>
+          <CheckCircle2 size={15} /> ডেলিভারি সম্পন্ন
+          <span className="text-[10px] px-1.5 py-0.5 rounded-full font-bold"
+            style={{ background: deliveryTab === "delivered" ? "#bbf7d0" : "var(--bg-input)", color: deliveryTab === "delivered" ? "#166534" : "var(--text-muted)" }}>
+            {orders.filter((o) => o.deliveryStatus === "delivered").length}
+          </span>
+        </button>
+      </div>
+
       {showForm && (
         <div className="rounded-xl p-5 mb-5" style={{ background: "var(--bg-card)", border: "1px solid var(--border-color)" }}>
           <form onSubmit={handleSubmit}>
@@ -884,14 +1001,22 @@ export default function OrdersPage() {
       )}
 
       {/* Orders List */}
-      {orders.length === 0 ? (
+      {(() => {
+        const filteredOrders = orders.filter((o) =>
+          deliveryTab === "pending"
+            ? (o.deliveryStatus || "pending") === "pending"
+            : o.deliveryStatus === "delivered"
+        );
+        return filteredOrders.length === 0 ? (
         <div className="rounded-xl py-16 text-center" style={{ background: "var(--bg-card)", border: "1px solid var(--border-color)" }}>
           <Calendar size={36} className="mx-auto mb-3" style={{ color: "var(--text-muted)" }} strokeWidth={1} />
-          <p className="text-sm" style={{ color: "var(--text-muted)" }}>এই তারিখে কোনো অর্ডার নেই</p>
+          <p className="text-sm" style={{ color: "var(--text-muted)" }}>
+            {deliveryTab === "pending" ? "কোনো পেন্ডিং অর্ডার নেই" : "কোনো ডেলিভারড অর্ডার নেই"}
+          </p>
         </div>
       ) : (
         <div className="flex flex-col gap-3">
-          {orders.map((order, idx) => (
+          {filteredOrders.map((order, idx) => (
             <div key={order._id} className="rounded-xl overflow-hidden transition-shadow duration-200"
               style={{ background: "var(--bg-card)", border: "1px solid var(--border-color)", boxShadow: "0 1px 4px rgba(0,0,0,0.04)" }}>
               {/* Order header */}
@@ -907,6 +1032,14 @@ export default function OrdersPage() {
                       {order.status === "completed" ? "সম্পন্ন" : order.status === "cancelled" ? "বাতিল" : "পেন্ডিং"}
                     </span>
                   </div>
+                  {(() => {
+                    const addr = order.customerAddress || (order.customer ? customers.find((c) => c._id === order.customer)?.address : undefined);
+                    return addr ? (
+                      <p className="flex items-center gap-1 text-[11px] mt-0.5" style={{ color: "var(--text-muted)" }}>
+                        <MapPin size={10} /> {addr}
+                      </p>
+                    ) : null;
+                  })()}
                   <div className="flex items-center gap-3 mt-0.5">
                     <span className="flex items-center gap-1 text-[11px]" style={{ color: "var(--text-muted)" }}>
                       <Clock size={10} /> {new Date(order.createdAt).toLocaleTimeString("bn-BD", { hour: "2-digit", minute: "2-digit" })}
@@ -970,7 +1103,8 @@ export default function OrdersPage() {
             </div>
           ))}
         </div>
-      )}
+      );
+      })()}
 
       {renderViewModal()}
       {renderEditModal()}

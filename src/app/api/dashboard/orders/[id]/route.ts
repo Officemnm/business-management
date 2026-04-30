@@ -40,8 +40,13 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
 
     // If delivery is being completed, calculate due and update customer
     if (body.deliveryStatus === "delivered" && oldOrder.deliveryStatus !== "delivered") {
+      const returnAmount = body.returnAmount || 0;
+      const finalAmount = Math.max(0, oldOrder.totalAmount - returnAmount);
       const newPaid = body.paidAmount ?? oldOrder.paidAmount;
-      const newDue = Math.max(0, oldOrder.totalAmount - newPaid);
+      const newDue = Math.max(0, finalAmount - newPaid);
+
+      body.returnAmount = returnAmount;
+      body.finalAmount = finalAmount;
       body.paidAmount = newPaid;
       body.dueAmount = newDue;
       body.status = "completed";

@@ -9,13 +9,22 @@ export interface IOrderItem {
   remark?: string;
 }
 
+export interface IReturnItem {
+  productName: string;
+  amount: number;
+}
+
 export interface IOrder extends Document {
   customer: mongoose.Types.ObjectId;
   customerName: string;
+  customerAddress?: string;
   items: IOrderItem[];
   totalAmount: number;
+  returnAmount: number;
+  finalAmount: number;
   paidAmount: number;
   dueAmount: number;
+  returnItems: IReturnItem[];
   status: "pending" | "completed" | "cancelled";
   deliveryStatus: "pending" | "delivered" | "not_delivered";
   deliveryNote?: string;
@@ -44,6 +53,10 @@ const OrderSchema: Schema<IOrder> = new Schema(
       type: String,
       required: true,
     },
+    customerAddress: {
+      type: String,
+      trim: true,
+    },
     items: [OrderItemSchema],
     totalAmount: {
       type: Number,
@@ -58,6 +71,18 @@ const OrderSchema: Schema<IOrder> = new Schema(
       type: Number,
       default: 0,
     },
+    returnAmount: {
+      type: Number,
+      default: 0,
+    },
+    finalAmount: {
+      type: Number,
+      default: 0,
+    },
+    returnItems: [{
+      productName: { type: String, required: true },
+      amount: { type: Number, required: true },
+    }],
     status: {
       type: String,
       enum: ["pending", "completed", "cancelled"],
