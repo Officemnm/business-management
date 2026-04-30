@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   LayoutDashboard,
   ShoppingCart,
@@ -71,12 +72,19 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   return (
     <div className="min-h-screen flex" style={{ background: "var(--bg-primary)" }}>
       {/* Mobile overlay */}
-      {sidebarOpen && (
-        <div
-          className="fixed inset-0 bg-black/30 z-40 lg:hidden"
-          onClick={() => setSidebarOpen(false)}
-        />
-      )}
+      <AnimatePresence>
+        {sidebarOpen && (
+          <motion.div
+            className="fixed inset-0 z-40 lg:hidden"
+            style={{ background: "rgba(0,0,0,0.3)", backdropFilter: "blur(2px)" }}
+            onClick={() => setSidebarOpen(false)}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+          />
+        )}
+      </AnimatePresence>
 
       {/* Sidebar */}
       <aside
@@ -106,23 +114,24 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         {/* Nav */}
         <nav className="flex-1 py-3 px-3 overflow-y-auto">
           <div className="flex flex-col gap-1">
-            {allItems.map((item) => {
+            {allItems.map((item, idx) => {
               const Icon = item.icon;
               const active = isActive(item.href);
               return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  onClick={() => setSidebarOpen(false)}
-                  className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-[13px] font-medium transition-all duration-150"
-                  style={{
-                    background: active ? "rgba(102, 168, 15, 0.1)" : "transparent",
-                    color: active ? "#66a80f" : "var(--text-secondary)",
-                  }}
-                >
-                  <Icon size={18} strokeWidth={1.5} />
-                  {item.label}
-                </Link>
+                <motion.div key={item.href} initial={{ opacity: 0, x: -12 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: idx * 0.03 }} whileHover={{ x: 4 }}>
+                  <Link
+                    href={item.href}
+                    onClick={() => setSidebarOpen(false)}
+                    className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-[13px] font-medium transition-all duration-150 w-full"
+                    style={{
+                      background: active ? "rgba(102, 168, 15, 0.1)" : "transparent",
+                      color: active ? "#66a80f" : "var(--text-secondary)",
+                    }}
+                  >
+                    <Icon size={18} strokeWidth={1.5} />
+                    {item.label}
+                  </Link>
+                </motion.div>
               );
             })}
           </div>
@@ -183,7 +192,15 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </header>
 
         {/* Content */}
-        <div className="flex-1 p-5 overflow-y-auto">{children}</div>
+        <motion.div
+          className="flex-1 p-5 overflow-y-auto"
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3, ease: "easeOut" }}
+          key={pathname}
+        >
+          {children}
+        </motion.div>
       </main>
     </div>
   );

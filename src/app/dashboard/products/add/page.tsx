@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Upload, X, ImageIcon, Loader2 } from "lucide-react";
 import Image from "next/image";
 import toast from "react-hot-toast";
+import AnimatedDropdown from "@/components/ui/AnimatedDropdown";
 
 export default function AddProductPage() {
   const router = useRouter();
@@ -195,18 +196,18 @@ export default function AddProductPage() {
             <label className="block text-[12px] font-medium mb-1.5" style={{ color: "var(--text-secondary)" }}>
               একক
             </label>
-            <select
+            <AnimatedDropdown
+              options={[
+                { value: "পিস", label: "পিস" },
+                { value: "কেজি", label: "কেজি" },
+                { value: "লিটার", label: "লিটার" },
+                { value: "প্যাকেট", label: "প্যাকেট" },
+                { value: "বক্স", label: "বক্স" },
+              ]}
               value={unit}
-              onChange={(e) => setUnit(e.target.value)}
-              className={inputStyle}
-              style={{ background: "var(--bg-input)", color: "var(--text-primary)", border: "1px solid var(--border-color)" }}
-            >
-              <option value="পিস">পিস</option>
-              <option value="কেজি">কেজি</option>
-              <option value="লিটার">লিটার</option>
-              <option value="প্যাকেট">প্যাকেট</option>
-              <option value="বক্স">বক্স</option>
-            </select>
+              onChange={setUnit}
+              className="h-10"
+            />
           </div>
           <div>
             <label className="block text-[12px] font-medium mb-1.5" style={{ color: "var(--text-secondary)" }}>

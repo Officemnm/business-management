@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Plus, Trash2, Pencil, X, User, Phone, MapPin, Banknote } from "lucide-react";
 import toast from "react-hot-toast";
+import AnimatedModal from "@/components/ui/AnimatedModal";
 
 interface Customer { _id: string; name: string; phone: string; address?: string; totalDue: number; createdAt: string; }
 
@@ -208,61 +209,53 @@ export default function CustomersPage() {
       </div>
 
       {/* Edit Customer Modal */}
-      {editCustomer && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center" style={{ background: "rgba(0,0,0,0.5)" }}>
-          <div className="w-[90%] max-w-md rounded-2xl overflow-hidden" style={{ background: "var(--bg-card)" }}>
-            <div className="flex items-center justify-between px-5 py-4" style={{ borderBottom: "1px solid var(--border-color)" }}>
-              <h3 className="text-[15px] font-bold" style={{ color: "var(--text-primary)" }}>কাস্টমার সম্পাদনা</h3>
-              <button onClick={() => setEditCustomer(null)} className="cursor-pointer" style={{ color: "var(--text-muted)" }}><X size={18} /></button>
-            </div>
-            <div className="p-5 flex flex-col gap-4">
-              <div>
-                <label className="block text-[11px] font-medium mb-1" style={{ color: "var(--text-secondary)" }}>নাম</label>
-                <input value={editName} onChange={(e) => setEditName(e.target.value)} placeholder="কাস্টমার নাম" className={inputStyle}
-                  style={{ background: "var(--bg-input)", color: "var(--text-primary)", border: "1px solid var(--border-color)" }} />
-              </div>
-              <div>
-                <label className="block text-[11px] font-medium mb-1" style={{ color: "var(--text-secondary)" }}>ফোন</label>
-                <input value={editPhone} onChange={(e) => setEditPhone(e.target.value)} placeholder="ফোন নম্বর" className={inputStyle}
-                  style={{ background: "var(--bg-input)", color: "var(--text-primary)", border: "1px solid var(--border-color)" }} />
-              </div>
-              <div>
-                <label className="block text-[11px] font-medium mb-1" style={{ color: "var(--text-secondary)" }}>ঠিকানা</label>
-                <input value={editAddress} onChange={(e) => setEditAddress(e.target.value)} placeholder="ঠিকানা" className={inputStyle}
-                  style={{ background: "var(--bg-input)", color: "var(--text-primary)", border: "1px solid var(--border-color)" }} />
-              </div>
-
-              {/* Manual Previous Due */}
-              <div className="rounded-xl p-4" style={{ background: "#fffbeb", border: "1px solid #fef3c7" }}>
-                <div className="flex items-center gap-2 mb-2">
-                  <Banknote size={14} style={{ color: "#d97706" }} />
-                  <span className="text-[12px] font-bold" style={{ color: "#d97706" }}>পূর্বের বকেয়া যোগ করুন (অপশনাল)</span>
-                </div>
-                <p className="text-[10px] mb-2" style={{ color: "var(--text-muted)" }}>
-                  বর্তমান বাকি: <b style={{ color: "#dc2626" }}>৳{editCustomer.totalDue}</b>
-                </p>
-                <input type="number" value={editPrevDue}
-                  onChange={(e) => setEditPrevDue(e.target.value === "" ? "" : Number(e.target.value))}
-                  onFocus={(e) => e.target.select()}
-                  placeholder="টাকার পরিমাণ লিখুন" min={0}
-                  className={inputStyle}
-                  style={{ background: "#fff", color: "var(--text-primary)", border: "1px solid #fde68a" }} />
-                {Number(editPrevDue) > 0 && (
-                  <p className="text-[11px] mt-2 font-semibold" style={{ color: "#d97706" }}>
-                    নতুন মোট বাকি হবে: ৳{editCustomer.totalDue + Number(editPrevDue)}
-                  </p>
-                )}
-              </div>
-
-              <button onClick={handleEditSave} disabled={editSaving}
-                className="w-full h-11 rounded-xl text-[13px] font-semibold text-white cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2"
-                style={{ background: "#66a80f" }}>
-                {editSaving ? "সংরক্ষণ হচ্ছে..." : "আপডেট করুন"}
-              </button>
-            </div>
+      <AnimatedModal open={!!editCustomer} onClose={() => setEditCustomer(null)} title="কাস্টমার সম্পাদনা" maxWidth="max-w-md">
+        <div className="flex flex-col gap-4">
+          <div>
+            <label className="block text-[11px] font-medium mb-1" style={{ color: "var(--text-secondary)" }}>নাম</label>
+            <input value={editName} onChange={(e) => setEditName(e.target.value)} placeholder="কাস্টমার নাম" className={inputStyle}
+              style={{ background: "var(--bg-input)", color: "var(--text-primary)", border: "1px solid var(--border-color)" }} />
           </div>
+          <div>
+            <label className="block text-[11px] font-medium mb-1" style={{ color: "var(--text-secondary)" }}>ফোন</label>
+            <input value={editPhone} onChange={(e) => setEditPhone(e.target.value)} placeholder="ফোন নম্বর" className={inputStyle}
+              style={{ background: "var(--bg-input)", color: "var(--text-primary)", border: "1px solid var(--border-color)" }} />
+          </div>
+          <div>
+            <label className="block text-[11px] font-medium mb-1" style={{ color: "var(--text-secondary)" }}>ঠিকানা</label>
+            <input value={editAddress} onChange={(e) => setEditAddress(e.target.value)} placeholder="ঠিকানা" className={inputStyle}
+              style={{ background: "var(--bg-input)", color: "var(--text-primary)", border: "1px solid var(--border-color)" }} />
+          </div>
+
+          {/* Manual Previous Due */}
+          <div className="rounded-xl p-4" style={{ background: "#fffbeb", border: "1px solid #fef3c7" }}>
+            <div className="flex items-center gap-2 mb-2">
+              <Banknote size={14} style={{ color: "#d97706" }} />
+              <span className="text-[12px] font-bold" style={{ color: "#d97706" }}>পূর্বের বকেয়া যোগ করুন (অপশনাল)</span>
+            </div>
+            <p className="text-[10px] mb-2" style={{ color: "var(--text-muted)" }}>
+              বর্তমান বাকি: <b style={{ color: "#dc2626" }}>৳{editCustomer?.totalDue || 0}</b>
+            </p>
+            <input type="number" value={editPrevDue}
+              onChange={(e) => setEditPrevDue(e.target.value === "" ? "" : Number(e.target.value))}
+              onFocus={(e) => e.target.select()}
+              placeholder="টাকার পরিমাণ লিখুন" min={0}
+              className={inputStyle}
+              style={{ background: "#fff", color: "var(--text-primary)", border: "1px solid #fde68a" }} />
+            {Number(editPrevDue) > 0 && editCustomer && (
+              <p className="text-[11px] mt-2 font-semibold" style={{ color: "#d97706" }}>
+                নতুন মোট বাকি হবে: ৳{editCustomer.totalDue + Number(editPrevDue)}
+              </p>
+            )}
+          </div>
+
+          <button onClick={handleEditSave} disabled={editSaving}
+            className="w-full h-11 rounded-xl text-[13px] font-semibold text-white cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2"
+            style={{ background: "#66a80f" }}>
+            {editSaving ? "সংরক্ষণ হচ্ছে..." : "আপডেট করুন"}
+          </button>
         </div>
-      )}
+      </AnimatedModal>
     </div>
   );
 }

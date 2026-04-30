@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import { Plus, Trash2, Shield, ShieldCheck, Pencil, X, User, KeyRound } from "lucide-react";
 import toast from "react-hot-toast";
+import AnimatedModal from "@/components/ui/AnimatedModal";
+import AnimatedDropdown from "@/components/ui/AnimatedDropdown";
 
 interface UserData { _id: string; username: string; displayName: string; role: string; active: boolean; createdAt: string; }
 
@@ -150,10 +152,7 @@ export default function UsersPage() {
             </div>
             <div>
               <label className="block text-[12px] font-medium mb-1.5" style={{ color: "var(--text-secondary)" }}>পদবি</label>
-              <select value={role} onChange={(e) => setRole(e.target.value)} className={inputStyle}
-                style={{ background: "var(--bg-input)", color: "var(--text-primary)", border: "1px solid var(--border-color)" }}>
-                {roles.map((r) => <option key={r.value} value={r.value}>{r.label}</option>)}
-              </select>
+              <AnimatedDropdown options={roles} value={role} onChange={setRole} className="h-10" />
             </div>
             <div className="md:col-span-2">
               <button type="submit" disabled={submitting}
@@ -222,50 +221,39 @@ export default function UsersPage() {
       </div>
 
       {/* Edit User Modal */}
-      {editUser && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center" style={{ background: "rgba(0,0,0,0.5)" }}>
-          <div className="w-[90%] max-w-md rounded-2xl overflow-hidden" style={{ background: "var(--bg-card)" }}>
-            <div className="flex items-center justify-between px-5 py-4" style={{ borderBottom: "1px solid var(--border-color)" }}>
-              <h3 className="text-[15px] font-bold" style={{ color: "var(--text-primary)" }}>ইউজার সম্পাদনা</h3>
-              <button onClick={() => setEditUser(null)} className="cursor-pointer" style={{ color: "var(--text-muted)" }}><X size={18} /></button>
-            </div>
-            <div className="p-5 flex flex-col gap-4">
-              <div>
-                <label className="block text-[11px] font-medium mb-1" style={{ color: "var(--text-secondary)" }}>প্রদর্শন নাম</label>
-                <input value={editDisplayName} onChange={(e) => setEditDisplayName(e.target.value)} className={inputStyle}
-                  style={{ background: "var(--bg-input)", color: "var(--text-primary)", border: "1px solid var(--border-color)" }} />
-              </div>
-              <div>
-                <label className="block text-[11px] font-medium mb-1" style={{ color: "var(--text-secondary)" }}>ইউজারনেম</label>
-                <div className="h-10 px-3 flex items-center rounded-lg text-sm" style={{ background: "var(--bg-input)", color: "var(--text-muted)", border: "1px solid var(--border-color)" }}>
-                  {editUsername}
-                </div>
-              </div>
-              <div>
-                <label className="block text-[11px] font-medium mb-1" style={{ color: "var(--text-secondary)" }}>পদবি</label>
-                <select value={editRole} onChange={(e) => setEditRole(e.target.value)} className={inputStyle}
-                  style={{ background: "var(--bg-input)", color: "var(--text-primary)", border: "1px solid var(--border-color)" }}>
-                  {roles.map((r) => <option key={r.value} value={r.value}>{r.label}</option>)}
-                </select>
-              </div>
-              <div className="rounded-xl p-3" style={{ background: "var(--bg-input)", border: "1px solid var(--border-color)" }}>
-                <div className="flex items-center gap-2 mb-2">
-                  <KeyRound size={12} style={{ color: "var(--text-muted)" }} />
-                  <span className="text-[11px] font-medium" style={{ color: "var(--text-muted)" }}>নতুন পাসওয়ার্ড (অপশনাল)</span>
-                </div>
-                <input type="password" value={editPassword} onChange={(e) => setEditPassword(e.target.value)}
-                  placeholder="খালি রাখলে পাসওয়ার্ড পরিবর্তন হবে না" className={inputStyle}
-                  style={{ background: "var(--bg-card)", color: "var(--text-primary)", border: "1px solid var(--border-color)" }} />
-              </div>
-              <button onClick={handleEditSave} disabled={editSaving}
-                className="w-full h-11 rounded-xl text-[13px] font-semibold text-white cursor-pointer disabled:opacity-50"
-                style={{ background: "#66a80f" }}>
-                {editSaving ? "সংরক্ষণ হচ্ছে..." : "আপডেট করুন"}
-              </button>
+      <AnimatedModal open={!!editUser} onClose={() => setEditUser(null)} title="ইউজার সম্পাদনা" maxWidth="max-w-md">
+        <div className="flex flex-col gap-4">
+          <div>
+            <label className="block text-[11px] font-medium mb-1" style={{ color: "var(--text-secondary)" }}>প্রদর্শন নাম</label>
+            <input value={editDisplayName} onChange={(e) => setEditDisplayName(e.target.value)} className={inputStyle}
+              style={{ background: "var(--bg-input)", color: "var(--text-primary)", border: "1px solid var(--border-color)" }} />
+          </div>
+          <div>
+            <label className="block text-[11px] font-medium mb-1" style={{ color: "var(--text-secondary)" }}>ইউজারনেম</label>
+            <div className="h-10 px-3 flex items-center rounded-lg text-sm" style={{ background: "var(--bg-input)", color: "var(--text-muted)", border: "1px solid var(--border-color)" }}>
+              {editUsername}
             </div>
           </div>
+          <div>
+            <label className="block text-[11px] font-medium mb-1" style={{ color: "var(--text-secondary)" }}>পদবি</label>
+            <AnimatedDropdown options={roles} value={editRole} onChange={setEditRole} className="h-10" />
+          </div>
+          <div className="rounded-xl p-3" style={{ background: "var(--bg-input)", border: "1px solid var(--border-color)" }}>
+            <div className="flex items-center gap-2 mb-2">
+              <KeyRound size={12} style={{ color: "var(--text-muted)" }} />
+              <span className="text-[11px] font-medium" style={{ color: "var(--text-muted)" }}>নতুন পাসওয়ার্ড (অপশনাল)</span>
+            </div>
+            <input type="password" value={editPassword} onChange={(e) => setEditPassword(e.target.value)}
+              placeholder="খালি রাখলে পাসওয়ার্ড পরিবর্তন হবে না" className={inputStyle}
+              style={{ background: "var(--bg-card)", color: "var(--text-primary)", border: "1px solid var(--border-color)" }} />
+          </div>
+          <button onClick={handleEditSave} disabled={editSaving}
+            className="w-full h-11 rounded-xl text-[13px] font-semibold text-white cursor-pointer disabled:opacity-50"
+            style={{ background: "#66a80f" }}>
+            {editSaving ? "সংরক্ষণ হচ্ছে..." : "আপডেট করুন"}
+          </button>
         </div>
-      )}
+      </AnimatedModal>
     </div>
   );
 }

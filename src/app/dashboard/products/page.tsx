@@ -1,10 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Trash2, Package, Tag, Pencil, X } from "lucide-react";
-import Image from "next/image";
-import Link from "next/link";
+import { Plus, Trash2, Package, Pencil, X, Search, Tag } from "lucide-react";
 import toast from "react-hot-toast";
+import AnimatedModal from "@/components/ui/AnimatedModal";
+import Link from "next/link";
+import Image from "next/image";
 
 interface Product {
   _id: string;
@@ -237,65 +238,57 @@ export default function AllProductsPage() {
       )}
 
       {/* Edit Product Modal */}
-      {editProduct && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center" style={{ background: "rgba(0,0,0,0.5)" }}>
-          <div className="w-[92%] max-w-md rounded-2xl max-h-[85vh] overflow-y-auto" style={{ background: "var(--bg-card)" }}>
-            <div className="flex items-center justify-between px-5 py-4 sticky top-0" style={{ background: "var(--bg-card)", borderBottom: "1px solid var(--border-color)" }}>
-              <h3 className="text-[15px] font-bold" style={{ color: "var(--text-primary)" }}>প্রডাক্ট সম্পাদনা</h3>
-              <button onClick={() => setEditProduct(null)} className="cursor-pointer" style={{ color: "var(--text-muted)" }}><X size={18} /></button>
+      <AnimatedModal open={!!editProduct} onClose={() => setEditProduct(null)} title="প্রডাক্ট সম্পাদনা" maxWidth="max-w-md">
+        <div className="flex flex-col gap-4">
+          {editProduct?.image && (
+            <div className="flex justify-center">
+              <Image src={editProduct.image} alt={editProduct.name} width={120} height={120} className="rounded-lg" style={{ objectFit: "contain" }} unoptimized />
             </div>
-            <div className="p-5 flex flex-col gap-4">
-              {editProduct.image && (
-                <div className="flex justify-center">
-                  <Image src={editProduct.image} alt={editProduct.name} width={120} height={120} className="rounded-lg" style={{ objectFit: "contain" }} unoptimized />
-                </div>
-              )}
-              <div>
-                <label className="block text-[11px] font-medium mb-1" style={{ color: "var(--text-secondary)" }}>নাম</label>
-                <input value={editName} onChange={(e) => setEditName(e.target.value)} className={inputStyle}
-                  style={{ background: "var(--bg-input)", color: "var(--text-primary)", border: "1px solid var(--border-color)" }} />
-              </div>
-              <div>
-                <label className="block text-[11px] font-medium mb-1" style={{ color: "var(--text-secondary)" }}>ক্যাটাগরি</label>
-                <input value={editCategory} onChange={(e) => setEditCategory(e.target.value)} className={inputStyle}
-                  style={{ background: "var(--bg-input)", color: "var(--text-primary)", border: "1px solid var(--border-color)" }} />
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-[11px] font-medium mb-1" style={{ color: "var(--text-secondary)" }}>ক্রয় মূল্য</label>
-                  <input type="number" value={editBuyPrice} onChange={(e) => setEditBuyPrice(e.target.value === "" ? "" : Number(e.target.value))}
-                    onFocus={(e) => e.target.select()} className={inputStyle} min={0}
-                    style={{ background: "var(--bg-input)", color: "var(--text-primary)", border: "1px solid var(--border-color)" }} />
-                </div>
-                <div>
-                  <label className="block text-[11px] font-medium mb-1" style={{ color: "var(--text-secondary)" }}>বিক্রয় মূল্য</label>
-                  <input type="number" value={editSellPrice} onChange={(e) => setEditSellPrice(e.target.value === "" ? "" : Number(e.target.value))}
-                    onFocus={(e) => e.target.select()} className={inputStyle} min={0}
-                    style={{ background: "var(--bg-input)", color: "var(--text-primary)", border: "1px solid var(--border-color)" }} />
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-[11px] font-medium mb-1" style={{ color: "var(--text-secondary)" }}>স্টক</label>
-                  <input type="number" value={editStock} onChange={(e) => setEditStock(e.target.value === "" ? "" : Number(e.target.value))}
-                    onFocus={(e) => e.target.select()} className={inputStyle}
-                    style={{ background: "var(--bg-input)", color: "var(--text-primary)", border: "1px solid var(--border-color)" }} />
-                </div>
-                <div>
-                  <label className="block text-[11px] font-medium mb-1" style={{ color: "var(--text-secondary)" }}>ইউনিট</label>
-                  <input value={editUnit} onChange={(e) => setEditUnit(e.target.value)} className={inputStyle}
-                    style={{ background: "var(--bg-input)", color: "var(--text-primary)", border: "1px solid var(--border-color)" }} />
-                </div>
-              </div>
-              <button onClick={handleEditSave} disabled={editSaving}
-                className="w-full h-11 rounded-xl text-[13px] font-semibold text-white cursor-pointer disabled:opacity-50"
-                style={{ background: "#66a80f" }}>
-                {editSaving ? "সংরক্ষণ হচ্ছে..." : "আপডেট করুন"}
-              </button>
+          )}
+          <div>
+            <label className="block text-[11px] font-medium mb-1" style={{ color: "var(--text-secondary)" }}>নাম</label>
+            <input value={editName} onChange={(e) => setEditName(e.target.value)} className={inputStyle}
+              style={{ background: "var(--bg-input)", color: "var(--text-primary)", border: "1px solid var(--border-color)" }} />
+          </div>
+          <div>
+            <label className="block text-[11px] font-medium mb-1" style={{ color: "var(--text-secondary)" }}>ক্যাটাগরি</label>
+            <input value={editCategory} onChange={(e) => setEditCategory(e.target.value)} className={inputStyle}
+              style={{ background: "var(--bg-input)", color: "var(--text-primary)", border: "1px solid var(--border-color)" }} />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-[11px] font-medium mb-1" style={{ color: "var(--text-secondary)" }}>ক্রয় মূল্য</label>
+              <input type="number" value={editBuyPrice} onChange={(e) => setEditBuyPrice(e.target.value === "" ? "" : Number(e.target.value))}
+                onFocus={(e) => e.target.select()} className={inputStyle} min={0}
+                style={{ background: "var(--bg-input)", color: "var(--text-primary)", border: "1px solid var(--border-color)" }} />
+            </div>
+            <div>
+              <label className="block text-[11px] font-medium mb-1" style={{ color: "var(--text-secondary)" }}>বিক্রয় মূল্য</label>
+              <input type="number" value={editSellPrice} onChange={(e) => setEditSellPrice(e.target.value === "" ? "" : Number(e.target.value))}
+                onFocus={(e) => e.target.select()} className={inputStyle} min={0}
+                style={{ background: "var(--bg-input)", color: "var(--text-primary)", border: "1px solid var(--border-color)" }} />
             </div>
           </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-[11px] font-medium mb-1" style={{ color: "var(--text-secondary)" }}>স্টক</label>
+              <input type="number" value={editStock} onChange={(e) => setEditStock(e.target.value === "" ? "" : Number(e.target.value))}
+                onFocus={(e) => e.target.select()} className={inputStyle}
+                style={{ background: "var(--bg-input)", color: "var(--text-primary)", border: "1px solid var(--border-color)" }} />
+            </div>
+            <div>
+              <label className="block text-[11px] font-medium mb-1" style={{ color: "var(--text-secondary)" }}>ইউনিট</label>
+              <input value={editUnit} onChange={(e) => setEditUnit(e.target.value)} className={inputStyle}
+                style={{ background: "var(--bg-input)", color: "var(--text-primary)", border: "1px solid var(--border-color)" }} />
+            </div>
+          </div>
+          <button onClick={handleEditSave} disabled={editSaving}
+            className="w-full h-11 rounded-xl text-[13px] font-semibold text-white cursor-pointer disabled:opacity-50"
+            style={{ background: "#66a80f" }}>
+            {editSaving ? "সংরক্ষণ হচ্ছে..." : "আপডেট করুন"}
+          </button>
         </div>
-      )}
+      </AnimatedModal>
     </div>
   );
 }

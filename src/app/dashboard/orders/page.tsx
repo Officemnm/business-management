@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { Plus, Package, Tag, X, ShoppingBag, ArrowLeft, Check, Eye, Pencil, Calendar, BarChart3, Trash2, Clock, User, Hash, Truck, Ban, CheckCircle2, RotateCcw, MapPin } from "lucide-react";
 import Image from "next/image";
 import toast from "react-hot-toast";
+import AnimatedModal from "@/components/ui/AnimatedModal";
+import AnimatedDropdown from "@/components/ui/AnimatedDropdown";
 
 interface Customer { _id: string; name: string; phone: string; address?: string; }
 interface Product { _id: string; name: string; sellPrice: number; stock: number; category: string; image?: string; unit: string; }
@@ -410,61 +412,55 @@ export default function OrdersPage() {
     if (!viewOrder) return null;
     const ds = viewOrder.deliveryStatus || "pending";
     return (
-      <div className="fixed inset-0 z-[100] flex items-center justify-center" style={{ background: "rgba(0,0,0,0.5)" }}>
-        <div className="w-[95%] max-w-lg rounded-2xl max-h-[85vh] overflow-y-auto" style={{ background: "var(--bg-card)" }}>
-          <div className="flex items-center justify-between px-5 py-4" style={{ borderBottom: "1px solid var(--border-color)" }}>
-            <h3 className="text-[15px] font-bold" style={{ color: "var(--text-primary)" }}>অর্ডার বিবরণ</h3>
-            <button onClick={() => { setViewOrder(null); setDeliveryAction("none"); }} className="cursor-pointer" style={{ color: "var(--text-muted)" }}><X size={18} /></button>
+      <AnimatedModal open={!!viewOrder} onClose={() => { setViewOrder(null); setDeliveryAction("none"); }} title="অর্ডার বিবরণ" maxWidth="max-w-lg">
+        <div className="grid grid-cols-2 gap-3 mb-4">
+          <div>
+            <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>কাস্টমার</p>
+            <p className="text-[13px] font-semibold" style={{ color: "var(--text-primary)" }}>{viewOrder.customerName}</p>
           </div>
-          <div className="p-5">
-            <div className="grid grid-cols-2 gap-3 mb-4">
-              <div>
-                <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>কাস্টমার</p>
-                <p className="text-[13px] font-semibold" style={{ color: "var(--text-primary)" }}>{viewOrder.customerName}</p>
-              </div>
-              <div>
-                <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>তারিখ</p>
-                <p className="text-[13px] font-semibold" style={{ color: "var(--text-primary)" }}>{new Date(viewOrder.createdAt).toLocaleDateString("bn-BD")} {new Date(viewOrder.createdAt).toLocaleTimeString("bn-BD", { hour: "2-digit", minute: "2-digit" })}</p>
-              </div>
-              <div>
-                <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>স্ট্যাটাস</p>
-                <span className="text-[11px] px-2 py-0.5 rounded-full font-medium" style={{ background: viewOrder.status === "completed" ? "#f0fdf4" : viewOrder.status === "cancelled" ? "#fef2f2" : "#fffbeb", color: viewOrder.status === "completed" ? "#16a34a" : viewOrder.status === "cancelled" ? "#dc2626" : "#d97706" }}>
-                  {viewOrder.status === "completed" ? "সম্পন্ন" : viewOrder.status === "cancelled" ? "বাতিল" : "পেন্ডিং"}
-                </span>
-              </div>
-              <div>
-                <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>ডেলিভারি</p>
-                <span className="text-[11px] px-2 py-0.5 rounded-full font-medium" style={{ background: ds === "delivered" ? "#f0fdf4" : ds === "not_delivered" ? "#fef2f2" : "#fffbeb", color: ds === "delivered" ? "#16a34a" : ds === "not_delivered" ? "#dc2626" : "#d97706" }}>
-                  {ds === "delivered" ? "ডেলিভারি সম্পন্ন" : ds === "not_delivered" ? "ডেলিভারি হয়নি" : "পেন্ডিং"}
-                </span>
-                {viewOrder.deliveryNote && <p className="text-[11px] mt-0.5" style={{ color: "#dc2626" }}>{viewOrder.deliveryNote}</p>}
-              </div>
-            </div>
+          <div>
+            <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>তারিখ</p>
+            <p className="text-[13px] font-semibold" style={{ color: "var(--text-primary)" }}>{new Date(viewOrder.createdAt).toLocaleDateString("bn-BD")} {new Date(viewOrder.createdAt).toLocaleTimeString("bn-BD", { hour: "2-digit", minute: "2-digit" })}</p>
+          </div>
+          <div>
+            <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>স্ট্যাটাস</p>
+            <span className="text-[11px] px-2 py-0.5 rounded-full font-medium" style={{ background: viewOrder.status === "completed" ? "#f0fdf4" : viewOrder.status === "cancelled" ? "#fef2f2" : "#fffbeb", color: viewOrder.status === "completed" ? "#16a34a" : viewOrder.status === "cancelled" ? "#dc2626" : "#d97706" }}>
+              {viewOrder.status === "completed" ? "সম্পন্ন" : viewOrder.status === "cancelled" ? "বাতিল" : "পেন্ডিং"}
+            </span>
+          </div>
+          <div>
+            <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>ডেলিভারি</p>
+            <span className="text-[11px] px-2 py-0.5 rounded-full font-medium" style={{ background: ds === "delivered" ? "#f0fdf4" : ds === "not_delivered" ? "#fef2f2" : "#fffbeb", color: ds === "delivered" ? "#16a34a" : ds === "not_delivered" ? "#dc2626" : "#d97706" }}>
+              {ds === "delivered" ? "ডেলিভারি সম্পন্ন" : ds === "not_delivered" ? "ডেলিভারি হয়নি" : "পেন্ডিং"}
+            </span>
+            {viewOrder.deliveryNote && <p className="text-[11px] mt-0.5" style={{ color: "#dc2626" }}>{viewOrder.deliveryNote}</p>}
+          </div>
+        </div>
 
-            <div className="rounded-lg overflow-hidden mb-4" style={{ border: "1px solid var(--border-color)" }}>
-              <div className="px-3 py-2 text-[11px] font-semibold" style={{ background: "var(--bg-input)", color: "var(--text-secondary)" }}>পণ্য তালিকা</div>
-              {viewOrder.items.map((item: OrderItem, idx: number) => (
-                <div key={idx} className="flex items-center justify-between px-3 py-2.5" style={{ borderTop: "1px solid var(--border-color)" }}>
-                  <div>
-                    <p className="text-[13px] font-medium" style={{ color: "var(--text-primary)" }}>{item.productName}</p>
-                    <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>{item.quantity} x ৳{item.unitPrice}{item.remark ? ` · ${item.remark}` : ""}</p>
-                  </div>
-                  <span className="text-[13px] font-bold" style={{ color: "var(--text-primary)" }}>৳{item.total}</span>
-                </div>
-              ))}
+        <div className="rounded-lg overflow-hidden mb-4" style={{ border: "1px solid var(--border-color)" }}>
+          <div className="px-3 py-2 text-[11px] font-semibold" style={{ background: "var(--bg-input)", color: "var(--text-secondary)" }}>পণ্য তালিকা</div>
+          {viewOrder.items.map((item: OrderItem, idx: number) => (
+            <div key={idx} className="flex items-center justify-between px-3 py-2.5" style={{ borderTop: "1px solid var(--border-color)" }}>
+              <div>
+                <p className="text-[13px] font-medium" style={{ color: "var(--text-primary)" }}>{item.productName}</p>
+                <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>{item.quantity} x ৳{item.unitPrice}{item.remark ? ` · ${item.remark}` : ""}</p>
+              </div>
+              <span className="text-[13px] font-bold" style={{ color: "var(--text-primary)" }}>৳{item.total}</span>
             </div>
+          ))}
+        </div>
 
-            <div className="flex flex-col gap-2 p-3 rounded-lg mb-4" style={{ background: "var(--bg-input)" }}>
-              <div className="flex justify-between text-[13px]"><span style={{ color: "var(--text-secondary)" }}>মোট</span><b style={{ color: "var(--text-primary)" }}>৳{viewOrder.totalAmount}</b></div>
-              {viewOrder.returnAmount > 0 && (
-                <>
-                  <div className="flex justify-between text-[13px]"><span style={{ color: "var(--text-secondary)" }}>ফেরত</span><b style={{ color: "#d97706" }}>- ৳{viewOrder.returnAmount}</b></div>
-                  <div className="flex justify-between text-[13px]"><span style={{ color: "var(--text-secondary)" }}>চূড়ান্ত মোট</span><b style={{ color: "var(--text-primary)" }}>৳{viewOrder.finalAmount}</b></div>
-                </>
-              )}
-              <div className="flex justify-between text-[13px]"><span style={{ color: "var(--text-secondary)" }}>পরিশোধ</span><b style={{ color: "#16a34a" }}>৳{viewOrder.paidAmount}</b></div>
-              <div className="flex justify-between text-[13px]"><span style={{ color: "var(--text-secondary)" }}>বাকি</span><b style={{ color: viewOrder.dueAmount > 0 ? "#dc2626" : "var(--text-primary)" }}>৳{viewOrder.dueAmount}</b></div>
-            </div>
+        <div className="flex flex-col gap-2 p-3 rounded-lg mb-4" style={{ background: "var(--bg-input)" }}>
+          <div className="flex justify-between text-[13px]"><span style={{ color: "var(--text-secondary)" }}>মোট</span><b style={{ color: "var(--text-primary)" }}>৳{viewOrder.totalAmount}</b></div>
+          {viewOrder.returnAmount > 0 && (
+            <>
+              <div className="flex justify-between text-[13px]"><span style={{ color: "var(--text-secondary)" }}>ফেরত</span><b style={{ color: "#d97706" }}>- ৳{viewOrder.returnAmount}</b></div>
+              <div className="flex justify-between text-[13px]"><span style={{ color: "var(--text-secondary)" }}>চূড়ান্ত মোট</span><b style={{ color: "var(--text-primary)" }}>৳{viewOrder.finalAmount}</b></div>
+            </>
+          )}
+          <div className="flex justify-between text-[13px]"><span style={{ color: "var(--text-secondary)" }}>পরিশোধ</span><b style={{ color: "#16a34a" }}>৳{viewOrder.paidAmount}</b></div>
+          <div className="flex justify-between text-[13px]"><span style={{ color: "var(--text-secondary)" }}>বাকি</span><b style={{ color: viewOrder.dueAmount > 0 ? "#dc2626" : "var(--text-primary)" }}>৳{viewOrder.dueAmount}</b></div>
+        </div>
             {/* Return items list if exists */}
             {viewOrder.returnItems?.length > 0 && (
               <div className="mb-4 rounded-lg p-3" style={{ background: "#fffbeb", border: "1px solid #fef3c7" }}>
@@ -641,9 +637,7 @@ export default function OrdersPage() {
                 </div>
               </div>
             )}
-          </div>
-        </div>
-      </div>
+          </AnimatedModal>
     );
   };
 
@@ -651,13 +645,7 @@ export default function OrdersPage() {
   const renderEditModal = () => {
     if (!editOrder) return null;
     return (
-      <div className="fixed inset-0 z-[100] flex items-center justify-center" style={{ background: "rgba(0,0,0,0.5)" }}>
-        <div className="w-[95%] max-w-lg rounded-2xl max-h-[85vh] overflow-y-auto" style={{ background: "var(--bg-card)" }}>
-          <div className="flex items-center justify-between px-5 py-4" style={{ borderBottom: "1px solid var(--border-color)" }}>
-            <h3 className="text-[15px] font-bold" style={{ color: "var(--text-primary)" }}>অর্ডার সম্পাদনা</h3>
-            <button onClick={() => setEditOrder(null)} className="cursor-pointer" style={{ color: "var(--text-muted)" }}><X size={18} /></button>
-          </div>
-          <div className="p-5">
+      <AnimatedModal open={!!editOrder} onClose={() => setEditOrder(null)} title="অর্ডার সম্পাদনা" maxWidth="max-w-lg">
             <div className="mb-3">
               <label className="block text-[11px] font-medium mb-1" style={{ color: "var(--text-secondary)" }}>কাস্টমার নাম</label>
               <input value={editOrder.customerName} onChange={(e) => setEditOrder({ ...editOrder, customerName: e.target.value })}
@@ -709,13 +697,12 @@ export default function OrdersPage() {
             <div className="grid grid-cols-2 gap-3 mb-4">
               <div>
                 <label className="block text-[11px] font-medium mb-1" style={{ color: "var(--text-secondary)" }}>স্ট্যাটাস</label>
-                <select value={editOrder.status} onChange={(e) => setEditOrder({ ...editOrder, status: e.target.value })}
-                  className="w-full h-9 px-2 rounded-lg text-[13px] outline-none"
-                  style={{ background: "var(--bg-input)", color: "var(--text-primary)", border: "1px solid var(--border-color)" }}>
-                  <option value="pending">পেন্ডিং</option>
-                  <option value="completed">সম্পন্ন</option>
-                  <option value="cancelled">বাতিল</option>
-                </select>
+                <AnimatedDropdown
+                  options={[{ value: "pending", label: "পেন্ডিং" }, { value: "completed", label: "সম্পন্ন" }, { value: "cancelled", label: "বাতিল" }]}
+                  value={editOrder.status}
+                  onChange={(v) => setEditOrder({ ...editOrder, status: v })}
+                  className="h-9"
+                />
               </div>
               <div>
                 <label className="block text-[11px] font-medium mb-1" style={{ color: "var(--text-secondary)" }}>নোট</label>
@@ -730,9 +717,7 @@ export default function OrdersPage() {
               style={{ background: "#66a80f" }}>
               {saving ? "সংরক্ষণ হচ্ছে..." : "পরিবর্তন সংরক্ষণ"}
             </button>
-          </div>
-        </div>
-      </div>
+          </AnimatedModal>
     );
   };
 
@@ -766,64 +751,56 @@ export default function OrdersPage() {
       : "সকল তারিখ";
 
     return (
-      <div className="fixed inset-0 z-[100] flex items-center justify-center" style={{ background: "rgba(0,0,0,0.5)" }}>
-        <div className="w-[95%] max-w-lg rounded-2xl max-h-[85vh] overflow-y-auto" style={{ background: "var(--bg-card)" }}>
-          <div className="flex items-center justify-between px-5 py-4" style={{ borderBottom: "1px solid var(--border-color)" }}>
-            <div>
-              <h3 className="text-[15px] font-bold" style={{ color: "var(--text-primary)" }}>দৈনিক সামারি</h3>
-              <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>{dateLabel} &middot; {orders.length} অর্ডার</p>
-            </div>
-            <button onClick={() => setShowSummary(false)} className="cursor-pointer" style={{ color: "var(--text-muted)" }}><X size={18} /></button>
+      <AnimatedModal open={showSummary} onClose={() => setShowSummary(false)} title="দৈনিক সামারি" maxWidth="max-w-lg">
+        <div className="flex items-center justify-between mb-4">
+          <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>{dateLabel} · {orders.length} অর্ডার</p>
+        </div>
+
+        {/* Grand totals */}
+        <div className="grid grid-cols-3 gap-3 mb-5">
+          <div className="p-3 rounded-xl text-center" style={{ background: "var(--bg-input)" }}>
+            <p className="text-[10px] font-medium mb-1" style={{ color: "var(--text-muted)" }}>মোট বিক্রি</p>
+            <p className="text-[16px] font-bold" style={{ color: "#66a80f" }}>৳{grandTotal}</p>
           </div>
-
-          <div className="p-5">
-            {/* Grand totals */}
-            <div className="grid grid-cols-3 gap-3 mb-5">
-              <div className="p-3 rounded-xl text-center" style={{ background: "var(--bg-input)" }}>
-                <p className="text-[10px] font-medium mb-1" style={{ color: "var(--text-muted)" }}>মোট বিক্রি</p>
-                <p className="text-[16px] font-bold" style={{ color: "#66a80f" }}>৳{grandTotal}</p>
-              </div>
-              <div className="p-3 rounded-xl text-center" style={{ background: "var(--bg-input)" }}>
-                <p className="text-[10px] font-medium mb-1" style={{ color: "var(--text-muted)" }}>পরিশোধ</p>
-                <p className="text-[16px] font-bold" style={{ color: "#16a34a" }}>৳{grandPaid}</p>
-              </div>
-              <div className="p-3 rounded-xl text-center" style={{ background: grandDue > 0 ? "#fef2f2" : "var(--bg-input)" }}>
-                <p className="text-[10px] font-medium mb-1" style={{ color: "var(--text-muted)" }}>বাকি</p>
-                <p className="text-[16px] font-bold" style={{ color: grandDue > 0 ? "#dc2626" : "var(--text-primary)" }}>৳{grandDue}</p>
-              </div>
-            </div>
-
-            {/* Product breakdown */}
-            <h4 className="text-[12px] font-semibold mb-2" style={{ color: "var(--text-secondary)" }}>পণ্য ভিত্তিক বিবরণ</h4>
-            <div className="rounded-xl overflow-hidden" style={{ border: "1px solid var(--border-color)" }}>
-              <div className="grid grid-cols-12 px-3 py-2 text-[11px] font-semibold" style={{ background: "var(--bg-input)", color: "var(--text-muted)" }}>
-                <span className="col-span-6">পণ্য</span>
-                <span className="col-span-3 text-center">পরিমাণ</span>
-                <span className="col-span-3 text-right">মোট</span>
-              </div>
-              {productList.length === 0 ? (
-                <div className="py-6 text-center text-[12px]" style={{ color: "var(--text-muted)" }}>কোনো পণ্য নেই</div>
-              ) : (
-                productList.map((p, idx) => (
-                  <div key={idx} className="grid grid-cols-12 px-3 py-2.5 items-center" style={{ borderTop: "1px solid var(--border-color)" }}>
-                    <span className="col-span-6 text-[13px] font-medium truncate" style={{ color: "var(--text-primary)" }}>{p.name}</span>
-                    <span className="col-span-3 text-center text-[13px] font-semibold" style={{ color: "var(--text-secondary)" }}>{p.qty} পিছ</span>
-                    <span className="col-span-3 text-right text-[13px] font-bold" style={{ color: "#66a80f" }}>৳{p.total}</span>
-                  </div>
-                ))
-              )}
-              {/* Footer total */}
-              {productList.length > 0 && (
-                <div className="grid grid-cols-12 px-3 py-2.5 items-center" style={{ borderTop: "2px solid var(--border-color)", background: "var(--bg-input)" }}>
-                  <span className="col-span-6 text-[12px] font-bold" style={{ color: "var(--text-primary)" }}>সর্বমোট</span>
-                  <span className="col-span-3 text-center text-[12px] font-bold" style={{ color: "var(--text-primary)" }}>{productList.reduce((s, p) => s + p.qty, 0)} পিছ</span>
-                  <span className="col-span-3 text-right text-[13px] font-bold" style={{ color: "#66a80f" }}>৳{grandTotal}</span>
-                </div>
-              )}
-            </div>
+          <div className="p-3 rounded-xl text-center" style={{ background: "var(--bg-input)" }}>
+            <p className="text-[10px] font-medium mb-1" style={{ color: "var(--text-muted)" }}>পরিশোধ</p>
+            <p className="text-[16px] font-bold" style={{ color: "#16a34a" }}>৳{grandPaid}</p>
+          </div>
+          <div className="p-3 rounded-xl text-center" style={{ background: grandDue > 0 ? "#fef2f2" : "var(--bg-input)" }}>
+            <p className="text-[10px] font-medium mb-1" style={{ color: "var(--text-muted)" }}>বাকি</p>
+            <p className="text-[16px] font-bold" style={{ color: grandDue > 0 ? "#dc2626" : "var(--text-primary)" }}>৳{grandDue}</p>
           </div>
         </div>
-      </div>
+
+        {/* Product breakdown */}
+        <h4 className="text-[12px] font-semibold mb-2" style={{ color: "var(--text-secondary)" }}>পণ্য ভিত্তিক বিবরণ</h4>
+        <div className="rounded-xl overflow-hidden" style={{ border: "1px solid var(--border-color)" }}>
+          <div className="grid grid-cols-12 px-3 py-2 text-[11px] font-semibold" style={{ background: "var(--bg-input)", color: "var(--text-muted)" }}>
+            <span className="col-span-6">পণ্য</span>
+            <span className="col-span-3 text-center">পরিমাণ</span>
+            <span className="col-span-3 text-right">মোট</span>
+          </div>
+          {productList.length === 0 ? (
+            <div className="py-6 text-center text-[12px]" style={{ color: "var(--text-muted)" }}>কোনো পণ্য নেই</div>
+          ) : (
+            productList.map((p, idx) => (
+              <div key={idx} className="grid grid-cols-12 px-3 py-2.5 items-center" style={{ borderTop: "1px solid var(--border-color)" }}>
+                <span className="col-span-6 text-[13px] font-medium truncate" style={{ color: "var(--text-primary)" }}>{p.name}</span>
+                <span className="col-span-3 text-center text-[13px] font-semibold" style={{ color: "var(--text-secondary)" }}>{p.qty} পিছ</span>
+                <span className="col-span-3 text-right text-[13px] font-bold" style={{ color: "#66a80f" }}>৳{p.total}</span>
+              </div>
+            ))
+          )}
+          {/* Footer total */}
+          {productList.length > 0 && (
+            <div className="grid grid-cols-12 px-3 py-2.5 items-center" style={{ borderTop: "2px solid var(--border-color)", background: "var(--bg-input)" }}>
+              <span className="col-span-6 text-[12px] font-bold" style={{ color: "var(--text-primary)" }}>সর্বমোট</span>
+              <span className="col-span-3 text-center text-[12px] font-bold" style={{ color: "var(--text-primary)" }}>{productList.reduce((s, p) => s + p.qty, 0)} পিছ</span>
+              <span className="col-span-3 text-right text-[13px] font-bold" style={{ color: "#66a80f" }}>৳{grandTotal}</span>
+            </div>
+          )}
+        </div>
+      </AnimatedModal>
     );
   };
 
@@ -899,13 +876,12 @@ export default function OrdersPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
               <div>
                 <label className="block text-[12px] font-medium mb-1.5" style={{ color: "var(--text-secondary)" }}>কাস্টমার</label>
-                <select value={selectedCustomer}
-                  onChange={(e) => { setSelectedCustomer(e.target.value); const c = customers.find((x) => x._id === e.target.value); if (c) setCustomerName(c.name); }}
-                  className={inputStyle}
-                  style={{ background: "var(--bg-input)", color: "var(--text-primary)", border: "1px solid var(--border-color)" }}>
-                  <option value="">নতুন কাস্টমার</option>
-                  {customers.map((c) => <option key={c._id} value={c._id}>{c.name} - {c.phone}</option>)}
-                </select>
+                <AnimatedDropdown
+                  options={[{ value: "", label: "নতুন কাস্টমার" }, ...customers.map(c => ({ value: c._id, label: `${c.name} - ${c.phone}` }))]}
+                  value={selectedCustomer}
+                  onChange={(v) => { setSelectedCustomer(v); const c = customers.find((x) => x._id === v); if (c) setCustomerName(c.name); }}
+                  className="h-10"
+                />
               </div>
               <div>
                 <label className="block text-[12px] font-medium mb-1.5" style={{ color: "var(--text-secondary)" }}>কাস্টমার নাম</label>
