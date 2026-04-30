@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import dbConnect from "@/lib/db";
 import Order from "@/models/Order";
+import Customer from "@/models/Customer";
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -15,13 +16,45 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
   }
 }
 
+export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  try {
+    await dbConnect();
+    const { id } = await params;
+    const order = await Order.findByIdAndDelete(id);
+    if (!order) return NextResponse.json({ error: "Not found" }, { status: 404 });
+    return NextResponse.json({ message: "Deleted" });
+  } catch (error) {
+    console.error("Delete order error:", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  }
+}
+
 export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     await dbConnect();
     const { id } = await params;
     const body = await req.json();
-    const order = await Order.findByIdAndUpdate(id, body, { new: true });
-    if (!order) return NextResponse.json({ error: "Not found" }, { status: 404 });
+
+    const oldOrder = await Order.findById(id);
+    if (!oldOrder) return NextResponse.json({ error: "Not found" }, { status: 404 });
+
+    // If delivery is being completed, calculate due and update customer
+    if (body.deliveryStatus === "delivered" && oldOrder.deliveryStatus !== "delivered") {
+      const newPaid = body.paidAmount ?? oldOrder.paidAmount;
+      const newDue = Math.max(0, oldOrder.totalAmount - newPaid);
+      body.paidAmount = newPaid;
+      body.dueAmount = newDue;
+      body.status = "completed";
+
+      // Add due to customer (due is NOT added at order creation)
+      if (newDue > 0 && oldOrder.customer) {
+        await Customer.findByIdAndUpdate(oldOrder.customer, {
+          $inc: { totalDue: newDue },
+        });
+      }
+    }
+
+    const order = await Order.findByIdAndUpdate(id, { $set: body }, { new: true });
     return NextResponse.json(order);
   } catch (error) {
     console.error("Update order error:", error);

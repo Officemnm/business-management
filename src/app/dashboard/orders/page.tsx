@@ -1,14 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Plus, Package, Tag, X, ShoppingBag, ArrowLeft, Check, Eye, Pencil, Calendar, BarChart3 } from "lucide-react";
+import { Plus, Package, Tag, X, ShoppingBag, ArrowLeft, Check, Eye, Pencil, Calendar, BarChart3, Trash2, Clock, User, Hash, Truck, Ban, CheckCircle2 } from "lucide-react";
 import Image from "next/image";
 import toast from "react-hot-toast";
 
 interface Customer { _id: string; name: string; phone: string; }
 interface Product { _id: string; name: string; sellPrice: number; stock: number; category: string; image?: string; unit: string; }
 interface OrderItem { product: string; productName: string; quantity: number; unitPrice: number; total: number; remark: string; image?: string; }
-interface Order { _id: string; customerName: string; items: OrderItem[]; totalAmount: number; paidAmount: number; dueAmount: number; status: string; createdBy: string; createdAt: string; }
+interface Order { _id: string; customer?: string; customerName: string; items: OrderItem[]; totalAmount: number; paidAmount: number; dueAmount: number; status: string; deliveryStatus?: string; deliveryNote?: string; createdBy: string; createdAt: string; }
 
 export default function OrdersPage() {
   const [orders, setOrders] = useState<Order[]>([]);
@@ -25,8 +25,11 @@ export default function OrdersPage() {
   const [note, setNote] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
-  // Date filter
-  const [filterDate, setFilterDate] = useState("");
+  // Date filter — default to today
+  const [filterDate, setFilterDate] = useState(() => {
+    const today = new Date();
+    return today.getFullYear() + "-" + String(today.getMonth() + 1).padStart(2, "0") + "-" + String(today.getDate()).padStart(2, "0");
+  });
 
   // View/Edit modals
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -36,18 +39,26 @@ export default function OrdersPage() {
   const [saving, setSaving] = useState(false);
   const [showSummary, setShowSummary] = useState(false);
 
+  // Delivery action state
+  const [deliveryAction, setDeliveryAction] = useState<"none" | "complete" | "not_delivered">("none");
+  const [deliveryPaid, setDeliveryPaid] = useState<number | string>("");
+  const [deliveryReason, setDeliveryReason] = useState("");
+  const [deliverySaving, setDeliverySaving] = useState(false);
+
   // Catalog modal state
   const [showCatalog, setShowCatalog] = useState(false);
 
   // Product detail popup state
   const [popupProduct, setPopupProduct] = useState<Product | null>(null);
-  const [popupQty, setPopupQty] = useState(1);
-  const [popupRate, setPopupRate] = useState(0);
+  const [popupQty, setPopupQty] = useState<number | string>(1);
+  const [popupRate, setPopupRate] = useState<number | string>(0);
   const [popupRemark, setPopupRemark] = useState("");
 
   const loadData = () => {
+    const today = new Date();
+    const todayStr = today.getFullYear() + "-" + String(today.getMonth() + 1).padStart(2, "0") + "-" + String(today.getDate()).padStart(2, "0");
     Promise.all([
-      fetch("/api/dashboard/orders").then((r) => r.json()),
+      fetch(`/api/dashboard/orders?date=${todayStr}`).then((r) => r.json()),
       fetch("/api/dashboard/customers").then((r) => r.json()),
       fetch("/api/dashboard/products").then((r) => r.json()),
     ]).then(([o, c, p]) => {
@@ -61,6 +72,16 @@ export default function OrdersPage() {
   };
 
   useEffect(() => { loadData(); }, []);
+
+  const deleteOrder = async (id: string) => {
+    if (!confirm("এই অর্ডারটি স্থায়ীভাবে মুছে ফেলতে চান?")) return;
+    try {
+      const res = await fetch(`/api/dashboard/orders/${id}`, { method: "DELETE" });
+      if (!res.ok) throw new Error();
+      toast.success("অর্ডার মুছে ফেলা হয়েছে");
+      fetchOrders(filterDate);
+    } catch { toast.error("মুছতে ব্যর্থ হয়েছে"); }
+  };
 
   const saveEdit = async () => {
     if (!editOrder) return;
@@ -82,7 +103,7 @@ export default function OrdersPage() {
       if (!res.ok) throw new Error();
       toast.success("অর্ডার আপডেট হয়েছে");
       setEditOrder(null);
-      loadData();
+      fetchOrders(filterDate);
     } catch { toast.error("আপডেট ব্যর্থ হয়েছে"); }
     finally { setSaving(false); }
   };
@@ -94,7 +115,7 @@ export default function OrdersPage() {
   const openProductPopup = (p: Product) => {
     const existing = items.find((i) => i.product === p._id);
     setPopupProduct(p);
-    setPopupQty(existing ? existing.quantity : 1);
+    setPopupQty(existing ? existing.quantity : "");
     setPopupRate(existing ? existing.unitPrice : p.sellPrice);
     setPopupRemark(existing ? existing.remark : "");
   };
@@ -102,21 +123,23 @@ export default function OrdersPage() {
   // Add product from popup
   const confirmProduct = () => {
     if (!popupProduct) return;
-    if (popupQty < 1) { toast.error("পরিমাণ ১ এর কম হতে পারে না"); return; }
+    const qty = Number(popupQty) || 0;
+    const rate = Number(popupRate) || 0;
+    if (qty < 1) { toast.error("পরিমাণ ১ এর কম হতে পারে না"); return; }
     const exists = items.findIndex((i) => i.product === popupProduct._id);
     if (exists >= 0) {
       setItems(items.map((item, idx) =>
         idx === exists
-          ? { ...item, quantity: popupQty, unitPrice: popupRate, total: popupQty * popupRate, remark: popupRemark }
+          ? { ...item, quantity: qty, unitPrice: rate, total: qty * rate, remark: popupRemark }
           : item
       ));
     } else {
       setItems([...items, {
         product: popupProduct._id,
         productName: popupProduct.name,
-        quantity: popupQty,
-        unitPrice: popupRate,
-        total: popupQty * popupRate,
+        quantity: qty,
+        unitPrice: rate,
+        total: qty * rate,
         remark: popupRemark,
         image: popupProduct.image,
       }]);
@@ -141,7 +164,6 @@ export default function OrdersPage() {
           customerName: customerName.trim(),
           items: items.map(({ product, productName, quantity, unitPrice, total, remark }) => ({ product, productName, quantity, unitPrice, total, remark })),
           totalAmount, paidAmount, dueAmount,
-          status: dueAmount > 0 ? "pending" : "completed",
           note,
         }),
       });
@@ -149,7 +171,7 @@ export default function OrdersPage() {
       toast.success("অর্ডার সফলভাবে তৈরি হয়েছে");
       setShowForm(false);
       setItems([]); setPaidAmount(0); setNote(""); setCustomerName(""); setSelectedCustomer("");
-      loadData();
+      fetchOrders(filterDate);
     } catch { toast.error("অর্ডার তৈরিতে সমস্যা হয়েছে"); }
     finally { setSubmitting(false); }
   };
@@ -294,13 +316,15 @@ export default function OrdersPage() {
                 <div className="grid grid-cols-2 gap-3 mb-3">
                   <div>
                     <label className="block text-[11px] font-medium mb-1" style={{ color: "var(--text-secondary)" }}>রেট (প্রতি {popupProduct.unit})</label>
-                    <input type="number" value={popupRate} onChange={(e) => setPopupRate(Number(e.target.value))}
+                    <input type="number" value={popupRate} onChange={(e) => setPopupRate(e.target.value === "" ? "" : Number(e.target.value))}
+                      onFocus={(e) => e.target.select()}
                       className="w-full h-10 px-3 rounded-lg text-sm outline-none"
                       style={{ background: "var(--bg-input)", color: "var(--text-primary)", border: "1px solid var(--border-color)" }} />
                   </div>
                   <div>
                     <label className="block text-[11px] font-medium mb-1" style={{ color: "var(--text-secondary)" }}>পরিমাণ ({popupProduct.unit})</label>
-                    <input type="number" value={popupQty} onChange={(e) => setPopupQty(parseInt(e.target.value) || 1)} min={1}
+                    <input type="number" value={popupQty} onChange={(e) => setPopupQty(e.target.value === "" ? "" : Number(e.target.value))}
+                      onFocus={(e) => e.target.select()}
                       className="w-full h-10 px-3 rounded-lg text-sm outline-none"
                       style={{ background: "var(--bg-input)", color: "var(--text-primary)", border: "1px solid var(--border-color)" }} />
                   </div>
@@ -316,7 +340,7 @@ export default function OrdersPage() {
                 {/* Total preview */}
                 <div className="flex items-center justify-between mb-4 px-3 py-2.5 rounded-lg" style={{ background: "var(--bg-input)" }}>
                   <span className="text-[12px]" style={{ color: "var(--text-secondary)" }}>মোট</span>
-                  <span className="text-[16px] font-bold" style={{ color: "#66a80f" }}>৳{popupQty * popupRate}</span>
+                  <span className="text-[16px] font-bold" style={{ color: "#66a80f" }}>৳{(Number(popupQty) || 0) * (Number(popupRate) || 0)}</span>
                 </div>
 
                 <button onClick={confirmProduct}
@@ -332,15 +356,50 @@ export default function OrdersPage() {
     );
   }
 
+  const handleDeliveryComplete = async () => {
+    if (!viewOrder) return;
+    setDeliverySaving(true);
+    try {
+      const res = await fetch(`/api/dashboard/orders/${viewOrder._id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ deliveryStatus: "delivered", paidAmount: Number(deliveryPaid) || 0 }),
+      });
+      if (!res.ok) throw new Error();
+      toast.success("ডেলিভারি সম্পন্ন");
+      setViewOrder(null); setDeliveryAction("none"); setDeliveryPaid("");
+      fetchOrders(filterDate);
+    } catch { toast.error("আপডেট ব্যর্থ"); }
+    finally { setDeliverySaving(false); }
+  };
+
+  const handleDeliveryFailed = async () => {
+    if (!viewOrder || !deliveryReason) { toast.error("কারণ নির্বাচন করুন"); return; }
+    setDeliverySaving(true);
+    try {
+      const res = await fetch(`/api/dashboard/orders/${viewOrder._id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ deliveryStatus: "not_delivered", deliveryNote: deliveryReason, status: "cancelled" }),
+      });
+      if (!res.ok) throw new Error();
+      toast.success("ডেলিভারি স্ট্যাটাস আপডেট হয়েছে");
+      setViewOrder(null); setDeliveryAction("none"); setDeliveryReason("");
+      fetchOrders(filterDate);
+    } catch { toast.error("আপডেট ব্যর্থ"); }
+    finally { setDeliverySaving(false); }
+  };
+
   // ===================== VIEW ORDER MODAL =====================
   const renderViewModal = () => {
     if (!viewOrder) return null;
+    const ds = viewOrder.deliveryStatus || "pending";
     return (
       <div className="fixed inset-0 z-[100] flex items-center justify-center" style={{ background: "rgba(0,0,0,0.5)" }}>
         <div className="w-[95%] max-w-lg rounded-2xl max-h-[85vh] overflow-y-auto" style={{ background: "var(--bg-card)" }}>
           <div className="flex items-center justify-between px-5 py-4" style={{ borderBottom: "1px solid var(--border-color)" }}>
             <h3 className="text-[15px] font-bold" style={{ color: "var(--text-primary)" }}>অর্ডার বিবরণ</h3>
-            <button onClick={() => setViewOrder(null)} className="cursor-pointer" style={{ color: "var(--text-muted)" }}><X size={18} /></button>
+            <button onClick={() => { setViewOrder(null); setDeliveryAction("none"); }} className="cursor-pointer" style={{ color: "var(--text-muted)" }}><X size={18} /></button>
           </div>
           <div className="p-5">
             <div className="grid grid-cols-2 gap-3 mb-4">
@@ -354,13 +413,16 @@ export default function OrdersPage() {
               </div>
               <div>
                 <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>স্ট্যাটাস</p>
-                <span className="text-[11px] px-2 py-0.5 rounded-full font-medium" style={{ background: viewOrder.status === "completed" ? "#f0fdf4" : "#fffbeb", color: viewOrder.status === "completed" ? "#16a34a" : "#d97706" }}>
-                  {viewOrder.status === "completed" ? "সম্পন্ন" : "পেন্ডিং"}
+                <span className="text-[11px] px-2 py-0.5 rounded-full font-medium" style={{ background: viewOrder.status === "completed" ? "#f0fdf4" : viewOrder.status === "cancelled" ? "#fef2f2" : "#fffbeb", color: viewOrder.status === "completed" ? "#16a34a" : viewOrder.status === "cancelled" ? "#dc2626" : "#d97706" }}>
+                  {viewOrder.status === "completed" ? "সম্পন্ন" : viewOrder.status === "cancelled" ? "বাতিল" : "পেন্ডিং"}
                 </span>
               </div>
               <div>
-                <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>তৈরি করেছেন</p>
-                <p className="text-[13px] font-semibold" style={{ color: "var(--text-primary)" }}>{viewOrder.createdBy}</p>
+                <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>ডেলিভারি</p>
+                <span className="text-[11px] px-2 py-0.5 rounded-full font-medium" style={{ background: ds === "delivered" ? "#f0fdf4" : ds === "not_delivered" ? "#fef2f2" : "#fffbeb", color: ds === "delivered" ? "#16a34a" : ds === "not_delivered" ? "#dc2626" : "#d97706" }}>
+                  {ds === "delivered" ? "ডেলিভারি সম্পন্ন" : ds === "not_delivered" ? "ডেলিভারি হয়নি" : "পেন্ডিং"}
+                </span>
+                {viewOrder.deliveryNote && <p className="text-[11px] mt-0.5" style={{ color: "#dc2626" }}>{viewOrder.deliveryNote}</p>}
               </div>
             </div>
 
@@ -377,12 +439,121 @@ export default function OrdersPage() {
               ))}
             </div>
 
-            <div className="flex flex-col gap-2 p-3 rounded-lg" style={{ background: "var(--bg-input)" }}>
+            <div className="flex flex-col gap-2 p-3 rounded-lg mb-4" style={{ background: "var(--bg-input)" }}>
               <div className="flex justify-between text-[13px]"><span style={{ color: "var(--text-secondary)" }}>মোট</span><b style={{ color: "var(--text-primary)" }}>৳{viewOrder.totalAmount}</b></div>
               <div className="flex justify-between text-[13px]"><span style={{ color: "var(--text-secondary)" }}>পরিশোধ</span><b style={{ color: "#16a34a" }}>৳{viewOrder.paidAmount}</b></div>
               <div className="flex justify-between text-[13px]"><span style={{ color: "var(--text-secondary)" }}>বাকি</span><b style={{ color: viewOrder.dueAmount > 0 ? "#dc2626" : "var(--text-primary)" }}>৳{viewOrder.dueAmount}</b></div>
             </div>
-            {viewOrder.note && <p className="mt-3 text-[12px]" style={{ color: "var(--text-muted)" }}>নোট: {viewOrder.note}</p>}
+            {viewOrder.note && <p className="mb-4 text-[12px]" style={{ color: "var(--text-muted)" }}>নোট: {viewOrder.note}</p>}
+
+            {/* ===== DELIVERY ACTIONS ===== */}
+            {ds === "pending" && deliveryAction === "none" && (
+              <div className="flex gap-2">
+                <button onClick={() => { setDeliveryAction("complete"); setDeliveryPaid(""); }}
+                  className="flex-1 h-11 rounded-xl text-[13px] font-semibold text-white cursor-pointer flex items-center justify-center gap-2"
+                  style={{ background: "#16a34a" }}>
+                  <CheckCircle2 size={16} /> ডেলিভারি সম্পন্ন
+                </button>
+                <button onClick={() => setDeliveryAction("not_delivered")}
+                  className="flex-1 h-11 rounded-xl text-[13px] font-semibold cursor-pointer flex items-center justify-center gap-2"
+                  style={{ background: "#fef2f2", color: "#dc2626", border: "1px solid #fecaca" }}>
+                  <Ban size={16} /> ডেলিভারি হয়নি
+                </button>
+              </div>
+            )}
+
+            {/* Delivery Complete Form */}
+            {ds === "pending" && deliveryAction === "complete" && (
+              <div className="rounded-xl p-4" style={{ background: "#f0fdf4", border: "1px solid #bbf7d0" }}>
+                <div className="flex items-center gap-2 mb-3">
+                  <Truck size={16} style={{ color: "#16a34a" }} />
+                  <h4 className="text-[13px] font-bold" style={{ color: "#16a34a" }}>ডেলিভারি সম্পন্ন করুন</h4>
+                </div>
+                <div className="mb-3">
+                  <label className="block text-[11px] font-medium mb-1" style={{ color: "var(--text-secondary)" }}>মোট টাকা: ৳{viewOrder.totalAmount}</label>
+                  <label className="block text-[11px] font-medium mb-1" style={{ color: "var(--text-secondary)" }}>কত টাকা পেইড করেছে?</label>
+                  <input type="number" value={deliveryPaid}
+                    onChange={(e) => setDeliveryPaid(e.target.value === "" ? "" : Number(e.target.value))}
+                    onFocus={(e) => e.target.select()}
+                    placeholder="টাকার পরিমাণ লিখুন"
+                    min={0} max={viewOrder.totalAmount}
+                    className="w-full h-10 px-3 rounded-lg text-sm outline-none font-bold"
+                    style={{ background: "#fff", color: "var(--text-primary)", border: "1px solid #bbf7d0" }} />
+                </div>
+                {viewOrder.totalAmount - (Number(deliveryPaid) || 0) > 0 && (
+                  <div className="mb-3 px-3 py-2 rounded-lg" style={{ background: "#fef2f2" }}>
+                    <p className="text-[12px] font-semibold" style={{ color: "#dc2626" }}>বাকি থাকবে: ৳{viewOrder.totalAmount - (Number(deliveryPaid) || 0)}</p>
+                    <p className="text-[11px]" style={{ color: "#dc2626" }}>এই বাকি কাস্টমারের হিসাবে যোগ হবে</p>
+                  </div>
+                )}
+                <div className="flex gap-2">
+                  <button onClick={() => setDeliveryAction("none")}
+                    className="flex-1 h-10 rounded-lg text-[12px] font-medium cursor-pointer"
+                    style={{ background: "var(--bg-card)", color: "var(--text-muted)", border: "1px solid var(--border-color)" }}>
+                    বাতিল
+                  </button>
+                  <button onClick={handleDeliveryComplete} disabled={deliverySaving}
+                    className="flex-1 h-10 rounded-lg text-[12px] font-semibold text-white cursor-pointer disabled:opacity-50"
+                    style={{ background: "#16a34a" }}>
+                    {deliverySaving ? "সংরক্ষণ হচ্ছে..." : "ডেলিভারি কনফার্ম"}
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Delivery Failed Form */}
+            {ds === "pending" && deliveryAction === "not_delivered" && (
+              <div className="rounded-xl p-4" style={{ background: "#fef2f2", border: "1px solid #fecaca" }}>
+                <div className="flex items-center gap-2 mb-3">
+                  <Ban size={16} style={{ color: "#dc2626" }} />
+                  <h4 className="text-[13px] font-bold" style={{ color: "#dc2626" }}>ডেলিভারি হয়নি — কারণ নির্বাচন করুন</h4>
+                </div>
+                <div className="flex flex-wrap gap-2 mb-3">
+                  {["দোকান বন্ধ", "দোকানদার নেই", "অর্ডার নিবে না", "পণ্য পছন্দ হয়নি", "ঠিকানা পাওয়া যায়নি"].map((r) => (
+                    <button key={r} onClick={() => setDeliveryReason(r)}
+                      className="px-3 py-1.5 rounded-full text-[11px] font-medium cursor-pointer transition-colors"
+                      style={{ background: deliveryReason === r ? "#dc2626" : "#fff", color: deliveryReason === r ? "#fff" : "#dc2626", border: "1px solid #fecaca" }}>
+                      {r}
+                    </button>
+                  ))}
+                </div>
+                <div className="mb-3">
+                  <input value={deliveryReason} onChange={(e) => setDeliveryReason(e.target.value)}
+                    placeholder="অন্য কারণ লিখুন..."
+                    className="w-full h-9 px-3 rounded-lg text-[12px] outline-none"
+                    style={{ background: "#fff", color: "var(--text-primary)", border: "1px solid #fecaca" }} />
+                </div>
+                <div className="flex gap-2">
+                  <button onClick={() => { setDeliveryAction("none"); setDeliveryReason(""); }}
+                    className="flex-1 h-10 rounded-lg text-[12px] font-medium cursor-pointer"
+                    style={{ background: "var(--bg-card)", color: "var(--text-muted)", border: "1px solid var(--border-color)" }}>
+                    বাতিল
+                  </button>
+                  <button onClick={handleDeliveryFailed} disabled={deliverySaving}
+                    className="flex-1 h-10 rounded-lg text-[12px] font-semibold text-white cursor-pointer disabled:opacity-50"
+                    style={{ background: "#dc2626" }}>
+                    {deliverySaving ? "সংরক্ষণ হচ্ছে..." : "নিশ্চিত করুন"}
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Already delivered or not delivered badge */}
+            {ds === "delivered" && (
+              <div className="flex items-center gap-2 p-3 rounded-xl" style={{ background: "#f0fdf4", border: "1px solid #bbf7d0" }}>
+                <CheckCircle2 size={18} style={{ color: "#16a34a" }} />
+                <span className="text-[13px] font-semibold" style={{ color: "#16a34a" }}>ডেলিভারি সম্পন্ন হয়েছে</span>
+              </div>
+            )}
+            {ds === "not_delivered" && (
+              <div className="flex items-center gap-2 p-3 rounded-xl" style={{ background: "#fef2f2", border: "1px solid #fecaca" }}>
+                <Ban size={18} style={{ color: "#dc2626" }} />
+                <div>
+                  <span className="text-[13px] font-semibold" style={{ color: "#dc2626" }}>ডেলিভারি হয়নি</span>
+                  {viewOrder.deliveryNote && <p className="text-[11px]" style={{ color: "#dc2626" }}>কারণ: {viewOrder.deliveryNote}</p>}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -570,14 +741,6 @@ export default function OrdersPage() {
   };
 
   // ===================== MAIN ORDER PAGE =====================
-  // Group orders by date
-  const grouped: Record<string, Order[]> = {};
-  orders.forEach((o) => {
-    const d = new Date(o.createdAt).toLocaleDateString("bn-BD", { year: "numeric", month: "long", day: "numeric" });
-    if (!grouped[d]) grouped[d] = [];
-    grouped[d].push(o);
-  });
-
   return (
     <div>
       <div className="flex items-center justify-between mb-5">
@@ -720,49 +883,93 @@ export default function OrdersPage() {
         </div>
       )}
 
-      {/* Orders List grouped by date */}
+      {/* Orders List */}
       {orders.length === 0 ? (
-        <div className="rounded-xl py-12 text-center" style={{ background: "var(--bg-card)", border: "1px solid var(--border-color)" }}>
-          <p className="text-sm" style={{ color: "var(--text-muted)" }}>কোনো অর্ডার নেই</p>
+        <div className="rounded-xl py-16 text-center" style={{ background: "var(--bg-card)", border: "1px solid var(--border-color)" }}>
+          <Calendar size={36} className="mx-auto mb-3" style={{ color: "var(--text-muted)" }} strokeWidth={1} />
+          <p className="text-sm" style={{ color: "var(--text-muted)" }}>এই তারিখে কোনো অর্ডার নেই</p>
         </div>
       ) : (
-        Object.entries(grouped).map(([dateLabel, dateOrders]) => (
-          <div key={dateLabel} className="mb-4">
-            <div className="flex items-center gap-2 mb-2 px-1">
-              <Calendar size={13} style={{ color: "var(--text-muted)" }} />
-              <span className="text-[12px] font-semibold" style={{ color: "var(--text-secondary)" }}>{dateLabel}</span>
-              <span className="text-[11px]" style={{ color: "var(--text-muted)" }}>({dateOrders.length})</span>
-            </div>
-            <div className="rounded-xl overflow-hidden" style={{ background: "var(--bg-card)", border: "1px solid var(--border-color)" }}>
-              {dateOrders.map((order, idx) => (
-                <div key={order._id} className="flex items-center gap-3 px-4 py-3" style={{ borderTop: idx > 0 ? "1px solid var(--border-color)" : "none" }}>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-0.5">
-                      <p className="text-[13px] font-semibold" style={{ color: "var(--text-primary)" }}>{order.customerName}</p>
-                      <span className="text-[10px] px-1.5 py-0.5 rounded-full font-medium"
-                        style={{ background: order.status === "completed" ? "#f0fdf4" : order.status === "cancelled" ? "#fef2f2" : "#fffbeb", color: order.status === "completed" ? "#16a34a" : order.status === "cancelled" ? "#dc2626" : "#d97706" }}>
-                        {order.status === "completed" ? "সম্পন্ন" : order.status === "cancelled" ? "বাতিল" : "পেন্ডিং"}
-                      </span>
-                    </div>
-                    <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>
-                      {order.items.length} পণ্য &middot; মোট: <b style={{ color: "var(--text-primary)" }}>৳{order.totalAmount}</b>
-                      {order.dueAmount > 0 && <span style={{ color: "#dc2626" }}> &middot; বাকি: ৳{order.dueAmount}</span>}
-                      {" "}&middot; {new Date(order.createdAt).toLocaleTimeString("bn-BD", { hour: "2-digit", minute: "2-digit" })}
-                    </p>
+        <div className="flex flex-col gap-3">
+          {orders.map((order, idx) => (
+            <div key={order._id} className="rounded-xl overflow-hidden transition-shadow duration-200"
+              style={{ background: "var(--bg-card)", border: "1px solid var(--border-color)", boxShadow: "0 1px 4px rgba(0,0,0,0.04)" }}>
+              {/* Order header */}
+              <div className="flex items-center gap-3 px-4 pt-3.5 pb-2">
+                <div className="w-9 h-9 rounded-full flex items-center justify-center shrink-0" style={{ background: "#f0fdf4" }}>
+                  <User size={16} style={{ color: "#66a80f" }} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <p className="text-[14px] font-bold truncate" style={{ color: "var(--text-primary)" }}>{order.customerName}</p>
+                    <span className="text-[10px] px-2 py-0.5 rounded-full font-semibold shrink-0"
+                      style={{ background: order.status === "completed" ? "#f0fdf4" : order.status === "cancelled" ? "#fef2f2" : "#fffbeb", color: order.status === "completed" ? "#16a34a" : order.status === "cancelled" ? "#dc2626" : "#d97706" }}>
+                      {order.status === "completed" ? "সম্পন্ন" : order.status === "cancelled" ? "বাতিল" : "পেন্ডিং"}
+                    </span>
                   </div>
-                  <div className="flex items-center gap-1.5 shrink-0">
-                    <button onClick={() => setViewOrder(order)} className="w-8 h-8 rounded-lg flex items-center justify-center cursor-pointer" style={{ background: "var(--bg-input)", color: "var(--text-muted)" }} title="দেখুন">
-                      <Eye size={15} />
-                    </button>
-                    <button onClick={() => setEditOrder(JSON.parse(JSON.stringify(order)))} className="w-8 h-8 rounded-lg flex items-center justify-center cursor-pointer" style={{ background: "var(--bg-input)", color: "var(--text-muted)" }} title="সম্পাদনা">
-                      <Pencil size={14} />
-                    </button>
+                  <div className="flex items-center gap-3 mt-0.5">
+                    <span className="flex items-center gap-1 text-[11px]" style={{ color: "var(--text-muted)" }}>
+                      <Clock size={10} /> {new Date(order.createdAt).toLocaleTimeString("bn-BD", { hour: "2-digit", minute: "2-digit" })}
+                    </span>
+                    <span className="flex items-center gap-1 text-[11px]" style={{ color: "var(--text-muted)" }}>
+                      <Hash size={10} /> {order.items.length} পণ্য
+                    </span>
+                    <span className="flex items-center gap-1 text-[10px] font-semibold" style={{ color: (order.deliveryStatus || "pending") === "delivered" ? "#16a34a" : (order.deliveryStatus || "pending") === "not_delivered" ? "#dc2626" : "#d97706" }}>
+                      <Truck size={10} /> {(order.deliveryStatus || "pending") === "delivered" ? "ডেলিভারড" : (order.deliveryStatus || "pending") === "not_delivered" ? "ডেলিভারি হয়নি" : "ডেলিভারি পেন্ডিং"}
+                    </span>
                   </div>
                 </div>
-              ))}
+              </div>
+
+              {/* Product list compact */}
+              <div className="px-4 py-2">
+                {order.items.slice(0, 3).map((item, i) => (
+                  <div key={i} className="flex items-center justify-between py-1">
+                    <span className="text-[12px] truncate flex-1" style={{ color: "var(--text-secondary)" }}>{item.productName}</span>
+                    <span className="text-[11px] shrink-0 ml-2" style={{ color: "var(--text-muted)" }}>{item.quantity} x ৳{item.unitPrice}</span>
+                    <span className="text-[12px] font-semibold shrink-0 ml-2 w-16 text-right" style={{ color: "var(--text-primary)" }}>৳{item.total}</span>
+                  </div>
+                ))}
+                {order.items.length > 3 && (
+                  <p className="text-[11px] py-0.5" style={{ color: "var(--text-muted)" }}>+{order.items.length - 3} আরো পণ্য</p>
+                )}
+              </div>
+
+              {/* Order footer */}
+              <div className="flex items-center justify-between px-4 py-2.5" style={{ borderTop: "1px solid var(--border-color)", background: "var(--bg-input)" }}>
+                <div className="flex items-center gap-4">
+                  <div>
+                    <p className="text-[10px]" style={{ color: "var(--text-muted)" }}>মোট</p>
+                    <p className="text-[14px] font-bold" style={{ color: "#66a80f" }}>৳{order.totalAmount}</p>
+                  </div>
+                  {order.paidAmount > 0 && (
+                    <div>
+                      <p className="text-[10px]" style={{ color: "var(--text-muted)" }}>পরিশোধ</p>
+                      <p className="text-[13px] font-semibold" style={{ color: "#16a34a" }}>৳{order.paidAmount}</p>
+                    </div>
+                  )}
+                  {order.dueAmount > 0 && (
+                    <div>
+                      <p className="text-[10px]" style={{ color: "var(--text-muted)" }}>বাকি</p>
+                      <p className="text-[13px] font-bold" style={{ color: "#dc2626" }}>৳{order.dueAmount}</p>
+                    </div>
+                  )}
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <button onClick={() => setViewOrder(order)} className="w-8 h-8 rounded-lg flex items-center justify-center cursor-pointer transition-colors" style={{ background: "var(--bg-card)", color: "var(--text-muted)", border: "1px solid var(--border-color)" }} title="দেখুন">
+                    <Eye size={14} />
+                  </button>
+                  <button onClick={() => setEditOrder(JSON.parse(JSON.stringify(order)))} className="w-8 h-8 rounded-lg flex items-center justify-center cursor-pointer transition-colors" style={{ background: "var(--bg-card)", color: "var(--text-muted)", border: "1px solid var(--border-color)" }} title="সম্পাদনা">
+                    <Pencil size={13} />
+                  </button>
+                  <button onClick={() => deleteOrder(order._id)} className="w-8 h-8 rounded-lg flex items-center justify-center cursor-pointer transition-colors" style={{ background: "#fef2f2", color: "#dc2626", border: "1px solid #fecaca" }} title="মুছুন">
+                    <Trash2 size={13} />
+                  </button>
+                </div>
+              </div>
             </div>
-          </div>
-        ))
+          ))}
+        </div>
       )}
 
       {renderViewModal()}

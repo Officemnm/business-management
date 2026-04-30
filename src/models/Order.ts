@@ -17,6 +17,8 @@ export interface IOrder extends Document {
   paidAmount: number;
   dueAmount: number;
   status: "pending" | "completed" | "cancelled";
+  deliveryStatus: "pending" | "delivered" | "not_delivered";
+  deliveryNote?: string;
   note?: string;
   createdBy: string;
   createdAt: Date;
@@ -59,7 +61,16 @@ const OrderSchema: Schema<IOrder> = new Schema(
     status: {
       type: String,
       enum: ["pending", "completed", "cancelled"],
-      default: "completed",
+      default: "pending",
+    },
+    deliveryStatus: {
+      type: String,
+      enum: ["pending", "delivered", "not_delivered"],
+      default: "pending",
+    },
+    deliveryNote: {
+      type: String,
+      trim: true,
     },
     note: {
       type: String,

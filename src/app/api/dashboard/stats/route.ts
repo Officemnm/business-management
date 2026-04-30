@@ -8,19 +8,30 @@ export async function GET() {
   try {
     await dbConnect();
 
-    const [totalOrders, totalCustomers, totalProducts, orders, dueCustomers] = await Promise.all([
+    // Today's date range
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+    const todayEnd = new Date();
+    todayEnd.setHours(23, 59, 59, 999);
+
+    const [totalOrders, totalCustomers, totalProducts, allOrders, dueCustomers, todayOrders] = await Promise.all([
       Order.countDocuments(),
       Customer.countDocuments({ active: true }),
       Product.countDocuments({ active: true }),
-      Order.find().sort({ createdAt: -1 }).limit(20).lean(),
+      Order.find().lean(),
       Customer.find({ totalDue: { $gt: 0 }, active: true }).lean(),
+      Order.find({ createdAt: { $gte: todayStart, $lte: todayEnd } }).lean(),
     ]);
 
-    const totalRevenue = orders.reduce((sum, o) => sum + (o.totalAmount || 0), 0);
+    const totalRevenue = allOrders.reduce((sum, o) => sum + (o.totalAmount || 0), 0);
     const totalDue = dueCustomers.reduce((sum, c) => sum + (c.totalDue || 0), 0);
 
+    const todayRevenue = todayOrders.reduce((sum, o) => sum + (o.totalAmount || 0), 0);
+    const todayDelivered = todayOrders.filter((o) => o.deliveryStatus === "delivered").length;
+    const todayPending = todayOrders.filter((o) => o.deliveryStatus !== "delivered" && o.deliveryStatus !== "not_delivered").length;
+
     // Recent activity
-    const recentOrders = await Order.find().sort({ createdAt: -1 }).limit(10).lean();
+    const recentOrders = await Order.find().sort({ createdAt: -1 }).limit(15).lean();
 
     return NextResponse.json({
       stats: {
@@ -29,13 +40,20 @@ export async function GET() {
         totalProducts,
         totalRevenue,
         totalDue,
+        todayOrders: todayOrders.length,
+        todayRevenue,
+        todayDelivered,
+        todayPending,
       },
       recentActivity: recentOrders.map((o) => ({
         _id: o._id,
-        type: "order",
-        description: `${o.customerName} - ৳${o.totalAmount}`,
-        status: o.status,
+        customerName: o.customerName,
+        totalAmount: o.totalAmount,
+        paidAmount: o.paidAmount,
         dueAmount: o.dueAmount,
+        itemCount: o.items?.length || 0,
+        status: o.status,
+        deliveryStatus: o.deliveryStatus || "pending",
         createdBy: o.createdBy,
         createdAt: o.createdAt,
       })),

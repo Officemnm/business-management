@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import dbConnect from "@/lib/db";
 import Order from "@/models/Order";
-import Customer from "@/models/Customer";
 import Product from "@/models/Product";
 
 export async function GET(req: NextRequest) {
@@ -37,14 +36,13 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const createdBy = req.headers.get("x-user-name") || "unknown";
 
-    const order = await Order.create({ ...body, createdBy });
-
-    // Update customer due
-    if (order.dueAmount > 0 && order.customer) {
-      await Customer.findByIdAndUpdate(order.customer, {
-        $inc: { totalDue: order.dueAmount },
-      });
-    }
+    // Force pending status — due only added to customer after delivery confirmation
+    const order = await Order.create({
+      ...body,
+      createdBy,
+      status: "pending",
+      deliveryStatus: "pending",
+    });
 
     // Update product stock
     if (body.items && body.items.length > 0) {
