@@ -152,8 +152,12 @@ export default function DashboardPage() {
       const targetDate = date || collectionDate;
 
       // Fetch payments for the selected date
-      const res = await fetch(`/api/dashboard/payments?date=${targetDate}`);
-      const datePayments = await res.json();
+      const paymentsRes = await fetch(`/api/dashboard/payments?date=${targetDate}`);
+      const datePayments = await paymentsRes.json();
+
+      // Fetch stats for the selected date to get order paid amount
+      const statsRes = await fetch(`/api/dashboard/stats?from=${targetDate}&to=${targetDate}`);
+      const dateStats = await statsRes.json();
 
       // Calculate due collections for this date
       const dueCollections = datePayments
@@ -170,16 +174,13 @@ export default function DashboardPage() {
           date: p.createdAt,
         }));
 
-      // Fetch total stats for order paid calculation
-      const statsRes = await fetch("/api/dashboard/stats");
-      const statsData = await statsRes.json();
-      const totalDueCollections = statsData.stats?.totalCollection || 0;
-      const orderPaid = totalDueCollections - dueCollections;
+      // Order paid amount from the date stats
+      const orderPaid = dateStats.paid || 0;
 
       setCollectionData({
         orderPaid,
         dueCollection: dueCollections,
-        total: dueCollections,
+        total: orderPaid + dueCollections,
         dateCollections,
         isAdmin,
       });
@@ -241,45 +242,45 @@ export default function DashboardPage() {
   return (
     <div>
       {/* Today Summary — minimal */}
-      <div className="flex items-center justify-between mb-5">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 sm:mb-5 gap-3 sm:gap-0">
         <div>
-          <h2 className="text-[18px] font-bold" style={{ color: "var(--text-primary)" }}>ড্যাশবোর্ড</h2>
-          <p className="text-[12px] mt-0.5 flex items-center gap-1.5" style={{ color: "var(--text-muted)" }}>
+          <h2 className="text-[16px] sm:text-[18px] font-bold" style={{ color: "var(--text-primary)" }}>ড্যাশবোর্ড</h2>
+          <p className="text-[11px] sm:text-[12px] mt-0.5 flex items-center gap-1.5" style={{ color: "var(--text-muted)" }}>
             <CalendarDays size={12} /> {todayLabel}
           </p>
         </div>
         <div className="flex items-center gap-4">
           <div className="text-right">
-            <p className="text-[10px] font-medium" style={{ color: "var(--text-muted)" }}>আজকের বিক্রি</p>
-            <p className="text-[18px] font-extrabold" style={{ color: "#66a80f" }}>৳{stats?.todayRevenue || 0}</p>
+            <p className="text-[9px] sm:text-[10px] font-medium" style={{ color: "var(--text-muted)" }}>আজকের বিক্রি</p>
+            <p className="text-[16px] sm:text-[18px] font-extrabold" style={{ color: "#66a80f" }}>৳{stats?.todayRevenue || 0}</p>
           </div>
         </div>
       </div>
 
       {/* Today mini stats */}
-      <div className="grid grid-cols-4 gap-2 mb-5">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-5">
         {[
           { label: "অর্ডার", value: stats?.todayOrders || 0, color: "#66a80f" },
           { label: "ডেলিভারড", value: stats?.todayDelivered || 0, color: "#16a34a" },
           { label: "পেন্ডিং", value: stats?.todayPending || 0, color: "#d97706" },
           { label: "বাকি", value: `৳${stats?.totalDue || 0}`, color: "#dc2626" },
         ].map((s) => (
-          <div key={s.label} className="rounded-xl p-3 text-center" style={{ background: "var(--bg-card)", border: "1px solid var(--border-color)" }}>
-            <p className="text-[18px] font-extrabold" style={{ color: s.color }}>{s.value}</p>
-            <p className="text-[10px] font-medium mt-0.5" style={{ color: "var(--text-muted)" }}>{s.label}</p>
+          <div key={s.label} className="rounded-xl p-2.5 sm:p-3 text-center" style={{ background: "var(--bg-card)", border: "1px solid var(--border-color)" }}>
+            <p className="text-[16px] sm:text-[18px] font-extrabold" style={{ color: s.color }}>{s.value}</p>
+            <p className="text-[9px] sm:text-[10px] font-medium mt-0.5" style={{ color: "var(--text-muted)" }}>{s.label}</p>
           </div>
         ))}
       </div>
 
       {/* Charts Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-5">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4 mb-5">
         {/* Revenue Chart */}
-        <div className="rounded-xl p-4" style={{ background: "var(--bg-card)", border: "1px solid var(--border-color)" }}>
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-[13px] font-bold" style={{ color: "var(--text-primary)" }}>৭ দিনের বিক্রি</h3>
+        <div className="rounded-xl p-3 sm:p-4" style={{ background: "var(--bg-card)", border: "1px solid var(--border-color)" }}>
+          <div className="flex items-center justify-between mb-3 sm:mb-4">
+            <h3 className="text-[12px] sm:text-[13px] font-bold" style={{ color: "var(--text-primary)" }}>৭ দিনের বিক্রি</h3>
             <TrendingUp size={14} style={{ color: "var(--text-muted)" }} />
           </div>
-          <div style={{ height: 180 }}>
+          <div className="h-[140px] sm:h-[180px]">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={chartData}>
                 <defs>
@@ -298,12 +299,12 @@ export default function DashboardPage() {
         </div>
 
         {/* Orders Chart */}
-        <div className="rounded-xl p-4" style={{ background: "var(--bg-card)", border: "1px solid var(--border-color)" }}>
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-[13px] font-bold" style={{ color: "var(--text-primary)" }}>৭ দিনের অর্ডার</h3>
+        <div className="rounded-xl p-3 sm:p-4" style={{ background: "var(--bg-card)", border: "1px solid var(--border-color)" }}>
+          <div className="flex items-center justify-between mb-3 sm:mb-4">
+            <h3 className="text-[12px] sm:text-[13px] font-bold" style={{ color: "var(--text-primary)" }}>৭ দিনের অর্ডার</h3>
             <ShoppingCart size={14} style={{ color: "var(--text-muted)" }} />
           </div>
-          <div style={{ height: 180 }}>
+          <div className="h-[140px] sm:h-[180px]">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={chartData}>
                 <XAxis dataKey="date" tick={{ fontSize: 10, fill: "var(--text-muted)" }} axisLine={false} tickLine={false} />
@@ -317,7 +318,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3 mb-5">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-3 mb-5">
         {[
           { label: "মোট অর্ডার", value: stats?.totalOrders || 0, icon: ShoppingCart, color: "#66a80f" },
           { label: "মোট কাস্টমার", value: stats?.totalCustomers || 0, icon: Users, color: "#2563eb" },
@@ -331,14 +332,14 @@ export default function DashboardPage() {
             <div
               key={card.label}
               onClick={card.onClick}
-              className={`rounded-xl p-3.5 ${card.onClick ? "cursor-pointer hover:opacity-80 transition-opacity" : ""}`}
+              className={`rounded-xl p-2.5 sm:p-3.5 ${card.onClick ? "cursor-pointer hover:opacity-80 transition-opacity" : ""}`}
               style={{ background: "var(--bg-card)", border: "1px solid var(--border-color)" }}
             >
-              <div className="flex items-center gap-2.5">
-                <Icon size={16} style={{ color: card.color }} strokeWidth={1.5} />
+              <div className="flex items-center gap-2 sm:gap-2.5">
+                <Icon size={14} className="sm:w-4 sm:h-4" style={{ color: card.color }} strokeWidth={1.5} />
                 <div>
-                  <p className="text-[17px] font-extrabold leading-tight" style={{ color: "var(--text-primary)" }}>{card.value}</p>
-                  <p className="text-[10px] font-medium" style={{ color: "var(--text-muted)" }}>{card.label}</p>
+                  <p className="text-[14px] sm:text-[17px] font-extrabold leading-tight" style={{ color: "var(--text-primary)" }}>{card.value}</p>
+                  <p className="text-[9px] sm:text-[10px] font-medium" style={{ color: "var(--text-muted)" }}>{card.label}</p>
                 </div>
               </div>
             </div>
