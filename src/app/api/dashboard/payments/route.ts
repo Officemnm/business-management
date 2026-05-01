@@ -3,21 +3,88 @@ import dbConnect from "@/lib/db";
 import Payment from "@/models/Payment";
 import Customer from "@/models/Customer";
 
-// GET payments for a customer
+// GET payments - either for a customer or all payments
 export async function GET(req: NextRequest) {
   try {
     await dbConnect();
     const { searchParams } = new URL(req.url);
     const customerId = searchParams.get("customerId");
+    const list = searchParams.get("list");
+    const date = searchParams.get("date");
 
-    if (!customerId) {
-      return NextResponse.json({ error: "customerId required" }, { status: 400 });
+    // If date param is provided, return payments for that date
+    if (date) {
+      const targetDate = new Date(date);
+      const dayStart = new Date(targetDate);
+      dayStart.setHours(0, 0, 0, 0);
+      const dayEnd = new Date(targetDate);
+      dayEnd.setHours(23, 59, 59, 999);
+
+      const payments = await Payment.find({
+        amount: { $gt: 0 },
+        createdAt: { $gte: dayStart, $lte: dayEnd },
+      })
+        .sort({ createdAt: -1 })
+        .lean();
+      return NextResponse.json(payments);
     }
 
-    const payments = await Payment.find({ customer: customerId }).sort({ createdAt: -1 });
-    return NextResponse.json(payments);
+    // If list param is provided, return all positive payments (collections)
+    if (list === "all") {
+      const payments = await Payment.find({ amount: { $gt: 0 } })
+        .sort({ createdAt: -1 })
+        .limit(100)
+        .lean();
+      return NextResponse.json(payments);
+    }
+
+    // If customerId provided, return payments for that customer
+    if (customerId) {
+      const payments = await Payment.find({ customer: customerId }).sort({ createdAt: -1 });
+      return NextResponse.json(payments);
+    }
+
+    return NextResponse.json({ error: "customerId, list, or date param required" }, { status: 400 });
   } catch (error) {
     console.error("Get payments error:", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  }
+}
+
+// DELETE payment - admin only
+export async function DELETE(req: NextRequest) {
+  try {
+    await dbConnect();
+
+    // Check if user is admin
+    const userRole = req.headers.get("x-user-role");
+    if (userRole !== "admin") {
+      return NextResponse.json({ error: "Unauthorized - Admin only" }, { status: 403 });
+    }
+
+    const { searchParams } = new URL(req.url);
+    const paymentId = searchParams.get("id");
+
+    if (!paymentId) {
+      return NextResponse.json({ error: "Payment ID required" }, { status: 400 });
+    }
+
+    const payment = await Payment.findById(paymentId);
+    if (!payment) {
+      return NextResponse.json({ error: "Payment not found" }, { status: 404 });
+    }
+
+    // If it was a positive payment (collection), add the amount back to customer's due
+    if (payment.amount > 0) {
+      await Customer.findByIdAndUpdate(payment.customer, {
+        $inc: { totalDue: payment.amount },
+      });
+    }
+
+    await Payment.findByIdAndDelete(paymentId);
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error("Delete payment error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

@@ -3,10 +3,33 @@ import dbConnect from "@/lib/db";
 import Order from "@/models/Order";
 import Customer from "@/models/Customer";
 import Product from "@/models/Product";
+import Payment from "@/models/Payment";
 
-export async function GET() {
+export async function GET(req: Request) {
+  const { searchParams } = new URL(req.url);
+  const dateFrom = searchParams.get("from");
+  const dateTo = searchParams.get("to");
   try {
     await dbConnect();
+
+    // If date range specified, return sales for that period
+    if (dateFrom && dateTo) {
+      const fromDate = new Date(dateFrom);
+      fromDate.setHours(0, 0, 0, 0);
+      const toDate = new Date(dateTo);
+      toDate.setHours(23, 59, 59, 999);
+
+      const orders = await Order.find({
+        createdAt: { $gte: fromDate, $lte: toDate },
+      }).lean();
+
+      const revenue = orders.reduce((sum, o) => sum + (o.totalAmount || 0), 0);
+      const count = orders.length;
+      const paid = orders.reduce((sum, o) => sum + (o.paidAmount || 0), 0);
+      const due = orders.reduce((sum, o) => sum + (o.dueAmount || 0), 0);
+
+      return NextResponse.json({ revenue, count, paid, due });
+    }
 
     // Today's date range
     const todayStart = new Date();
@@ -14,19 +37,35 @@ export async function GET() {
     const todayEnd = new Date();
     todayEnd.setHours(23, 59, 59, 999);
 
-    const [totalOrders, totalCustomers, totalProducts, allOrders, dueCustomers, todayOrders] = await Promise.all([
+    const [totalOrders, totalCustomers, totalProducts, allOrders, dueCustomers, todayOrders, allPayments, todayPayments] = await Promise.all([
       Order.countDocuments(),
       Customer.countDocuments({ active: true }),
       Product.countDocuments({ active: true }),
       Order.find().lean(),
       Customer.find({ totalDue: { $gt: 0 }, active: true }).lean(),
       Order.find({ createdAt: { $gte: todayStart, $lte: todayEnd } }).lean(),
+      Payment.find().sort({ createdAt: -1 }).lean(),
+      Payment.find({ createdAt: { $gte: todayStart, $lte: todayEnd } }).lean(),
     ]);
 
     const totalRevenue = allOrders.reduce((sum, o) => sum + (o.totalAmount || 0), 0);
     const totalDue = dueCustomers.reduce((sum, c) => sum + (c.totalDue || 0), 0);
 
+    // Calculate total collection (order paidAmount + payment collections)
+    const totalOrderPaid = allOrders.reduce((sum, o) => sum + (o.paidAmount || 0), 0);
+    const totalPaymentCollection = allPayments
+      .filter(p => p.amount > 0)
+      .reduce((sum, p) => sum + (p.amount || 0), 0);
+    const totalCollection = totalOrderPaid + totalPaymentCollection;
+
+    // Today's stats
     const todayRevenue = todayOrders.reduce((sum, o) => sum + (o.totalAmount || 0), 0);
+    const todayOrderPaid = todayOrders.reduce((sum, o) => sum + (o.paidAmount || 0), 0);
+    const todayPaymentCollection = todayPayments
+      .filter(p => p.amount > 0)
+      .reduce((sum, p) => sum + (p.amount || 0), 0);
+    const todayCollection = todayOrderPaid + todayPaymentCollection;
+
     const todayDelivered = todayOrders.filter((o) => o.deliveryStatus === "delivered").length;
     const todayPending = todayOrders.filter((o) => o.deliveryStatus !== "delivered" && o.deliveryStatus !== "not_delivered").length;
 
@@ -48,24 +87,15 @@ export async function GET() {
       });
     }
 
-    // Recent activity
-    const recentOrders = await Order.find().sort({ createdAt: -1 }).limit(15).lean();
+    // Recent activity - combine orders and payments
+    const recentOrders = await Order.find().sort({ createdAt: -1 }).limit(10).lean();
+    const recentPayments = await Payment.find({ amount: { $gt: 0 } }).sort({ createdAt: -1 }).limit(10).lean();
 
-    return NextResponse.json({
-      stats: {
-        totalOrders,
-        totalCustomers,
-        totalProducts,
-        totalRevenue,
-        totalDue,
-        todayOrders: todayOrders.length,
-        todayRevenue,
-        todayDelivered,
-        todayPending,
-      },
-      chartData: last7Days,
-      recentActivity: recentOrders.map((o) => ({
+    // Combine and sort by date
+    const combinedActivity = [
+      ...recentOrders.map((o) => ({
         _id: o._id,
+        type: "order" as const,
         customerName: o.customerName,
         totalAmount: o.totalAmount,
         paidAmount: o.paidAmount,
@@ -76,6 +106,39 @@ export async function GET() {
         createdBy: o.createdBy,
         createdAt: o.createdAt,
       })),
+      ...recentPayments.map((p) => ({
+        _id: p._id,
+        type: "payment" as const,
+        customerName: p.customerName,
+        totalAmount: p.amount,
+        paidAmount: p.amount,
+        dueAmount: 0,
+        itemCount: 0,
+        status: "completed",
+        deliveryStatus: "payment",
+        createdBy: p.collectedBy,
+        createdAt: p.createdAt,
+      })),
+    ]
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+      .slice(0, 15);
+
+    return NextResponse.json({
+      stats: {
+        totalOrders,
+        totalCustomers,
+        totalProducts,
+        totalRevenue,
+        totalDue,
+        totalCollection,
+        todayOrders: todayOrders.length,
+        todayRevenue,
+        todayCollection,
+        todayDelivered,
+        todayPending,
+      },
+      chartData: last7Days,
+      recentActivity: combinedActivity,
     });
   } catch (error) {
     console.error("Stats error:", error);
