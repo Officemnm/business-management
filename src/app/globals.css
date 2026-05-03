@@ -2,21 +2,22 @@
 @source "../../src";
 
 :root {
-  --bg-primary: #f2f2f7;
+  --bg-primary: #fafafa;
   --bg-card: #ffffff;
-  --bg-input: #f2f2f7;
-  --border-color: #e5e5ea;
-  --border-hover: #d1d1d6;
+  --bg-input: #fafafa;
+  --border-color: #e5e7eb;
+  --border-hover: #d1d5db;
   --border-focus: #66a80f;
-  --text-primary: #1d1d1f;
-  --text-secondary: #3c3c43;
-  --text-muted: #86868b;
-  --text-placeholder: #c7c7cc;
+  --text-primary: #111827;
+  --text-secondary: #374151;
+  --text-muted: #6b7280;
+  --text-placeholder: #9ca3af;
   --accent: #66a80f;
   --accent-light: #f0fdf0;
   --accent-hover: #5c940d;
-  --error: #ff3b30;
-  --success: #66a80f;
+  --error: #dc2626;
+  --error-light: #fef2f2;
+  --success: #16a34a;
 }
 
 @layer base {
