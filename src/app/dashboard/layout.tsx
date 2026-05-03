@@ -88,32 +88,32 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
       {/* Sidebar */}
       <aside
-        className={`fixed lg:static inset-y-0 left-0 z-50 w-[260px] flex flex-col transition-transform duration-200 lg:translate-x-0 ${
+        className={`fixed lg:static inset-y-0 left-0 z-50 w-[270px] flex flex-col transition-transform duration-200 lg:translate-x-0 ${
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
         }`}
         style={{
           background: "#ffffff",
-          borderRight: "1px solid #e7e5e4",
+          borderRight: "0.5px solid #e5e5ea",
         }}
       >
         {/* Logo */}
-        <div className="flex items-center gap-3 px-5 h-[60px]" style={{ borderBottom: "1px solid #e7e5e4" }}>
-          <Image src="/logo.png" alt="লোগো" width={32} height={32} className="rounded-lg" />
-          <span className="text-[13px] font-semibold tracking-tight" style={{ color: "#1c1917" }}>
+        <div className="flex items-center gap-3 px-5 h-[64px]" style={{ borderBottom: "0.5px solid #e5e5ea" }}>
+          <Image src="/logo.png" alt="লোগো" width={32} height={32} className="rounded-[10px]" />
+          <span className="text-[14px] font-semibold tracking-tight" style={{ color: "#1d1d1f", letterSpacing: "-0.01em" }}>
             ভ্যারাইটিজ কসমেটিক্স
           </span>
           <button
             onClick={() => setSidebarOpen(false)}
-            className="ml-auto lg:hidden cursor-pointer w-7 h-7 rounded-lg flex items-center justify-center"
-            style={{ color: "#a8a29e", background: "#f5f5f4" }}
+            className="ml-auto lg:hidden cursor-pointer w-8 h-8 rounded-full flex items-center justify-center active:opacity-60 transition-opacity"
+            style={{ color: "#1d1d1f", background: "#f2f2f7" }}
           >
-            <X size={14} />
+            <X size={15} strokeWidth={2.5} />
           </button>
         </div>
 
         {/* Nav */}
-        <nav className="flex-1 py-4 px-3 overflow-y-auto">
-          <p className="text-[9px] font-semibold uppercase tracking-[0.12em] px-3 mb-2" style={{ color: "#a8a29e" }}>মেনু</p>
+        <nav className="flex-1 py-5 px-3 overflow-y-auto">
+          <p className="text-[11px] font-semibold uppercase tracking-wider px-3 mb-2.5" style={{ color: "#86868b" }}>মেনু</p>
           <div className="flex flex-col gap-0.5">
             {allItems.map((item, idx) => {
               const Icon = item.icon;
@@ -123,15 +123,17 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   <Link
                     href={item.href}
                     onClick={() => setSidebarOpen(false)}
-                    className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] font-medium transition-all duration-150 w-full"
+                    className="flex items-center gap-3 px-3 py-2.5 rounded-[10px] text-[14px] transition-all duration-150 w-full"
                     style={{
-                      background: active ? "#f5f5f4" : "transparent",
-                      color: active ? "#1c1917" : "#78716c",
+                      background: active ? "#f2f2f7" : "transparent",
+                      color: active ? "#1d1d1f" : "#3c3c43",
+                      fontWeight: active ? 600 : 500,
                     }}
                   >
-                    <Icon size={17} strokeWidth={active ? 2 : 1.5} />
+                    <div className="w-7 h-7 rounded-[8px] flex items-center justify-center shrink-0" style={{ background: active ? "rgba(102,168,15,0.12)" : "transparent" }}>
+                      <Icon size={16} strokeWidth={2} style={{ color: active ? "#66a80f" : "#86868b" }} />
+                    </div>
                     {item.label}
-                    {active && <div className="ml-auto w-1.5 h-1.5 rounded-full" style={{ background: "#66a80f" }} />}
                   </Link>
                 </motion.div>
               );
@@ -140,29 +142,29 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </nav>
 
         {/* User info + Logout */}
-        <div className="px-3 pb-4" style={{ borderTop: "1px solid #f5f5f4" }}>
+        <div className="px-3 pb-4" style={{ borderTop: "0.5px solid #e5e5ea" }}>
           <div className="flex items-center gap-3 px-3 py-3 mt-3">
             <div
-              className="w-8 h-8 rounded-xl flex items-center justify-center text-[11px] font-bold"
-              style={{ background: "#f5f5f4", color: "#44403c" }}
+              className="w-9 h-9 rounded-full flex items-center justify-center text-[13px] font-semibold"
+              style={{ background: "#f2f2f7", color: "#1d1d1f" }}
             >
               {userInfo?.displayName?.[0] || "U"}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-[12px] font-semibold truncate" style={{ color: "#1c1917" }}>
+              <p className="text-[13px] font-semibold truncate" style={{ color: "#1d1d1f" }}>
                 {userInfo?.displayName || "..."}
               </p>
-              <p className="text-[10px]" style={{ color: "#a8a29e" }}>
+              <p className="text-[11px] font-medium" style={{ color: "#86868b" }}>
                 {userInfo?.role === "admin" ? "এডমিন" : "ইউজার"}
               </p>
             </div>
             <button
               onClick={handleLogout}
-              className="w-8 h-8 rounded-xl flex items-center justify-center cursor-pointer transition-colors duration-150"
-              style={{ color: "#a8a29e", background: "#f5f5f4" }}
+              className="w-9 h-9 rounded-full flex items-center justify-center cursor-pointer active:opacity-60 transition-opacity"
+              style={{ color: "#ff3b30", background: "#f2f2f7" }}
               title="লগআউট"
             >
-              <LogOut size={14} strokeWidth={1.5} />
+              <LogOut size={15} strokeWidth={2} />
             </button>
           </div>
         </div>
@@ -172,21 +174,22 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <main className="flex-1 flex flex-col min-w-0">
         {/* Top bar */}
         <header
-          className="sticky top-0 z-30 flex items-center h-[52px] px-4 gap-3"
+          className="sticky top-0 z-30 flex items-center h-[56px] px-4 gap-3"
           style={{
-            background: "rgba(255,255,255,0.85)",
-            backdropFilter: "blur(12px)",
-            borderBottom: "1px solid #e7e5e4",
+            background: "rgba(242,242,247,0.8)",
+            backdropFilter: "saturate(180%) blur(20px)",
+            WebkitBackdropFilter: "saturate(180%) blur(20px)",
+            borderBottom: "0.5px solid rgba(0,0,0,0.06)",
           }}
         >
           <button
             onClick={() => setSidebarOpen(true)}
-            className="lg:hidden cursor-pointer w-8 h-8 rounded-xl flex items-center justify-center"
-            style={{ color: "#44403c", background: "#f5f5f4" }}
+            className="lg:hidden cursor-pointer w-9 h-9 rounded-full flex items-center justify-center active:opacity-60 transition-opacity"
+            style={{ color: "#1d1d1f", background: "rgba(255,255,255,0.7)" }}
           >
-            <Menu size={16} />
+            <Menu size={17} strokeWidth={2.5} />
           </button>
-          <h2 className="text-[14px] font-semibold tracking-tight" style={{ color: "#1c1917" }}>
+          <h2 className="text-[15px] font-semibold tracking-tight" style={{ color: "#1d1d1f", letterSpacing: "-0.01em" }}>
             {allItems.find((i) => isActive(i.href))?.label || "ড্যাশবোর্ড"}
           </h2>
         </header>
