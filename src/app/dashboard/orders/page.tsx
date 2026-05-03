@@ -28,7 +28,7 @@ export default function OrdersPage() {
   const [submitting, setSubmitting] = useState(false);
 
   // Delivery tab filter
-  const [deliveryTab, setDeliveryTab] = useState<"pending" | "delivered">("pending");
+  const [deliveryTab, setDeliveryTab] = useState<"pending" | "delivered" | "not_delivered">("pending");
 
   // Date filter — default to today
   const [filterDate, setFilterDate] = useState(() => {
@@ -1204,8 +1204,3 @@ export default function OrdersPage() {
     </div>
   );
 }
- 
- S u n d a y ,   M a y   3 ,   2 0 2 6   6 : 4 7 : 5 2   P M  
-  
-  
- 
