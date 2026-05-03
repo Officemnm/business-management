@@ -76,7 +76,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         {sidebarOpen && (
           <motion.div
             className="fixed inset-0 z-40 lg:hidden"
-            style={{ background: "rgba(0,0,0,0.3)", backdropFilter: "blur(2px)" }}
+            style={{ background: "rgba(0,0,0,0.15)", backdropFilter: "blur(6px)" }}
             onClick={() => setSidebarOpen(false)}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -92,44 +92,46 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
         }`}
         style={{
-          background: "var(--bg-card)",
-          borderRight: "1px solid var(--border-color)",
+          background: "#ffffff",
+          borderRight: "1px solid #e7e5e4",
         }}
       >
         {/* Logo */}
-        <div className="flex items-center gap-3 px-5 h-16" style={{ borderBottom: "1px solid var(--border-color)" }}>
-          <Image src="/logo.png" alt="লোগো" width={36} height={36} />
-          <span className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>
+        <div className="flex items-center gap-3 px-5 h-[60px]" style={{ borderBottom: "1px solid #e7e5e4" }}>
+          <Image src="/logo.png" alt="লোগো" width={32} height={32} className="rounded-lg" />
+          <span className="text-[13px] font-semibold tracking-tight" style={{ color: "#1c1917" }}>
             ভ্যারাইটিজ কসমেটিক্স
           </span>
           <button
             onClick={() => setSidebarOpen(false)}
-            className="ml-auto lg:hidden cursor-pointer"
-            style={{ color: "var(--text-muted)" }}
+            className="ml-auto lg:hidden cursor-pointer w-7 h-7 rounded-lg flex items-center justify-center"
+            style={{ color: "#a8a29e", background: "#f5f5f4" }}
           >
-            <X size={18} />
+            <X size={14} />
           </button>
         </div>
 
         {/* Nav */}
-        <nav className="flex-1 py-3 px-3 overflow-y-auto">
-          <div className="flex flex-col gap-1">
+        <nav className="flex-1 py-4 px-3 overflow-y-auto">
+          <p className="text-[9px] font-semibold uppercase tracking-[0.12em] px-3 mb-2" style={{ color: "#a8a29e" }}>মেনু</p>
+          <div className="flex flex-col gap-0.5">
             {allItems.map((item, idx) => {
               const Icon = item.icon;
               const active = isActive(item.href);
               return (
-                <motion.div key={item.href} initial={{ opacity: 0, x: -12 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: idx * 0.03 }} whileHover={{ x: 4 }}>
+                <motion.div key={item.href} initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: idx * 0.03 }}>
                   <Link
                     href={item.href}
                     onClick={() => setSidebarOpen(false)}
-                    className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-[13px] font-medium transition-all duration-150 w-full"
+                    className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] font-medium transition-all duration-150 w-full"
                     style={{
-                      background: active ? "rgba(102, 168, 15, 0.1)" : "transparent",
-                      color: active ? "#66a80f" : "var(--text-secondary)",
+                      background: active ? "#f5f5f4" : "transparent",
+                      color: active ? "#1c1917" : "#78716c",
                     }}
                   >
-                    <Icon size={18} strokeWidth={1.5} />
+                    <Icon size={17} strokeWidth={active ? 2 : 1.5} />
                     {item.label}
+                    {active && <div className="ml-auto w-1.5 h-1.5 rounded-full" style={{ background: "#66a80f" }} />}
                   </Link>
                 </motion.div>
               );
@@ -138,34 +140,31 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </nav>
 
         {/* User info + Logout */}
-        <div className="px-3 pb-4">
-          <div
-            className="flex items-center gap-3 px-3 py-3 rounded-lg mb-2"
-            style={{ background: "var(--bg-input)" }}
-          >
+        <div className="px-3 pb-4" style={{ borderTop: "1px solid #f5f5f4" }}>
+          <div className="flex items-center gap-3 px-3 py-3 mt-3">
             <div
-              className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white"
-              style={{ background: "#66a80f" }}
+              className="w-8 h-8 rounded-xl flex items-center justify-center text-[11px] font-bold"
+              style={{ background: "#f5f5f4", color: "#44403c" }}
             >
               {userInfo?.displayName?.[0] || "U"}
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-[13px] font-medium truncate" style={{ color: "var(--text-primary)" }}>
+              <p className="text-[12px] font-semibold truncate" style={{ color: "#1c1917" }}>
                 {userInfo?.displayName || "..."}
               </p>
-              <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>
+              <p className="text-[10px]" style={{ color: "#a8a29e" }}>
                 {userInfo?.role === "admin" ? "এডমিন" : "ইউজার"}
               </p>
             </div>
+            <button
+              onClick={handleLogout}
+              className="w-8 h-8 rounded-xl flex items-center justify-center cursor-pointer transition-colors duration-150"
+              style={{ color: "#a8a29e", background: "#f5f5f4" }}
+              title="লগআউট"
+            >
+              <LogOut size={14} strokeWidth={1.5} />
+            </button>
           </div>
-          <button
-            onClick={handleLogout}
-            className="flex items-center gap-2 w-full px-3 py-2.5 rounded-lg text-[13px] font-medium cursor-pointer transition-colors duration-150"
-            style={{ color: "var(--text-muted)" }}
-          >
-            <LogOut size={16} strokeWidth={1.5} />
-            লগআউট
-          </button>
         </div>
       </aside>
 
@@ -173,30 +172,31 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <main className="flex-1 flex flex-col min-w-0">
         {/* Top bar */}
         <header
-          className="sticky top-0 z-30 flex items-center h-16 px-5 gap-4"
+          className="sticky top-0 z-30 flex items-center h-[52px] px-4 gap-3"
           style={{
-            background: "var(--bg-card)",
-            borderBottom: "1px solid var(--border-color)",
+            background: "rgba(255,255,255,0.85)",
+            backdropFilter: "blur(12px)",
+            borderBottom: "1px solid #e7e5e4",
           }}
         >
           <button
             onClick={() => setSidebarOpen(true)}
-            className="lg:hidden cursor-pointer"
-            style={{ color: "var(--text-secondary)" }}
+            className="lg:hidden cursor-pointer w-8 h-8 rounded-xl flex items-center justify-center"
+            style={{ color: "#44403c", background: "#f5f5f4" }}
           >
-            <Menu size={20} />
+            <Menu size={16} />
           </button>
-          <h2 className="text-[15px] font-semibold" style={{ color: "var(--text-primary)" }}>
+          <h2 className="text-[14px] font-semibold tracking-tight" style={{ color: "#1c1917" }}>
             {allItems.find((i) => isActive(i.href))?.label || "ড্যাশবোর্ড"}
           </h2>
         </header>
 
         {/* Content */}
         <motion.div
-          className="flex-1 p-5 overflow-y-auto"
-          initial={{ opacity: 0, y: 8 }}
+          className="flex-1 p-4 overflow-y-auto"
+          initial={{ opacity: 0, y: 6 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3, ease: "easeOut" }}
+          transition={{ duration: 0.25, ease: "easeOut" }}
           key={pathname}
         >
           {children}
