@@ -231,170 +231,239 @@ export default function DashboardPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="animate-spin w-8 h-8 border-2 border-t-transparent rounded-full" style={{ borderColor: "#66a80f", borderTopColor: "transparent" }} />
+      <div className="flex items-center justify-center h-[60vh]">
+        <div className="flex flex-col items-center gap-3">
+          <div className="animate-spin w-8 h-8 border-[2.5px] border-t-transparent rounded-full" style={{ borderColor: "#66a80f", borderTopColor: "transparent" }} />
+          <p className="text-[11px] font-medium" style={{ color: "var(--text-muted)" }}>লোড হচ্ছে...</p>
+        </div>
       </div>
     );
   }
 
   const todayLabel = new Date().toLocaleDateString("bn-BD", { year: "numeric", month: "long", day: "numeric" });
+  const greetHour = new Date().getHours();
+  const greeting = greetHour < 12 ? "সুপ্রভাত" : greetHour < 17 ? "শুভ অপরাহ্ণ" : "শুভ সন্ধ্যা";
 
   return (
-    <div>
-      {/* Today Summary — minimal */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 sm:mb-5 gap-3 sm:gap-0">
-        <div>
-          <h2 className="text-[16px] sm:text-[18px] font-bold" style={{ color: "var(--text-primary)" }}>ড্যাশবোর্ড</h2>
-          <p className="text-[11px] sm:text-[12px] mt-0.5 flex items-center gap-1.5" style={{ color: "var(--text-muted)" }}>
-            <CalendarDays size={12} /> {todayLabel}
-          </p>
-        </div>
-        <div className="flex items-center gap-4">
-          <div className="text-right">
-            <p className="text-[9px] sm:text-[10px] font-medium" style={{ color: "var(--text-muted)" }}>আজকের বিক্রি</p>
-            <p className="text-[16px] sm:text-[18px] font-extrabold" style={{ color: "#66a80f" }}>৳{stats?.todayRevenue || 0}</p>
+    <div className="pb-6 space-y-4">
+
+      {/* Hero Header */}
+      <div className="rounded-2xl p-4 relative overflow-hidden" style={{ background: "linear-gradient(135deg, #1c1917 0%, #292524 50%, #44403c 100%)" }}>
+        <div className="absolute top-0 right-0 w-32 h-32 rounded-full opacity-10" style={{ background: "radial-gradient(circle, #66a80f 0%, transparent 70%)", transform: "translate(30%, -30%)" }} />
+        <div className="relative z-10">
+          <p className="text-[11px] font-medium mb-0.5" style={{ color: "rgba(255,255,255,0.5)" }}>{greeting}</p>
+          <h2 className="text-[17px] font-bold mb-3" style={{ color: "rgba(255,255,255,0.95)" }}>ড্যাশবোর্ড</h2>
+          <div className="flex items-center gap-1.5 mb-4">
+            <CalendarDays size={11} style={{ color: "rgba(255,255,255,0.4)" }} />
+            <p className="text-[10px]" style={{ color: "rgba(255,255,255,0.4)" }}>{todayLabel}</p>
+          </div>
+
+          {/* Today Revenue Hero */}
+          <div className="flex items-end justify-between">
+            <div>
+              <p className="text-[9px] font-medium tracking-wider uppercase mb-1" style={{ color: "#66a80f" }}>আজকের বিক্রি</p>
+              <p className="text-[28px] font-extrabold leading-none" style={{ color: "white" }}>৳{stats?.todayRevenue || 0}</p>
+            </div>
+            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full" style={{ background: "rgba(102,168,15,0.15)" }}>
+              <TrendingUp size={11} style={{ color: "#66a80f" }} />
+              <span className="text-[10px] font-bold" style={{ color: "#66a80f" }}>{stats?.todayOrders || 0} অর্ডার</span>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Today mini stats */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-5">
+      {/* Today Quick Stats — pill style */}
+      <div className="grid grid-cols-4 gap-1.5">
         {[
-          { label: "অর্ডার", value: stats?.todayOrders || 0, color: "#66a80f" },
-          { label: "ডেলিভারড", value: stats?.todayDelivered || 0, color: "#16a34a" },
-          { label: "পেন্ডিং", value: stats?.todayPending || 0, color: "#d97706" },
-          { label: "বাকি", value: `৳${stats?.totalDue || 0}`, color: "#dc2626" },
+          { label: "অর্ডার", value: stats?.todayOrders || 0, color: "#66a80f", bg: "rgba(102,168,15,0.08)" },
+          { label: "ডেলিভারড", value: stats?.todayDelivered || 0, color: "#16a34a", bg: "rgba(22,163,74,0.08)" },
+          { label: "পেন্ডিং", value: stats?.todayPending || 0, color: "#d97706", bg: "rgba(217,119,6,0.08)" },
+          { label: "মোট বাকি", value: `৳${stats?.totalDue || 0}`, color: "#dc2626", bg: "rgba(220,38,38,0.08)" },
         ].map((s) => (
-          <div key={s.label} className="rounded-xl p-2.5 sm:p-3 text-center" style={{ background: "var(--bg-card)", border: "1px solid var(--border-color)" }}>
-            <p className="text-[16px] sm:text-[18px] font-extrabold" style={{ color: s.color }}>{s.value}</p>
-            <p className="text-[9px] sm:text-[10px] font-medium mt-0.5" style={{ color: "var(--text-muted)" }}>{s.label}</p>
+          <div key={s.label} className="rounded-xl py-2.5 px-1 text-center" style={{ background: s.bg }}>
+            <p className="text-[15px] font-extrabold leading-tight" style={{ color: s.color }}>{s.value}</p>
+            <p className="text-[8px] font-semibold mt-0.5 uppercase tracking-wide" style={{ color: s.color, opacity: 0.7 }}>{s.label}</p>
           </div>
         ))}
       </div>
 
-      {/* Charts Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4 mb-5">
-        {/* Revenue Chart */}
-        <div className="rounded-xl p-3 sm:p-4" style={{ background: "var(--bg-card)", border: "1px solid var(--border-color)" }}>
-          <div className="flex items-center justify-between mb-3 sm:mb-4">
-            <h3 className="text-[12px] sm:text-[13px] font-bold" style={{ color: "var(--text-primary)" }}>৭ দিনের বিক্রি</h3>
-            <TrendingUp size={14} style={{ color: "var(--text-muted)" }} />
-          </div>
-          <div className="h-[140px] sm:h-[180px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={chartData}>
-                <defs>
-                  <linearGradient id="revGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#66a80f" stopOpacity={0.2} />
-                    <stop offset="100%" stopColor="#66a80f" stopOpacity={0} />
-                  </linearGradient>
-                </defs>
-                <XAxis dataKey="date" tick={{ fontSize: 10, fill: "var(--text-muted)" }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fontSize: 10, fill: "var(--text-muted)" }} axisLine={false} tickLine={false} width={40} />
-                <Tooltip contentStyle={{ background: "var(--bg-card)", border: "1px solid var(--border-color)", borderRadius: 8, fontSize: 12 }} />
-                <Area type="monotone" dataKey="revenue" stroke="#66a80f" strokeWidth={2} fill="url(#revGrad)" name="বিক্রি" />
-              </AreaChart>
-            </ResponsiveContainer>
+      {/* Main Action Cards — 3 big tappable cards */}
+      <div className="space-y-2">
+        {/* Sales Card */}
+        <div
+          onClick={openSalesModal}
+          className="rounded-2xl p-4 cursor-pointer active:scale-[0.98] transition-transform"
+          style={{ background: "var(--bg-card)", border: "1px solid var(--border-color)", boxShadow: "0 1px 3px rgba(0,0,0,0.04)" }}
+        >
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: "linear-gradient(135deg, #059669 0%, #10b981 100%)" }}>
+                <TrendingUp size={18} style={{ color: "white" }} strokeWidth={2} />
+              </div>
+              <div>
+                <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>মোট বিক্রি</p>
+                <p className="text-[20px] font-extrabold leading-tight" style={{ color: "var(--text-primary)" }}>৳{stats?.totalRevenue || 0}</p>
+              </div>
+            </div>
+            <ChevronRight size={18} style={{ color: "var(--text-muted)" }} />
           </div>
         </div>
 
-        {/* Orders Chart */}
-        <div className="rounded-xl p-3 sm:p-4" style={{ background: "var(--bg-card)", border: "1px solid var(--border-color)" }}>
-          <div className="flex items-center justify-between mb-3 sm:mb-4">
-            <h3 className="text-[12px] sm:text-[13px] font-bold" style={{ color: "var(--text-primary)" }}>৭ দিনের অর্ডার</h3>
-            <ShoppingCart size={14} style={{ color: "var(--text-muted)" }} />
+        {/* Collection & Due — side by side */}
+        <div className="grid grid-cols-2 gap-2">
+          <div
+            onClick={openCollectionModal}
+            className="rounded-2xl p-3.5 cursor-pointer active:scale-[0.98] transition-transform"
+            style={{ background: "var(--bg-card)", border: "1px solid var(--border-color)", boxShadow: "0 1px 3px rgba(0,0,0,0.04)" }}
+          >
+            <div className="w-9 h-9 rounded-xl flex items-center justify-center mb-2.5" style={{ background: "linear-gradient(135deg, #0891b2 0%, #06b6d4 100%)" }}>
+              <Banknote size={16} style={{ color: "white" }} strokeWidth={2} />
+            </div>
+            <p className="text-[9px] font-semibold uppercase tracking-wider mb-0.5" style={{ color: "var(--text-muted)" }}>মোট আদায়</p>
+            <p className="text-[18px] font-extrabold leading-tight" style={{ color: "var(--text-primary)" }}>৳{stats?.totalCollection || 0}</p>
+            <div className="flex items-center gap-1 mt-1.5">
+              <div className="w-1 h-1 rounded-full" style={{ background: "#0891b2" }} />
+              <p className="text-[8px] font-medium" style={{ color: "#0891b2" }}>বিস্তারিত দেখুন</p>
+            </div>
           </div>
-          <div className="h-[140px] sm:h-[180px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={chartData}>
-                <XAxis dataKey="date" tick={{ fontSize: 10, fill: "var(--text-muted)" }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fontSize: 10, fill: "var(--text-muted)" }} axisLine={false} tickLine={false} width={25} allowDecimals={false} />
-                <Tooltip contentStyle={{ background: "var(--bg-card)", border: "1px solid var(--border-color)", borderRadius: 8, fontSize: 12 }} />
-                <Bar dataKey="orders" fill="#66a80f" radius={[4, 4, 0, 0]} name="অর্ডার" />
-              </BarChart>
-            </ResponsiveContainer>
+
+          <div
+            className="rounded-2xl p-3.5"
+            style={{ background: "var(--bg-card)", border: "1px solid var(--border-color)", boxShadow: "0 1px 3px rgba(0,0,0,0.04)" }}
+          >
+            <div className="w-9 h-9 rounded-xl flex items-center justify-center mb-2.5" style={{ background: "linear-gradient(135deg, #dc2626 0%, #ef4444 100%)" }}>
+              <CreditCard size={16} style={{ color: "white" }} strokeWidth={2} />
+            </div>
+            <p className="text-[9px] font-semibold uppercase tracking-wider mb-0.5" style={{ color: "var(--text-muted)" }}>মোট বাকি</p>
+            <p className="text-[18px] font-extrabold leading-tight" style={{ color: "#dc2626" }}>৳{stats?.totalDue || 0}</p>
           </div>
+        </div>
+
+        {/* Small counts row */}
+        <div className="grid grid-cols-3 gap-2">
+          {[
+            { label: "মোট অর্ডার", value: stats?.totalOrders || 0, icon: ShoppingCart, gradient: "linear-gradient(135deg, #66a80f 0%, #84cc16 100%)" },
+            { label: "কাস্টমার", value: stats?.totalCustomers || 0, icon: Users, gradient: "linear-gradient(135deg, #2563eb 0%, #3b82f6 100%)" },
+            { label: "প্রডাক্ট", value: stats?.totalProducts || 0, icon: Package, gradient: "linear-gradient(135deg, #7c3aed 0%, #8b5cf6 100%)" },
+          ].map((item) => {
+            const Icon = item.icon;
+            return (
+              <div
+                key={item.label}
+                className="rounded-2xl p-3 text-center"
+                style={{ background: "var(--bg-card)", border: "1px solid var(--border-color)", boxShadow: "0 1px 3px rgba(0,0,0,0.04)" }}
+              >
+                <div className="w-8 h-8 rounded-lg flex items-center justify-center mx-auto mb-2" style={{ background: item.gradient }}>
+                  <Icon size={14} style={{ color: "white" }} strokeWidth={2} />
+                </div>
+                <p className="text-[16px] font-extrabold leading-tight" style={{ color: "var(--text-primary)" }}>{item.value}</p>
+                <p className="text-[8px] font-semibold mt-0.5 uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>{item.label}</p>
+              </div>
+            );
+          })}
         </div>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-3 mb-5">
-        {[
-          { label: "মোট অর্ডার", value: stats?.totalOrders || 0, icon: ShoppingCart, color: "#66a80f" },
-          { label: "মোট কাস্টমার", value: stats?.totalCustomers || 0, icon: Users, color: "#2563eb" },
-          { label: "মোট প্রডাক্ট", value: stats?.totalProducts || 0, icon: Package, color: "#7c3aed" },
-          { label: "মোট বিক্রি", value: `৳${stats?.totalRevenue || 0}`, icon: TrendingUp, color: "#059669", onClick: openSalesModal },
-          { label: "মোট আদায়", value: `৳${stats?.totalCollection || 0}`, icon: Banknote, color: "#0891b2", onClick: openCollectionModal },
-          { label: "মোট বাকি", value: `৳${stats?.totalDue || 0}`, icon: CreditCard, color: "#dc2626" },
-        ].map((card) => {
-          const Icon = card.icon;
-          return (
-            <div
-              key={card.label}
-              onClick={card.onClick}
-              className={`rounded-xl p-2.5 sm:p-3.5 ${card.onClick ? "cursor-pointer hover:opacity-80 transition-opacity" : ""}`}
-              style={{ background: "var(--bg-card)", border: "1px solid var(--border-color)" }}
-            >
-              <div className="flex items-center gap-2 sm:gap-2.5">
-                <Icon size={14} className="sm:w-4 sm:h-4" style={{ color: card.color }} strokeWidth={1.5} />
-                <div>
-                  <p className="text-[14px] sm:text-[17px] font-extrabold leading-tight" style={{ color: "var(--text-primary)" }}>{card.value}</p>
-                  <p className="text-[9px] sm:text-[10px] font-medium" style={{ color: "var(--text-muted)" }}>{card.label}</p>
-                </div>
-              </div>
-            </div>
-          );
-        })}
+      {/* Revenue Chart */}
+      <div className="rounded-2xl p-4" style={{ background: "var(--bg-card)", border: "1px solid var(--border-color)", boxShadow: "0 1px 3px rgba(0,0,0,0.04)" }}>
+        <div className="flex items-center justify-between mb-3">
+          <div>
+            <h3 className="text-[12px] font-bold" style={{ color: "var(--text-primary)" }}>৭ দিনের বিক্রি</h3>
+            <p className="text-[9px] mt-0.5" style={{ color: "var(--text-muted)" }}>সাপ্তাহিক ট্রেন্ড</p>
+          </div>
+          <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "rgba(102,168,15,0.1)" }}>
+            <TrendingUp size={13} style={{ color: "#66a80f" }} />
+          </div>
+        </div>
+        <div className="h-[150px]">
+          <ResponsiveContainer width="100%" height="100%">
+            <AreaChart data={chartData}>
+              <defs>
+                <linearGradient id="revGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#66a80f" stopOpacity={0.25} />
+                  <stop offset="100%" stopColor="#66a80f" stopOpacity={0.02} />
+                </linearGradient>
+              </defs>
+              <XAxis dataKey="date" tick={{ fontSize: 9, fill: "var(--text-muted)" }} axisLine={false} tickLine={false} />
+              <YAxis tick={{ fontSize: 9, fill: "var(--text-muted)" }} axisLine={false} tickLine={false} width={35} />
+              <Tooltip contentStyle={{ background: "var(--bg-card)", border: "1px solid var(--border-color)", borderRadius: 12, fontSize: 11, boxShadow: "0 4px 12px rgba(0,0,0,0.1)" }} />
+              <Area type="monotone" dataKey="revenue" stroke="#66a80f" strokeWidth={2.5} fill="url(#revGrad)" name="বিক্রি" dot={{ r: 3, fill: "#66a80f", strokeWidth: 0 }} activeDot={{ r: 5, fill: "#66a80f", strokeWidth: 2, stroke: "white" }} />
+            </AreaChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+
+      {/* Orders Chart */}
+      <div className="rounded-2xl p-4" style={{ background: "var(--bg-card)", border: "1px solid var(--border-color)", boxShadow: "0 1px 3px rgba(0,0,0,0.04)" }}>
+        <div className="flex items-center justify-between mb-3">
+          <div>
+            <h3 className="text-[12px] font-bold" style={{ color: "var(--text-primary)" }}>৭ দিনের অর্ডার</h3>
+            <p className="text-[9px] mt-0.5" style={{ color: "var(--text-muted)" }}>দৈনিক অর্ডার সংখ্যা</p>
+          </div>
+          <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "rgba(102,168,15,0.1)" }}>
+            <ShoppingCart size={13} style={{ color: "#66a80f" }} />
+          </div>
+        </div>
+        <div className="h-[140px]">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={chartData}>
+              <XAxis dataKey="date" tick={{ fontSize: 9, fill: "var(--text-muted)" }} axisLine={false} tickLine={false} />
+              <YAxis tick={{ fontSize: 9, fill: "var(--text-muted)" }} axisLine={false} tickLine={false} width={20} allowDecimals={false} />
+              <Tooltip contentStyle={{ background: "var(--bg-card)", border: "1px solid var(--border-color)", borderRadius: 12, fontSize: 11, boxShadow: "0 4px 12px rgba(0,0,0,0.1)" }} />
+              <Bar dataKey="orders" fill="#66a80f" radius={[6, 6, 0, 0]} name="অর্ডার" barSize={20} />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
       </div>
 
       {/* Recent Activity */}
-      <div className="rounded-xl overflow-hidden" style={{ background: "var(--bg-card)", border: "1px solid var(--border-color)" }}>
-        <div className="flex items-center justify-between px-5 py-3.5" style={{ borderBottom: "1px solid var(--border-color)" }}>
+      <div className="rounded-2xl overflow-hidden" style={{ background: "var(--bg-card)", border: "1px solid var(--border-color)", boxShadow: "0 1px 3px rgba(0,0,0,0.04)" }}>
+        <div className="flex items-center justify-between px-4 py-3" style={{ borderBottom: "1px solid var(--border-color)" }}>
           <div className="flex items-center gap-2">
-            <Clock size={14} style={{ color: "var(--text-muted)" }} strokeWidth={1.5} />
-            <h3 className="text-[13px] font-bold" style={{ color: "var(--text-primary)" }}>সাম্প্রতিক কার্যক্রম</h3>
+            <div className="w-6 h-6 rounded-md flex items-center justify-center" style={{ background: "rgba(120,113,108,0.1)" }}>
+              <Clock size={12} style={{ color: "var(--text-muted)" }} strokeWidth={2} />
+            </div>
+            <h3 className="text-[12px] font-bold" style={{ color: "var(--text-primary)" }}>সাম্প্রতিক কার্যক্রম</h3>
           </div>
-          <span className="text-[10px] font-medium" style={{ color: "var(--text-muted)" }}>{activity.length} টি</span>
+          <span className="text-[9px] font-semibold px-2 py-0.5 rounded-full" style={{ color: "var(--text-muted)", background: "var(--bg-input)" }}>{activity.length} টি</span>
         </div>
 
         {activity.length === 0 ? (
-          <div className="px-5 py-16 text-center">
-            <ShoppingCart size={32} className="mx-auto mb-2" style={{ color: "var(--text-muted)" }} strokeWidth={1} />
-            <p className="text-[12px]" style={{ color: "var(--text-muted)" }}>কোনো অর্ডার নেই</p>
+          <div className="px-4 py-14 text-center">
+            <div className="w-12 h-12 rounded-2xl flex items-center justify-center mx-auto mb-3" style={{ background: "var(--bg-input)" }}>
+              <ShoppingCart size={20} style={{ color: "var(--text-muted)" }} strokeWidth={1.5} />
+            </div>
+            <p className="text-[11px] font-medium" style={{ color: "var(--text-muted)" }}>কোনো কার্যক্রম নেই</p>
           </div>
         ) : (
           <div>
             {activity.map((item, idx) => {
               const isPayment = item.type === "payment";
               const ds = item.deliveryStatus || "pending";
+              const iconConfig = isPayment
+                ? { bg: "linear-gradient(135deg, #0891b2 0%, #06b6d4 100%)", icon: <Banknote size={13} style={{ color: "white" }} /> }
+                : ds === "delivered"
+                ? { bg: "linear-gradient(135deg, #16a34a 0%, #22c55e 100%)", icon: <CheckCircle2 size={13} style={{ color: "white" }} /> }
+                : ds === "not_delivered"
+                ? { bg: "linear-gradient(135deg, #dc2626 0%, #ef4444 100%)", icon: <AlertCircle size={13} style={{ color: "white" }} /> }
+                : { bg: "linear-gradient(135deg, #d97706 0%, #f59e0b 100%)", icon: <Truck size={13} style={{ color: "white" }} /> };
               return (
-                <div key={item._id} className="flex items-center gap-3 px-5 py-3" style={{ borderTop: idx > 0 ? "1px solid var(--border-color)" : "none" }}>
-                  <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0"
-                    style={{
-                      background: isPayment ? "#f0fdf4" :
-                        ds === "delivered" ? "#f0fdf4" :
-                        ds === "not_delivered" ? "#fef2f2" :
-                        ds === "payment" ? "#e0f2fe" :
-                        "#fffbeb"
-                    }}>
-                    {isPayment ? <Banknote size={14} style={{ color: "#0891b2" }} /> :
-                     ds === "delivered" ? <CheckCircle2 size={14} style={{ color: "#16a34a" }} /> :
-                     ds === "not_delivered" ? <AlertCircle size={14} style={{ color: "#dc2626" }} /> :
-                     ds === "payment" ? <Banknote size={14} style={{ color: "#0891b2" }} /> :
-                     <Truck size={14} style={{ color: "#d97706" }} />}
+                <div key={item._id} className="flex items-center gap-3 px-4 py-3" style={{ borderTop: idx > 0 ? "1px solid var(--border-color)" : "none" }}>
+                  <div className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0" style={{ background: iconConfig.bg }}>
+                    {iconConfig.icon}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-[12px] font-bold truncate" style={{ color: "var(--text-primary)" }}>{item.customerName}</p>
-                    <p className="text-[10px]" style={{ color: "var(--text-muted)" }}>
+                    <p className="text-[11px] font-bold truncate" style={{ color: "var(--text-primary)" }}>{item.customerName}</p>
+                    <p className="text-[9px] mt-0.5" style={{ color: "var(--text-muted)" }}>
                       {isPayment ? "বাকি আদায়" : `${item.itemCount} পণ্য`} · {new Date(item.createdAt).toLocaleTimeString("bn-BD", { hour: "2-digit", minute: "2-digit" })}
                     </p>
                   </div>
                   <div className="text-right shrink-0">
-                    <p className="text-[13px] font-bold" style={{ color: isPayment ? "#0891b2" : "var(--text-primary)" }}>
+                    <p className="text-[13px] font-extrabold" style={{ color: isPayment ? "#0891b2" : "var(--text-primary)" }}>
                       {isPayment ? "+" : ""}৳{item.totalAmount}
                     </p>
                     {!isPayment && item.dueAmount > 0 && (
-                      <p className="text-[9px] font-semibold" style={{ color: "#dc2626" }}>বাকি ৳{item.dueAmount}</p>
+                      <p className="text-[8px] font-bold mt-0.5 px-1.5 py-0.5 rounded-full inline-block" style={{ color: "#dc2626", background: "rgba(220,38,38,0.08)" }}>বাকি ৳{item.dueAmount}</p>
                     )}
                   </div>
                 </div>
@@ -408,40 +477,33 @@ export default function DashboardPage() {
       <AnimatedModal open={showSalesModal} onClose={() => setShowSalesModal(false)} title="বিক্রির বিস্তারিত" maxWidth="max-w-md">
         <div className="space-y-4">
           {/* Period Stats Grid */}
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-2.5">
             {loadingPeriods ? (
               <div className="col-span-2 py-8 text-center">
-                <div className="animate-spin w-6 h-6 border-2 border-t-transparent rounded-full mx-auto" style={{ borderColor: "#66a80f", borderTopColor: "transparent" }} />
+                <div className="animate-spin w-6 h-6 border-[2.5px] border-t-transparent rounded-full mx-auto" style={{ borderColor: "#66a80f", borderTopColor: "transparent" }} />
               </div>
             ) : (
               <>
-                <div className="rounded-xl p-3" style={{ background: "#f0fdf4", border: "1px solid #bbf7d0" }}>
-                  <p className="text-[10px] font-medium" style={{ color: "#16a34a" }}>আজকের বিক্রি</p>
-                  <p className="text-[16px] font-bold" style={{ color: "#166534" }}>৳{periodStats.today?.revenue || 0}</p>
-                  <p className="text-[10px]" style={{ color: "#22c55e" }}>{periodStats.today?.count || 0} অর্ডার</p>
-                </div>
-                <div className="rounded-xl p-3" style={{ background: "#eff6ff", border: "1px solid #bfdbfe" }}>
-                  <p className="text-[10px] font-medium" style={{ color: "#2563eb" }}>গতকালের বিক্রি</p>
-                  <p className="text-[16px] font-bold" style={{ color: "#1e40af" }}>৳{periodStats.yesterday?.revenue || 0}</p>
-                  <p className="text-[10px]" style={{ color: "#3b82f6" }}>{periodStats.yesterday?.count || 0} অর্ডার</p>
-                </div>
-                <div className="rounded-xl p-3" style={{ background: "#fffbeb", border: "1px solid #fde68a" }}>
-                  <p className="text-[10px] font-medium" style={{ color: "#d97706" }}>গত ৭ দিনে</p>
-                  <p className="text-[16px] font-bold" style={{ color: "#92400e" }}>৳{periodStats.last7?.revenue || 0}</p>
-                  <p className="text-[10px]" style={{ color: "#f59e0b" }}>{periodStats.last7?.count || 0} অর্ডার</p>
-                </div>
-                <div className="rounded-xl p-3" style={{ background: "#f3f4f6", border: "1px solid #d1d5db" }}>
-                  <p className="text-[10px] font-medium" style={{ color: "#6b7280" }}>গত ৩০ দিনে</p>
-                  <p className="text-[16px] font-bold" style={{ color: "#374151" }}>৳{periodStats.last30?.revenue || 0}</p>
-                  <p className="text-[10px]" style={{ color: "#9ca3af" }}>{periodStats.last30?.count || 0} অর্ডার</p>
-                </div>
+                {[
+                  { label: "আজকের বিক্রি", data: periodStats.today, gradient: "linear-gradient(135deg, #059669 0%, #10b981 100%)" },
+                  { label: "গতকালের বিক্রি", data: periodStats.yesterday, gradient: "linear-gradient(135deg, #2563eb 0%, #3b82f6 100%)" },
+                  { label: "গত ৭ দিনে", data: periodStats.last7, gradient: "linear-gradient(135deg, #d97706 0%, #f59e0b 100%)" },
+                  { label: "গত ৩০ দিনে", data: periodStats.last30, gradient: "linear-gradient(135deg, #7c3aed 0%, #8b5cf6 100%)" },
+                ].map((item) => (
+                  <div key={item.label} className="rounded-2xl p-3.5 relative overflow-hidden" style={{ background: item.gradient }}>
+                    <div className="absolute top-0 right-0 w-16 h-16 rounded-full" style={{ background: "rgba(255,255,255,0.1)", transform: "translate(30%, -30%)" }} />
+                    <p className="text-[9px] font-semibold uppercase tracking-wider" style={{ color: "rgba(255,255,255,0.7)" }}>{item.label}</p>
+                    <p className="text-[18px] font-extrabold mt-1 leading-tight" style={{ color: "white" }}>৳{item.data?.revenue || 0}</p>
+                    <p className="text-[9px] font-medium mt-1" style={{ color: "rgba(255,255,255,0.6)" }}>{item.data?.count || 0} অর্ডার</p>
+                  </div>
+                ))}
               </>
             )}
           </div>
 
           {/* Date Picker Section */}
-          <div className="rounded-xl p-4" style={{ background: "var(--bg-input)", border: "1px solid var(--border-color)" }}>
-            <label className="block text-[11px] font-medium mb-2" style={{ color: "var(--text-secondary)" }}>
+          <div className="rounded-2xl p-4" style={{ background: "var(--bg-input)", border: "1px solid var(--border-color)" }}>
+            <label className="block text-[10px] font-semibold mb-2.5 uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>
               তারিখ সিলেক্ট করুন
             </label>
             <div className="flex items-center gap-2 mb-3">
@@ -449,10 +511,9 @@ export default function DashboardPage() {
                 onClick={() => {
                   const d = new Date(selectedDate);
                   d.setDate(d.getDate() - 1);
-                  const newDate = d.toISOString().split("T")[0];
-                  handleDateChange(newDate);
+                  handleDateChange(d.toISOString().split("T")[0]);
                 }}
-                className="p-2 rounded-lg cursor-pointer"
+                className="w-10 h-10 rounded-xl flex items-center justify-center cursor-pointer active:scale-95 transition-transform"
                 style={{ background: "var(--bg-card)", border: "1px solid var(--border-color)" }}
               >
                 <ChevronLeft size={16} style={{ color: "var(--text-muted)" }} />
@@ -461,17 +522,16 @@ export default function DashboardPage() {
                 type="date"
                 value={selectedDate}
                 onChange={(e) => handleDateChange(e.target.value)}
-                className="flex-1 h-10 px-3 rounded-lg text-sm outline-none"
+                className="flex-1 h-10 px-3 rounded-xl text-[12px] font-medium outline-none"
                 style={{ background: "var(--bg-card)", color: "var(--text-primary)", border: "1px solid var(--border-color)" }}
               />
               <button
                 onClick={() => {
                   const d = new Date(selectedDate);
                   d.setDate(d.getDate() + 1);
-                  const newDate = d.toISOString().split("T")[0];
-                  handleDateChange(newDate);
+                  handleDateChange(d.toISOString().split("T")[0]);
                 }}
-                className="p-2 rounded-lg cursor-pointer"
+                className="w-10 h-10 rounded-xl flex items-center justify-center cursor-pointer active:scale-95 transition-transform"
                 style={{ background: "var(--bg-card)", border: "1px solid var(--border-color)" }}
               >
                 <ChevronRight size={16} style={{ color: "var(--text-muted)" }} />
@@ -480,28 +540,28 @@ export default function DashboardPage() {
 
             {/* Selected Date Stats */}
             {dateStats && (
-              <div className="rounded-lg p-3" style={{ background: "var(--bg-card)", border: "1px solid var(--border-color)" }}>
-                <p className="text-[11px] font-medium mb-2" style={{ color: "var(--text-secondary)" }}>
+              <div className="rounded-xl p-3.5" style={{ background: "var(--bg-card)", border: "1px solid var(--border-color)" }}>
+                <p className="text-[10px] font-semibold mb-2.5" style={{ color: "var(--text-secondary)" }}>
                   {new Date(selectedDate).toLocaleDateString("bn-BD", { year: "numeric", month: "long", day: "numeric" })}
                 </p>
                 <div className="grid grid-cols-3 gap-2 text-center">
                   <div>
-                    <p className="text-[10px]" style={{ color: "var(--text-muted)" }}>মোট বিক্রি</p>
-                    <p className="text-[14px] font-bold" style={{ color: "#66a80f" }}>৳{dateStats.revenue}</p>
+                    <p className="text-[8px] font-semibold uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>বিক্রি</p>
+                    <p className="text-[15px] font-extrabold mt-0.5" style={{ color: "#66a80f" }}>৳{dateStats.revenue}</p>
                   </div>
                   <div>
-                    <p className="text-[10px]" style={{ color: "var(--text-muted)" }}>অর্ডার</p>
-                    <p className="text-[14px] font-bold" style={{ color: "var(--text-primary)" }}>{dateStats.count}</p>
+                    <p className="text-[8px] font-semibold uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>অর্ডার</p>
+                    <p className="text-[15px] font-extrabold mt-0.5" style={{ color: "var(--text-primary)" }}>{dateStats.count}</p>
                   </div>
                   <div>
-                    <p className="text-[10px]" style={{ color: "var(--text-muted)" }}>পরিশোধ</p>
-                    <p className="text-[14px] font-bold" style={{ color: "#16a34a" }}>৳{dateStats.paid}</p>
+                    <p className="text-[8px] font-semibold uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>পরিশোধ</p>
+                    <p className="text-[15px] font-extrabold mt-0.5" style={{ color: "#16a34a" }}>৳{dateStats.paid}</p>
                   </div>
                 </div>
                 {dateStats.due > 0 && (
-                  <div className="mt-2 pt-2 text-center" style={{ borderTop: "1px solid var(--border-color)" }}>
-                    <p className="text-[10px]" style={{ color: "var(--text-muted)" }}>বাকি</p>
-                    <p className="text-[14px] font-bold" style={{ color: "#dc2626" }}>৳{dateStats.due}</p>
+                  <div className="mt-2.5 pt-2.5 text-center" style={{ borderTop: "1px solid var(--border-color)" }}>
+                    <p className="text-[8px] font-semibold uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>বাকি</p>
+                    <p className="text-[15px] font-extrabold mt-0.5" style={{ color: "#dc2626" }}>৳{dateStats.due}</p>
                   </div>
                 )}
               </div>
@@ -521,7 +581,7 @@ export default function DashboardPage() {
                 d.setDate(d.getDate() - 1);
                 handleCollectionDateChange(d.toISOString().split("T")[0]);
               }}
-              className="p-2 rounded-lg cursor-pointer"
+              className="w-10 h-10 rounded-xl flex items-center justify-center cursor-pointer active:scale-95 transition-transform"
               style={{ background: "var(--bg-input)", border: "1px solid var(--border-color)" }}
             >
               <ChevronLeft size={16} style={{ color: "var(--text-muted)" }} />
@@ -530,7 +590,7 @@ export default function DashboardPage() {
               type="date"
               value={collectionDate}
               onChange={(e) => handleCollectionDateChange(e.target.value)}
-              className="flex-1 h-10 px-3 rounded-lg text-sm outline-none"
+              className="flex-1 h-10 px-3 rounded-xl text-[12px] font-medium outline-none"
               style={{ background: "var(--bg-input)", color: "var(--text-primary)", border: "1px solid var(--border-color)" }}
             />
             <button
@@ -539,7 +599,7 @@ export default function DashboardPage() {
                 d.setDate(d.getDate() + 1);
                 handleCollectionDateChange(d.toISOString().split("T")[0]);
               }}
-              className="p-2 rounded-lg cursor-pointer"
+              className="w-10 h-10 rounded-xl flex items-center justify-center cursor-pointer active:scale-95 transition-transform"
               style={{ background: "var(--bg-input)", border: "1px solid var(--border-color)" }}
             >
               <ChevronRight size={16} style={{ color: "var(--text-muted)" }} />
@@ -548,60 +608,76 @@ export default function DashboardPage() {
 
           {loadingCollection ? (
             <div className="py-8 text-center">
-              <div className="animate-spin w-6 h-6 border-2 border-t-transparent rounded-full mx-auto" style={{ borderColor: "#0891b2", borderTopColor: "transparent" }} />
+              <div className="animate-spin w-6 h-6 border-[2.5px] border-t-transparent rounded-full mx-auto" style={{ borderColor: "#0891b2", borderTopColor: "transparent" }} />
             </div>
           ) : collectionData ? (
             <>
-              {/* Collection Summary Cards */}
-              <div className="grid grid-cols-2 gap-3">
-                <div className="rounded-xl p-3" style={{ background: "#e0f2fe", border: "1px solid #bae6fd" }}>
-                  <p className="text-[10px] font-medium" style={{ color: "#0891b2" }}>বাকি আদায়</p>
-                  <p className="text-[16px] font-bold" style={{ color: "#0c4a6e" }}>৳{collectionData.dueCollection}</p>
-                  <p className="text-[10px]" style={{ color: "#06b6d4" }}>{collectionData.dateCollections.length} টি</p>
-                </div>
-                <div className="rounded-xl p-3" style={{ background: "#f0fdf4", border: "1px solid #bbf7d0" }}>
-                  <p className="text-[10px] font-medium" style={{ color: "#16a34a" }}>অর্ডার থেকে আদায়</p>
-                  <p className="text-[16px] font-bold" style={{ color: "#166534" }}>৳{collectionData.orderPaid}</p>
-                </div>
+              {/* Total Collection Hero */}
+              <div className="rounded-2xl p-5 text-center relative overflow-hidden" style={{ background: "linear-gradient(135deg, #0891b2 0%, #06b6d4 50%, #22d3ee 100%)" }}>
+                <div className="absolute top-0 right-0 w-24 h-24 rounded-full" style={{ background: "rgba(255,255,255,0.1)", transform: "translate(30%, -30%)" }} />
+                <p className="text-[9px] font-semibold uppercase tracking-widest" style={{ color: "rgba(255,255,255,0.6)" }}>মোট আদায়</p>
+                <p className="text-[30px] font-extrabold leading-tight mt-1" style={{ color: "white" }}>৳{collectionData.total}</p>
               </div>
 
-              {/* Total Collection */}
-              <div className="rounded-xl p-4 text-center" style={{ background: "linear-gradient(135deg, #0891b2 0%, #06b6d4 100%)" }}>
-                <p className="text-[11px] font-medium" style={{ color: "rgba(255,255,255,0.8)" }}>মোট আদায়</p>
-                <p className="text-[24px] font-bold" style={{ color: "white" }}>৳{collectionData.total}</p>
+              {/* Collection Summary Cards */}
+              <div className="grid grid-cols-2 gap-2.5">
+                <div className="rounded-2xl p-3.5" style={{ background: "var(--bg-card)", border: "1px solid var(--border-color)" }}>
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className="w-6 h-6 rounded-md flex items-center justify-center" style={{ background: "rgba(8,145,178,0.1)" }}>
+                      <Banknote size={12} style={{ color: "#0891b2" }} />
+                    </div>
+                    <p className="text-[9px] font-semibold" style={{ color: "#0891b2" }}>বাকি আদায়</p>
+                  </div>
+                  <p className="text-[17px] font-extrabold" style={{ color: "var(--text-primary)" }}>৳{collectionData.dueCollection}</p>
+                  <p className="text-[9px] font-medium mt-0.5" style={{ color: "var(--text-muted)" }}>{collectionData.dateCollections.length} টি</p>
+                </div>
+                <div className="rounded-2xl p-3.5" style={{ background: "var(--bg-card)", border: "1px solid var(--border-color)" }}>
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className="w-6 h-6 rounded-md flex items-center justify-center" style={{ background: "rgba(22,163,74,0.1)" }}>
+                      <ShoppingCart size={12} style={{ color: "#16a34a" }} />
+                    </div>
+                    <p className="text-[9px] font-semibold" style={{ color: "#16a34a" }}>অর্ডার থেকে</p>
+                  </div>
+                  <p className="text-[17px] font-extrabold" style={{ color: "var(--text-primary)" }}>৳{collectionData.orderPaid}</p>
+                </div>
               </div>
 
               {/* Date Collections with Delete */}
               {collectionData.dateCollections.length > 0 && (
                 <div>
-                  <h4 className="text-[11px] font-medium mb-2" style={{ color: "var(--text-secondary)" }}>
+                  <h4 className="text-[10px] font-semibold mb-2 uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>
                     {new Date(collectionDate).toLocaleDateString("bn-BD", { year: "numeric", month: "long", day: "numeric" })} - বাকি আদায়
                   </h4>
-                  <div className="rounded-xl overflow-hidden" style={{ border: "1px solid var(--border-color)" }}>
+                  <div className="rounded-2xl overflow-hidden" style={{ border: "1px solid var(--border-color)" }}>
                     {collectionData.dateCollections.map((c: { _id: string; customerName: string; amount: number; date: string }, idx: number) => (
                       <div
                         key={c._id}
-                        className="flex items-center justify-between px-3 py-2.5"
+                        className="flex items-center justify-between px-3.5 py-3"
                         style={{ borderTop: idx > 0 ? "1px solid var(--border-color)" : "none", background: "var(--bg-card)" }}
                       >
-                        <div className="flex-1 min-w-0">
-                          <p className="text-[12px] font-medium truncate" style={{ color: "var(--text-primary)" }}>{c.customerName}</p>
-                          <p className="text-[10px]" style={{ color: "var(--text-muted)" }}>
-                            {new Date(c.date).toLocaleTimeString("bn-BD", { hour: "2-digit", minute: "2-digit" })}
-                          </p>
+                        <div className="flex items-center gap-2.5 flex-1 min-w-0">
+                          <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0" style={{ background: "rgba(8,145,178,0.1)" }}>
+                            <Banknote size={12} style={{ color: "#0891b2" }} />
+                          </div>
+                          <div className="min-w-0">
+                            <p className="text-[11px] font-bold truncate" style={{ color: "var(--text-primary)" }}>{c.customerName}</p>
+                            <p className="text-[9px]" style={{ color: "var(--text-muted)" }}>
+                              {new Date(c.date).toLocaleTimeString("bn-BD", { hour: "2-digit", minute: "2-digit" })}
+                            </p>
+                          </div>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <p className="text-[13px] font-bold" style={{ color: "#0891b2" }}>+৳{c.amount}</p>
+                        <div className="flex items-center gap-2 shrink-0">
+                          <p className="text-[13px] font-extrabold" style={{ color: "#0891b2" }}>+৳{c.amount}</p>
                           {collectionData.isAdmin && (
                             <button
                               onClick={() => deletePayment(c._id)}
                               disabled={deletingPayment === c._id}
-                              className="p-1.5 rounded-lg cursor-pointer disabled:opacity-50"
-                              style={{ background: "#fef2f2", color: "#dc2626" }}
+                              className="w-7 h-7 rounded-lg flex items-center justify-center cursor-pointer disabled:opacity-50 active:scale-90 transition-transform"
+                              style={{ background: "rgba(220,38,38,0.08)", color: "#dc2626" }}
                               title="ডিলিট করুন"
                             >
                               {deletingPayment === c._id ? (
-                                <div className="animate-spin w-3 h-3 border-2 border-t-transparent rounded-full" style={{ borderColor: "#dc2626", borderTopColor: "transparent" }} />
+                                <div className="animate-spin w-3 h-3 border-[1.5px] border-t-transparent rounded-full" style={{ borderColor: "#dc2626", borderTopColor: "transparent" }} />
                               ) : (
                                 <Trash2 size={12} />
                               )}
@@ -614,14 +690,17 @@ export default function DashboardPage() {
                 </div>
               )}
               {collectionData.dateCollections.length === 0 && (
-                <div className="py-8 text-center rounded-xl" style={{ background: "var(--bg-input)", border: "1px solid var(--border-color)" }}>
-                  <p className="text-[12px]" style={{ color: "var(--text-muted)" }}>এই তারিখে কোনো আদায় নেই</p>
+                <div className="py-10 text-center rounded-2xl" style={{ background: "var(--bg-input)", border: "1px solid var(--border-color)" }}>
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center mx-auto mb-2" style={{ background: "var(--bg-card)" }}>
+                    <Banknote size={16} style={{ color: "var(--text-muted)" }} />
+                  </div>
+                  <p className="text-[11px] font-medium" style={{ color: "var(--text-muted)" }}>এই তারিখে কোনো আদায় নেই</p>
                 </div>
               )}
             </>
           ) : (
-            <div className="py-8 text-center">
-              <p className="text-[12px]" style={{ color: "var(--text-muted)" }}>কোনো তথ্য পাওয়া যায়নি</p>
+            <div className="py-10 text-center">
+              <p className="text-[11px] font-medium" style={{ color: "var(--text-muted)" }}>কোনো তথ্য পাওয়া যায়নি</p>
             </div>
           )}
         </div>
