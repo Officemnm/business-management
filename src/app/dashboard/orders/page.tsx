@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Plus, Package, Tag, X, ShoppingBag, ArrowLeft, Check, Eye, Pencil, Calendar, BarChart3, Trash2, Clock, User, Hash, Truck, Ban, CheckCircle2, RotateCcw, MapPin } from "lucide-react";
+import { Plus, Package, Tag, X, ShoppingBag, ArrowLeft, Check, Eye, Pencil, Calendar, BarChart3, Trash2, Clock, User, Hash, Truck, Ban, CheckCircle2, RotateCcw, MapPin, CreditCard } from "lucide-react";
 import Image from "next/image";
 import toast from "react-hot-toast";
 import AnimatedModal from "@/components/ui/AnimatedModal";
@@ -725,13 +725,15 @@ export default function OrdersPage() {
   const renderSummaryModal = () => {
     if (!showSummary) return null;
 
-    // Aggregate products across all currently displayed orders
+    // Only aggregate PENDING orders (as requested)
+    const pendingOrdersOnly = orders.filter((o) => (o.deliveryStatus || "pending") === "pending");
+
     const productMap: Record<string, { name: string; qty: number; total: number }> = {};
     let grandTotal = 0;
     let grandPaid = 0;
     let grandDue = 0;
 
-    orders.forEach((o) => {
+    pendingOrdersOnly.forEach((o) => {
       grandTotal += o.totalAmount;
       grandPaid += o.paidAmount;
       grandDue += o.dueAmount;
@@ -751,52 +753,64 @@ export default function OrdersPage() {
       : "সকল তারিখ";
 
     return (
-      <AnimatedModal open={showSummary} onClose={() => setShowSummary(false)} title="দৈনিক সামারি" maxWidth="max-w-lg">
-        <div className="flex items-center justify-between mb-4">
-          <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>{dateLabel} · {orders.length} অর্ডার</p>
+      <AnimatedModal open={showSummary} onClose={() => setShowSummary(false)} title="পেন্ডিং অর্ডার সামারি" maxWidth="max-w-lg">
+        {/* Header */}
+        <div className="flex items-center gap-2 mb-4">
+          <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: "#fffbeb" }}>
+            <Truck size={15} strokeWidth={2.2} style={{ color: "#d97706" }} />
+          </div>
+          <div>
+            <p className="text-[13px] font-semibold" style={{ color: "#111827" }}>পেন্ডিং অর্ডারের সামারি</p>
+            <p className="text-[11px] font-medium" style={{ color: "#6b7280" }}>{dateLabel} · {pendingOrdersOnly.length} টি অর্ডার</p>
+          </div>
         </div>
 
         {/* Grand totals */}
         <div className="grid grid-cols-3 gap-3 mb-5">
-          <div className="p-3 rounded-xl text-center" style={{ background: "var(--bg-input)" }}>
-            <p className="text-[10px] font-medium mb-1" style={{ color: "var(--text-muted)" }}>মোট বিক্রি</p>
-            <p className="text-[16px] font-bold" style={{ color: "#66a80f" }}>৳{grandTotal}</p>
+          <div className="p-4 rounded-xl" style={{ background: "#ffffff", border: "1px solid #e5e7eb" }}>
+            <p className="text-[10px] font-semibold uppercase tracking-wider mb-1" style={{ color: "#9ca3af" }}>মোট বিক্রি</p>
+            <p className="text-[18px] font-bold" style={{ color: "#111827", letterSpacing: "-0.02em", fontVariantNumeric: "tabular-nums" }}>৳{grandTotal.toLocaleString("en-US")}</p>
           </div>
-          <div className="p-3 rounded-xl text-center" style={{ background: "var(--bg-input)" }}>
-            <p className="text-[10px] font-medium mb-1" style={{ color: "var(--text-muted)" }}>পরিশোধ</p>
-            <p className="text-[16px] font-bold" style={{ color: "#16a34a" }}>৳{grandPaid}</p>
+          <div className="p-4 rounded-xl" style={{ background: "#ffffff", border: "1px solid #e5e7eb" }}>
+            <p className="text-[10px] font-semibold uppercase tracking-wider mb-1" style={{ color: "#9ca3af" }}>পরিশোধ</p>
+            <p className="text-[18px] font-bold" style={{ color: "#16a34a", letterSpacing: "-0.02em", fontVariantNumeric: "tabular-nums" }}>৳{grandPaid.toLocaleString("en-US")}</p>
           </div>
-          <div className="p-3 rounded-xl text-center" style={{ background: grandDue > 0 ? "#fef2f2" : "var(--bg-input)" }}>
-            <p className="text-[10px] font-medium mb-1" style={{ color: "var(--text-muted)" }}>বাকি</p>
-            <p className="text-[16px] font-bold" style={{ color: grandDue > 0 ? "#dc2626" : "var(--text-primary)" }}>৳{grandDue}</p>
+          <div className="p-4 rounded-xl" style={{ background: grandDue > 0 ? "#fef2f2" : "#ffffff", border: grandDue > 0 ? "1px solid #fecaca" : "1px solid #e5e7eb" }}>
+            <p className="text-[10px] font-semibold uppercase tracking-wider mb-1" style={{ color: "#9ca3af" }}>বাকি</p>
+            <p className="text-[18px] font-bold" style={{ color: grandDue > 0 ? "#dc2626" : "#111827", letterSpacing: "-0.02em", fontVariantNumeric: "tabular-nums" }}>৳{grandDue.toLocaleString("en-US")}</p>
           </div>
         </div>
 
         {/* Product breakdown */}
-        <h4 className="text-[12px] font-semibold mb-2" style={{ color: "var(--text-secondary)" }}>পণ্য ভিত্তিক বিবরণ</h4>
-        <div className="rounded-xl overflow-hidden" style={{ border: "1px solid var(--border-color)" }}>
-          <div className="grid grid-cols-12 px-3 py-2 text-[11px] font-semibold" style={{ background: "var(--bg-input)", color: "var(--text-muted)" }}>
+        <h4 className="text-[11px] font-semibold uppercase tracking-wider mb-2" style={{ color: "#6b7280" }}>পণ্য ভিত্তিক বিবরণ</h4>
+        <div className="rounded-xl overflow-hidden" style={{ background: "#ffffff", border: "1px solid #e5e7eb" }}>
+          <div className="grid grid-cols-12 px-4 py-2.5 text-[10px] font-semibold uppercase tracking-wider" style={{ background: "#fafafa", color: "#6b7280" }}>
             <span className="col-span-6">পণ্য</span>
             <span className="col-span-3 text-center">পরিমাণ</span>
             <span className="col-span-3 text-right">মোট</span>
           </div>
           {productList.length === 0 ? (
-            <div className="py-6 text-center text-[12px]" style={{ color: "var(--text-muted)" }}>কোনো পণ্য নেই</div>
+            <div className="py-8 text-center">
+              <div className="w-10 h-10 rounded-full mx-auto mb-2 flex items-center justify-center" style={{ background: "#f3f4f6" }}>
+                <ShoppingBag size={16} strokeWidth={1.5} style={{ color: "#9ca3af" }} />
+              </div>
+              <p className="text-[12px] font-medium" style={{ color: "#6b7280" }}>কোনো পেন্ডিং অর্ডারে পণ্য নেই</p>
+            </div>
           ) : (
             productList.map((p, idx) => (
-              <div key={idx} className="grid grid-cols-12 px-3 py-2.5 items-center" style={{ borderTop: "1px solid var(--border-color)" }}>
-                <span className="col-span-6 text-[13px] font-medium truncate" style={{ color: "var(--text-primary)" }}>{p.name}</span>
-                <span className="col-span-3 text-center text-[13px] font-semibold" style={{ color: "var(--text-secondary)" }}>{p.qty} পিছ</span>
-                <span className="col-span-3 text-right text-[13px] font-bold" style={{ color: "#66a80f" }}>৳{p.total}</span>
+              <div key={idx} className="grid grid-cols-12 px-4 py-3 items-center" style={{ borderTop: idx > 0 ? "1px solid #f3f4f6" : "none" }}>
+                <span className="col-span-6 text-[13px] font-medium truncate" style={{ color: "#111827" }}>{p.name}</span>
+                <span className="col-span-3 text-center text-[13px] font-semibold" style={{ color: "#374151" }}>{p.qty} পিছ</span>
+                <span className="col-span-3 text-right text-[13px] font-bold" style={{ color: "#66a80f" }}>৳{p.total.toLocaleString("en-US")}</span>
               </div>
             ))
           )}
           {/* Footer total */}
           {productList.length > 0 && (
-            <div className="grid grid-cols-12 px-3 py-2.5 items-center" style={{ borderTop: "2px solid var(--border-color)", background: "var(--bg-input)" }}>
-              <span className="col-span-6 text-[12px] font-bold" style={{ color: "var(--text-primary)" }}>সর্বমোট</span>
-              <span className="col-span-3 text-center text-[12px] font-bold" style={{ color: "var(--text-primary)" }}>{productList.reduce((s, p) => s + p.qty, 0)} পিছ</span>
-              <span className="col-span-3 text-right text-[13px] font-bold" style={{ color: "#66a80f" }}>৳{grandTotal}</span>
+            <div className="grid grid-cols-12 px-4 py-3 items-center" style={{ borderTop: "1px solid #e5e7eb", background: "#fafafa" }}>
+              <span className="col-span-6 text-[11px] font-bold" style={{ color: "#111827" }}>সর্বমোট</span>
+              <span className="col-span-3 text-center text-[11px] font-bold" style={{ color: "#111827" }}>{productList.reduce((s, p) => s + p.qty, 0)} পিছ</span>
+              <span className="col-span-3 text-right text-[13px] font-bold" style={{ color: "#111827" }}>৳{grandTotal.toLocaleString("en-US")}</span>
             </div>
           )}
         </div>
@@ -804,68 +818,168 @@ export default function OrdersPage() {
     );
   };
 
+  // Calculate stats for display
+  const todayLabel = new Date().toLocaleDateString("bn-BD", { year: "numeric", month: "long", day: "numeric" });
+  const pendingOrders = orders.filter((o) => (o.deliveryStatus || "pending") === "pending");
+  const deliveredOrders = orders.filter((o) => o.deliveryStatus === "delivered");
+  const notDeliveredOrders = orders.filter((o) => o.deliveryStatus === "not_delivered");
+  const totalRevenue = orders.reduce((s, o) => s + o.totalAmount, 0);
+  const totalDue = orders.reduce((s, o) => s + o.dueAmount, 0);
+  const pendingRevenue = pendingOrders.reduce((s, o) => s + o.totalAmount, 0);
+  const pendingDue = pendingOrders.reduce((s, o) => s + o.dueAmount, 0);
+
   // ===================== MAIN ORDER PAGE =====================
   return (
-    <div>
-      <div className="flex items-center justify-between mb-5">
-        <h2 className="text-lg font-semibold" style={{ color: "var(--text-primary)" }}>অর্ডার সমূহ</h2>
+    <div className="pb-8 space-y-5">
+      {/* Page Header */}
+      <div className="flex items-end justify-between flex-wrap gap-3">
+        <div>
+          <h1 className="text-[26px] sm:text-[28px] font-bold tracking-tight" style={{ color: "#111827", letterSpacing: "-0.02em" }}>অর্ডার সমূহ</h1>
+          <p className="text-[13px] font-medium mt-1" style={{ color: "#6b7280" }}>{todayLabel} · মোট {orders.length} টি অর্ডার</p>
+        </div>
         <button onClick={() => setShowForm(!showForm)}
-          className="flex items-center gap-2 h-10 px-4 rounded-lg text-sm font-medium text-white cursor-pointer"
+          className="flex items-center gap-2 h-10 px-4 rounded-lg text-[13px] font-semibold text-white cursor-pointer transition-all hover:shadow-sm"
           style={{ background: "#66a80f" }}>
           <Plus size={16} /> নতুন অর্ডার
         </button>
       </div>
 
-      {/* Date filter */}
-      <div className="flex items-center gap-3 mb-4">
-        <div className="flex items-center gap-2">
-          <Calendar size={16} style={{ color: "var(--text-muted)" }} />
-          <input type="date" value={filterDate}
-            onChange={(e) => { setFilterDate(e.target.value); fetchOrders(e.target.value); }}
-            className="h-9 px-3 rounded-lg text-[13px] outline-none"
-            style={{ background: "var(--bg-card)", color: "var(--text-primary)", border: "1px solid var(--border-color)" }} />
+      {/* KPI Cards */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        {/* Total Orders */}
+        <div className="rounded-2xl p-5" style={{ background: "#ffffff", border: "1px solid #e5e7eb" }}>
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "#6b7280" }}>মোট অর্ডার</p>
+            <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "#f3f4f6" }}>
+              <ShoppingBag size={14} strokeWidth={2.2} style={{ color: "#374151" }} />
+            </div>
+          </div>
+          <p className="text-[26px] font-bold leading-none" style={{ color: "#111827", letterSpacing: "-0.025em", fontVariantNumeric: "tabular-nums" }}>
+            {orders.length.toLocaleString("en-US")}
+          </p>
         </div>
-        {filterDate && (
-          <button onClick={() => { setFilterDate(""); fetchOrders(""); }}
-            className="h-9 px-3 rounded-lg text-[12px] font-medium cursor-pointer"
-            style={{ background: "var(--bg-card)", color: "var(--text-muted)", border: "1px solid var(--border-color)" }}>
-            সব দেখুন
-          </button>
-        )}
+
+        {/* Pending Orders */}
+        <div className="rounded-2xl p-5" style={{ background: "#ffffff", border: "1px solid #e5e7eb" }}>
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "#6b7280" }}>পেন্ডিং</p>
+            <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "#fffbeb" }}>
+              <Truck size={14} strokeWidth={2.2} style={{ color: "#d97706" }} />
+            </div>
+          </div>
+          <p className="text-[26px] font-bold leading-none" style={{ color: "#111827", letterSpacing: "-0.025em", fontVariantNumeric: "tabular-nums" }}>
+            {pendingOrders.length.toLocaleString("en-US")}
+          </p>
+          <div className="flex items-center gap-1.5 mt-3">
+            <span className="text-[11px] font-semibold" style={{ color: "#d97706" }}>{notDeliveredOrders.length} ব্যর্থ</span>
+          </div>
+        </div>
+
+        {/* Revenue */}
+        <div className="rounded-2xl p-5" style={{ background: "#ffffff", border: "1px solid #e5e7eb" }}>
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "#6b7280" }}>মোট বিক্রি</p>
+            <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "rgba(102,168,15,0.1)" }}>
+              <BarChart3 size={14} strokeWidth={2.2} style={{ color: "#66a80f" }} />
+            </div>
+          </div>
+          <p className="text-[26px] font-bold leading-none" style={{ color: "#111827", letterSpacing: "-0.025em", fontVariantNumeric: "tabular-nums" }}>
+            ৳{totalRevenue.toLocaleString("en-US")}
+          </p>
+          <div className="flex items-center gap-1.5 mt-3">
+            <span className="text-[11px] font-semibold" style={{ color: "#66a80f" }}>৳{pendingRevenue.toLocaleString("en-US")}</span>
+            <span className="text-[11px] font-medium" style={{ color: "#9ca3af" }}>পেন্ডিং</span>
+          </div>
+        </div>
+
+        {/* Total Due */}
+        <div className="rounded-2xl p-5" style={{ background: "#ffffff", border: "1px solid #e5e7eb" }}>
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "#6b7280" }}>মোট বাকি</p>
+            <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "#fef2f2" }}>
+              <CreditCard size={14} strokeWidth={2.2} style={{ color: "#dc2626" }} />
+            </div>
+          </div>
+          <p className="text-[26px] font-bold leading-none" style={{ color: "#111827", letterSpacing: "-0.025em", fontVariantNumeric: "tabular-nums" }}>
+            ৳{totalDue.toLocaleString("en-US")}
+          </p>
+          <div className="flex items-center gap-1.5 mt-3">
+            <span className="text-[11px] font-semibold" style={{ color: "#dc2626" }}>৳{pendingDue.toLocaleString("en-US")}</span>
+            <span className="text-[11px] font-medium" style={{ color: "#9ca3af" }}>পেন্ডিং</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Date filter & Actions */}
+      <div className="rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3" style={{ background: "#ffffff", border: "1px solid #e5e7eb" }}>
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
+            <Calendar size={16} style={{ color: "#6b7280" }} />
+            <input type="date" value={filterDate}
+              onChange={(e) => { setFilterDate(e.target.value); fetchOrders(e.target.value); }}
+              className="h-10 px-3 rounded-lg text-[13px] font-medium outline-none"
+              style={{ background: "#fafafa", color: "#111827", border: "1px solid #e5e7eb" }} />
+          </div>
+          {filterDate && (
+            <button onClick={() => { setFilterDate(""); fetchOrders(""); }}
+              className="h-10 px-3 rounded-lg text-[12px] font-semibold cursor-pointer transition-colors hover:bg-gray-50"
+              style={{ background: "#fafafa", color: "#374151", border: "1px solid #e5e7eb" }}>
+              সব দেখুন
+            </button>
+          )}
+        </div>
         <button onClick={() => setShowSummary(true)}
-          className="h-9 px-3 rounded-lg text-[12px] font-medium cursor-pointer flex items-center gap-1.5"
-          style={{ background: "var(--bg-card)", color: "var(--text-secondary)", border: "1px solid var(--border-color)" }}>
-          <BarChart3 size={14} style={{ color: "#66a80f" }} /> সামারি
+          className="h-10 px-4 rounded-lg text-[12px] font-semibold cursor-pointer flex items-center justify-center gap-2 transition-all hover:shadow-sm"
+          style={{ background: "#111827", color: "#ffffff" }}>
+          <BarChart3 size={15} /> পেন্ডিং সামারি
         </button>
-        <span className="text-[12px] ml-auto" style={{ color: "var(--text-muted)" }}>{orders.length} অর্ডার</span>
       </div>
 
       {/* Delivery Status Tabs */}
-      <div className="flex gap-2 mb-4">
+      <div className="grid grid-cols-3 gap-3">
         <button onClick={() => setDeliveryTab("pending")}
-          className="flex-1 h-10 rounded-xl text-[13px] font-semibold cursor-pointer flex items-center justify-center gap-2 transition-colors"
+          className="h-12 rounded-xl text-[13px] font-semibold cursor-pointer flex items-center justify-center gap-2 transition-all"
           style={{
-            background: deliveryTab === "pending" ? "#fffbeb" : "var(--bg-card)",
-            color: deliveryTab === "pending" ? "#d97706" : "var(--text-muted)",
-            border: deliveryTab === "pending" ? "1.5px solid #fde68a" : "1px solid var(--border-color)",
+            background: deliveryTab === "pending" ? "#ffffff" : "#fafafa",
+            color: deliveryTab === "pending" ? "#111827" : "#6b7280",
+            border: deliveryTab === "pending" ? "1px solid #e5e7eb" : "1px solid transparent",
+            boxShadow: deliveryTab === "pending" ? "0 1px 3px rgba(0,0,0,0.04)" : "none",
           }}>
-          <Truck size={15} /> ডেলিভারি পেন্ডিং
-          <span className="text-[10px] px-1.5 py-0.5 rounded-full font-bold"
-            style={{ background: deliveryTab === "pending" ? "#fde68a" : "var(--bg-input)", color: deliveryTab === "pending" ? "#92400e" : "var(--text-muted)" }}>
-            {orders.filter((o) => (o.deliveryStatus || "pending") === "pending").length}
+          <Truck size={15} strokeWidth={2.2} style={{ color: deliveryTab === "pending" ? "#d97706" : "#9ca3af" }} /> 
+          পেন্ডিং
+          <span className="text-[11px] px-2 py-0.5 rounded-full font-bold"
+            style={{ background: deliveryTab === "pending" ? "#fffbeb" : "#f3f4f6", color: deliveryTab === "pending" ? "#d97706" : "#6b7280" }}>
+            {pendingOrders.length}
           </span>
         </button>
         <button onClick={() => setDeliveryTab("delivered")}
-          className="flex-1 h-10 rounded-xl text-[13px] font-semibold cursor-pointer flex items-center justify-center gap-2 transition-colors"
+          className="h-12 rounded-xl text-[13px] font-semibold cursor-pointer flex items-center justify-center gap-2 transition-all"
           style={{
-            background: deliveryTab === "delivered" ? "#f0fdf4" : "var(--bg-card)",
-            color: deliveryTab === "delivered" ? "#16a34a" : "var(--text-muted)",
-            border: deliveryTab === "delivered" ? "1.5px solid #bbf7d0" : "1px solid var(--border-color)",
+            background: deliveryTab === "delivered" ? "#ffffff" : "#fafafa",
+            color: deliveryTab === "delivered" ? "#111827" : "#6b7280",
+            border: deliveryTab === "delivered" ? "1px solid #e5e7eb" : "1px solid transparent",
+            boxShadow: deliveryTab === "delivered" ? "0 1px 3px rgba(0,0,0,0.04)" : "none",
           }}>
-          <CheckCircle2 size={15} /> ডেলিভারি সম্পন্ন
-          <span className="text-[10px] px-1.5 py-0.5 rounded-full font-bold"
-            style={{ background: deliveryTab === "delivered" ? "#bbf7d0" : "var(--bg-input)", color: deliveryTab === "delivered" ? "#166534" : "var(--text-muted)" }}>
-            {orders.filter((o) => o.deliveryStatus === "delivered").length}
+          <CheckCircle2 size={15} strokeWidth={2.2} style={{ color: deliveryTab === "delivered" ? "#16a34a" : "#9ca3af" }} /> 
+          ডেলিভারড
+          <span className="text-[11px] px-2 py-0.5 rounded-full font-bold"
+            style={{ background: deliveryTab === "delivered" ? "#f0fdf4" : "#f3f4f6", color: deliveryTab === "delivered" ? "#16a34a" : "#6b7280" }}>
+            {deliveredOrders.length}
+          </span>
+        </button>
+        <button onClick={() => setDeliveryTab("not_delivered")}
+          className="h-12 rounded-xl text-[13px] font-semibold cursor-pointer flex items-center justify-center gap-2 transition-all"
+          style={{
+            background: deliveryTab === "not_delivered" ? "#ffffff" : "#fafafa",
+            color: deliveryTab === "not_delivered" ? "#111827" : "#6b7280",
+            border: deliveryTab === "not_delivered" ? "1px solid #e5e7eb" : "1px solid transparent",
+            boxShadow: deliveryTab === "not_delivered" ? "0 1px 3px rgba(0,0,0,0.04)" : "none",
+          }}>
+          <Ban size={15} strokeWidth={2.2} style={{ color: deliveryTab === "not_delivered" ? "#dc2626" : "#9ca3af" }} /> 
+          ব্যর্থ
+          <span className="text-[11px] px-2 py-0.5 rounded-full font-bold"
+            style={{ background: deliveryTab === "not_delivered" ? "#fef2f2" : "#f3f4f6", color: deliveryTab === "not_delivered" ? "#dc2626" : "#6b7280" }}>
+            {notDeliveredOrders.length}
           </span>
         </button>
       </div>
@@ -978,23 +1092,25 @@ export default function OrdersPage() {
 
       {/* Orders List */}
       {(() => {
-        const filteredOrders = orders.filter((o) =>
-          deliveryTab === "pending"
-            ? (o.deliveryStatus || "pending") === "pending"
-            : o.deliveryStatus === "delivered"
-        );
+        const filteredOrders = orders.filter((o) => {
+          if (deliveryTab === "pending") return (o.deliveryStatus || "pending") === "pending";
+          if (deliveryTab === "delivered") return o.deliveryStatus === "delivered";
+          return o.deliveryStatus === "not_delivered";
+        });
         return filteredOrders.length === 0 ? (
-        <div className="rounded-xl py-16 text-center" style={{ background: "var(--bg-card)", border: "1px solid var(--border-color)" }}>
-          <Calendar size={36} className="mx-auto mb-3" style={{ color: "var(--text-muted)" }} strokeWidth={1} />
-          <p className="text-sm" style={{ color: "var(--text-muted)" }}>
-            {deliveryTab === "pending" ? "কোনো পেন্ডিং অর্ডার নেই" : "কোনো ডেলিভারড অর্ডার নেই"}
+        <div className="rounded-2xl py-16 text-center" style={{ background: "#ffffff", border: "1px solid #e5e7eb" }}>
+          <div className="w-12 h-12 rounded-full mx-auto mb-3 flex items-center justify-center" style={{ background: "#f3f4f6" }}>
+            <ShoppingBag size={20} strokeWidth={1.5} style={{ color: "#9ca3af" }} />
+          </div>
+          <p className="text-[13px] font-medium" style={{ color: "#6b7280" }}>
+            {deliveryTab === "pending" ? "কোনো পেন্ডিং অর্ডার নেই" : deliveryTab === "delivered" ? "কোনো ডেলিভারড অর্ডার নেই" : "কোনো ব্যর্থ অর্ডার নেই"}
           </p>
         </div>
       ) : (
         <div className="flex flex-col gap-3">
-          {filteredOrders.map((order, idx) => (
-            <div key={order._id} className="rounded-xl overflow-hidden transition-shadow duration-200"
-              style={{ background: "var(--bg-card)", border: "1px solid var(--border-color)", boxShadow: "0 1px 4px rgba(0,0,0,0.04)" }}>
+          {filteredOrders.map((order) => (
+            <div key={order._id} className="rounded-2xl overflow-hidden transition-all hover:shadow-sm"
+              style={{ background: "#ffffff", border: "1px solid #e5e7eb" }}>
               {/* Order header */}
               <div className="flex items-center gap-3 px-4 pt-3.5 pb-2">
                 <div className="w-9 h-9 rounded-full flex items-center justify-center shrink-0" style={{ background: "#f0fdf4" }}>
