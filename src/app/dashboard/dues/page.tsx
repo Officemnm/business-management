@@ -85,50 +85,108 @@ export default function DuesPage() {
     </div>;
   }
 
+  const avgDue = customers.length > 0 ? Math.round(totalDue / customers.length) : 0;
+  const maxDue = customers.length > 0 ? Math.max(...customers.map((c) => c.totalDue)) : 0;
+
   return (
-    <div>
-      {/* Header */}
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-lg font-semibold" style={{ color: "var(--text-primary)" }}>বাকি তালিকা</h2>
-        <div className="h-10 px-4 flex items-center rounded-xl text-sm font-bold" style={{ background: "#fef2f2", color: "#dc2626", border: "1px solid #fecaca" }}>
-          মোট বাকি: ৳{totalDue}
+    <div className="pb-8 space-y-5">
+      {/* Page Header */}
+      <div className="flex items-end justify-between flex-wrap gap-3">
+        <div>
+          <h1 className="text-[26px] sm:text-[28px] font-bold tracking-tight" style={{ color: "#111827", letterSpacing: "-0.02em" }}>বাকি তালিকা</h1>
+          <p className="text-[13px] font-medium mt-1" style={{ color: "#6b7280" }}>{customers.length} জন কাস্টমারের বকেয়া রয়েছে</p>
         </div>
       </div>
 
-      {/* Customer List */}
-      <div className="rounded-xl overflow-hidden" style={{ background: "var(--bg-card)", border: "1px solid var(--border-color)", boxShadow: "0 1px 3px rgba(0,0,0,0.04)" }}>
+      {/* KPI Cards */}
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
+        <div className="rounded-2xl p-5" style={{ background: "#ffffff", border: "1px solid #e5e7eb" }}>
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "#6b7280" }}>মোট বাকি</p>
+            <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "#fef2f2" }}>
+              <Banknote size={14} strokeWidth={2.2} style={{ color: "#dc2626" }} />
+            </div>
+          </div>
+          <p className="text-[26px] font-bold leading-none" style={{ color: "#dc2626", letterSpacing: "-0.025em", fontVariantNumeric: "tabular-nums" }}>
+            ৳{totalDue.toLocaleString("en-US")}
+          </p>
+          <div className="flex items-center gap-1.5 mt-3">
+            <span className="text-[11px] font-semibold" style={{ color: "#6b7280" }}>{customers.length}</span>
+            <span className="text-[11px] font-medium" style={{ color: "#9ca3af" }}>জন কাস্টমার</span>
+          </div>
+        </div>
+
+        <div className="rounded-2xl p-5" style={{ background: "#ffffff", border: "1px solid #e5e7eb" }}>
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "#6b7280" }}>গড় বাকি</p>
+            <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "#fffbeb" }}>
+              <Banknote size={14} strokeWidth={2.2} style={{ color: "#d97706" }} />
+            </div>
+          </div>
+          <p className="text-[26px] font-bold leading-none" style={{ color: "#111827", letterSpacing: "-0.025em", fontVariantNumeric: "tabular-nums" }}>
+            ৳{avgDue.toLocaleString("en-US")}
+          </p>
+        </div>
+
+        <div className="rounded-2xl p-5 col-span-2 lg:col-span-1" style={{ background: "#ffffff", border: "1px solid #e5e7eb" }}>
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "#6b7280" }}>সর্বোচ্চ বাকি</p>
+            <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "#f3f4f6" }}>
+              <Banknote size={14} strokeWidth={2.2} style={{ color: "#374151" }} />
+            </div>
+          </div>
+          <p className="text-[26px] font-bold leading-none" style={{ color: "#111827", letterSpacing: "-0.025em", fontVariantNumeric: "tabular-nums" }}>
+            ৳{maxDue.toLocaleString("en-US")}
+          </p>
+        </div>
+      </div>
+
+      {/* Customer Table */}
+      <div className="rounded-2xl overflow-hidden" style={{ background: "#ffffff", border: "1px solid #e5e7eb" }}>
+        <div className="px-5 py-3.5 flex items-center justify-between" style={{ borderBottom: "1px solid #e5e7eb" }}>
+          <h3 className="text-[13px] font-semibold" style={{ color: "#111827" }}>বকেয়া কাস্টমার তালিকা</h3>
+          <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full" style={{ background: "#fef2f2", color: "#dc2626" }}>{customers.length}</span>
+        </div>
         {customers.length === 0 ? (
           <div className="py-16 text-center">
-            <CheckCircle2 size={36} className="mx-auto mb-3" style={{ color: "#16a34a" }} strokeWidth={1} />
-            <p className="text-sm" style={{ color: "var(--text-muted)" }}>কোনো বাকি নেই</p>
+            <div className="w-12 h-12 rounded-full mx-auto mb-3 flex items-center justify-center" style={{ background: "#f0fdf4" }}>
+              <CheckCircle2 size={20} strokeWidth={2} style={{ color: "#16a34a" }} />
+            </div>
+            <p className="text-[14px] font-semibold mb-1" style={{ color: "#111827" }}>সব বকেয়া পরিশোধিত</p>
+            <p className="text-[12px] font-medium" style={{ color: "#6b7280" }}>কোনো কাস্টমারের বাকি নেই</p>
           </div>
         ) : (
-          customers.map((c, idx) => (
-            <div key={c._id} className="flex items-center gap-3 px-4 py-3" style={{ borderTop: idx > 0 ? "1px solid var(--border-color)" : "none" }}>
-              <div className="w-9 h-9 rounded-full flex items-center justify-center shrink-0" style={{ background: "#fef2f2" }}>
-                <User size={16} style={{ color: "#dc2626" }} />
+          <div className="flex flex-col">
+            {customers.map((c, idx) => (
+              <div key={c._id} className="flex items-center gap-3 px-5 py-3.5 transition-colors hover:bg-gray-50" style={{ borderTop: idx > 0 ? "1px solid #f3f4f6" : "none" }}>
+                <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0 text-[13px] font-semibold" style={{ background: "#fef2f2", color: "#dc2626" }}>
+                  {c.name[0]?.toUpperCase() || "?"}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[14px] font-semibold truncate" style={{ color: "#111827" }}>{c.name}</p>
+                  <span className="flex items-center gap-1 text-[11px] font-medium mt-0.5" style={{ color: "#6b7280" }}>
+                    <Phone size={10} /> {c.phone}
+                  </span>
+                </div>
+                <div className="text-right shrink-0 mr-2">
+                  <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: "#9ca3af" }}>বকেয়া</p>
+                  <p className="text-[15px] font-bold" style={{ color: "#dc2626", fontVariantNumeric: "tabular-nums" }}>৳{c.totalDue.toLocaleString("en-US")}</p>
+                </div>
+                <div className="flex items-center gap-1.5 shrink-0">
+                  <button onClick={() => { setHistoryCustomer(c); setPayments([]); }}
+                    className="w-9 h-9 rounded-lg flex items-center justify-center cursor-pointer transition-colors hover:bg-blue-100"
+                    style={{ background: "#eff6ff", color: "#2563eb", border: "1px solid #bfdbfe" }} title="পেমেন্ট হিস্ট্রি">
+                    <History size={14} strokeWidth={2} />
+                  </button>
+                  <button onClick={() => { setCollectCustomer(c); setCollectAmount(""); }}
+                    className="h-9 px-3 rounded-lg text-[12px] font-semibold cursor-pointer transition-all hover:shadow-sm flex items-center gap-1.5"
+                    style={{ background: "#66a80f", color: "#ffffff" }} title="টাকা কালেক্ট">
+                    <Banknote size={13} strokeWidth={2} /> কালেক্ট
+                  </button>
+                </div>
               </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-[13px] font-bold truncate" style={{ color: "var(--text-primary)" }}>{c.name}</p>
-                <span className="flex items-center gap-1 text-[11px]" style={{ color: "var(--text-muted)" }}>
-                  <Phone size={9} /> {c.phone}
-                </span>
-              </div>
-              <p className="text-[15px] font-extrabold shrink-0" style={{ color: "#dc2626" }}>৳{c.totalDue}</p>
-              {/* History icon */}
-              <button onClick={() => { setHistoryCustomer(c); setPayments([]); }}
-                className="w-9 h-9 rounded-lg flex items-center justify-center cursor-pointer shrink-0"
-                style={{ background: "#eff6ff", border: "1px solid #bfdbfe" }} title="অর্ডার হিস্ট্রি">
-                <History size={15} style={{ color: "#2563eb" }} />
-              </button>
-              {/* Collect icon */}
-              <button onClick={() => { setCollectCustomer(c); setCollectAmount(""); }}
-                className="w-9 h-9 rounded-lg flex items-center justify-center cursor-pointer shrink-0"
-                style={{ background: "#f0fdf4", border: "1px solid #bbf7d0" }} title="টাকা কালেক্ট">
-                <Banknote size={15} style={{ color: "#16a34a" }} />
-              </button>
-            </div>
-          ))
+            ))}
+          </div>
         )}
       </div>
 

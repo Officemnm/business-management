@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Plus, Trash2, Package, Pencil, X, Search, Tag } from "lucide-react";
+import { Plus, Trash2, Package, Pencil, Tag, Search, Boxes, TrendingUp, AlertCircle } from "lucide-react";
 import toast from "react-hot-toast";
 import AnimatedModal from "@/components/ui/AnimatedModal";
 import Link from "next/link";
@@ -23,6 +23,8 @@ interface Product {
 export default function AllProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState("");
 
   // Edit modal state
   const [editProduct, setEditProduct] = useState<Product | null>(null);
@@ -87,7 +89,7 @@ export default function AllProductsPage() {
     loadData();
   };
 
-  const inputStyle = "w-full h-10 px-3 rounded-lg text-sm outline-none";
+  const inputStyle = "w-full h-10 px-3 rounded-lg text-[13px] outline-none transition-colors";
 
   if (loading) {
     return (
@@ -100,47 +102,156 @@ export default function AllProductsPage() {
     );
   }
 
+  // Stats
+  const totalProducts = products.length;
+  const totalStock = products.reduce((s, p) => s + p.stock, 0);
+  const outOfStock = products.filter((p) => p.stock === 0).length;
+  const inventoryValue = products.reduce((s, p) => s + p.stock * p.buyPrice, 0);
+  const categories = Array.from(new Set(products.map((p) => p.category).filter(Boolean)));
+
+  // Filter products
+  const filteredProducts = products.filter((p) => {
+    const matchesSearch = search === "" || p.name.toLowerCase().includes(search.toLowerCase()) || p.category.toLowerCase().includes(search.toLowerCase());
+    const matchesCategory = categoryFilter === "" || p.category === categoryFilter;
+    return matchesSearch && matchesCategory;
+  });
+
   return (
-    <div>
-      <div className="flex items-center justify-between mb-5">
-        <h2 className="text-lg font-semibold" style={{ color: "var(--text-primary)" }}>
-          সকল প্রডাক্ট ({products.length})
-        </h2>
+    <div className="pb-8 space-y-5">
+      {/* Page Header */}
+      <div className="flex items-end justify-between flex-wrap gap-3">
+        <div>
+          <h1 className="text-[26px] sm:text-[28px] font-bold tracking-tight" style={{ color: "#111827", letterSpacing: "-0.02em" }}>সকল প্রডাক্ট</h1>
+          <p className="text-[13px] font-medium mt-1" style={{ color: "#6b7280" }}>মোট {totalProducts} টি প্রডাক্ট · {categories.length} টি ক্যাটাগরি</p>
+        </div>
         <Link
           href="/dashboard/products/add"
-          className="flex items-center gap-2 h-10 px-4 rounded-lg text-sm font-medium text-white"
+          className="flex items-center gap-2 h-10 px-4 rounded-lg text-[13px] font-semibold text-white cursor-pointer transition-all hover:shadow-sm"
           style={{ background: "#66a80f" }}
         >
-          + নতুন প্রডাক্ট
+          <Plus size={16} /> নতুন প্রডাক্ট
         </Link>
       </div>
 
-      {products.length === 0 ? (
-        <div
-          className="rounded-xl py-16 text-center"
-          style={{ background: "var(--bg-card)", border: "1px solid var(--border-color)" }}
-        >
-          <Package size={40} className="mx-auto mb-3" style={{ color: "var(--text-muted)" }} strokeWidth={1} />
-          <p className="text-sm" style={{ color: "var(--text-muted)" }}>
-            কোনো প্রডাক্ট নেই
+      {/* KPI Cards */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <div className="rounded-2xl p-5" style={{ background: "#ffffff", border: "1px solid #e5e7eb" }}>
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "#6b7280" }}>মোট প্রডাক্ট</p>
+            <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "rgba(102,168,15,0.1)" }}>
+              <Package size={14} strokeWidth={2.2} style={{ color: "#66a80f" }} />
+            </div>
+          </div>
+          <p className="text-[26px] font-bold leading-none" style={{ color: "#111827", letterSpacing: "-0.025em", fontVariantNumeric: "tabular-nums" }}>
+            {totalProducts.toLocaleString("en-US")}
+          </p>
+        </div>
+
+        <div className="rounded-2xl p-5" style={{ background: "#ffffff", border: "1px solid #e5e7eb" }}>
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "#6b7280" }}>মোট স্টক</p>
+            <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "#f3f4f6" }}>
+              <Boxes size={14} strokeWidth={2.2} style={{ color: "#374151" }} />
+            </div>
+          </div>
+          <p className="text-[26px] font-bold leading-none" style={{ color: "#111827", letterSpacing: "-0.025em", fontVariantNumeric: "tabular-nums" }}>
+            {totalStock.toLocaleString("en-US")}
+          </p>
+        </div>
+
+        <div className="rounded-2xl p-5" style={{ background: "#ffffff", border: "1px solid #e5e7eb" }}>
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "#6b7280" }}>ইনভেন্টরি মূল্য</p>
+            <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "rgba(102,168,15,0.1)" }}>
+              <TrendingUp size={14} strokeWidth={2.2} style={{ color: "#66a80f" }} />
+            </div>
+          </div>
+          <p className="text-[26px] font-bold leading-none" style={{ color: "#111827", letterSpacing: "-0.025em", fontVariantNumeric: "tabular-nums" }}>
+            ৳{inventoryValue.toLocaleString("en-US")}
+          </p>
+        </div>
+
+        <div className="rounded-2xl p-5" style={{ background: "#ffffff", border: "1px solid #e5e7eb" }}>
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "#6b7280" }}>স্টক নেই</p>
+            <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "#fef2f2" }}>
+              <AlertCircle size={14} strokeWidth={2.2} style={{ color: "#dc2626" }} />
+            </div>
+          </div>
+          <p className="text-[26px] font-bold leading-none" style={{ color: "#111827", letterSpacing: "-0.025em", fontVariantNumeric: "tabular-nums" }}>
+            {outOfStock.toLocaleString("en-US")}
+          </p>
+        </div>
+      </div>
+
+      {/* Search & Category Filter */}
+      <div className="rounded-2xl p-4 flex flex-col sm:flex-row gap-3" style={{ background: "#ffffff", border: "1px solid #e5e7eb" }}>
+        <div className="flex-1 relative">
+          <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: "#9ca3af" }} />
+          <input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="প্রডাক্ট বা ক্যাটাগরি খুঁজুন..."
+            className="w-full h-10 pl-9 pr-3 rounded-lg text-[13px] font-medium outline-none"
+            style={{ background: "#fafafa", color: "#111827", border: "1px solid #e5e7eb" }}
+          />
+        </div>
+        {categories.length > 0 && (
+          <div className="flex gap-2 flex-wrap">
+            <button
+              onClick={() => setCategoryFilter("")}
+              className="h-10 px-3 rounded-lg text-[12px] font-semibold cursor-pointer transition-colors"
+              style={{
+                background: categoryFilter === "" ? "#111827" : "#fafafa",
+                color: categoryFilter === "" ? "#ffffff" : "#374151",
+                border: "1px solid " + (categoryFilter === "" ? "#111827" : "#e5e7eb"),
+              }}
+            >
+              সব
+            </button>
+            {categories.map((cat) => (
+              <button
+                key={cat}
+                onClick={() => setCategoryFilter(cat)}
+                className="h-10 px-3 rounded-lg text-[12px] font-semibold cursor-pointer transition-colors"
+                style={{
+                  background: categoryFilter === cat ? "#111827" : "#fafafa",
+                  color: categoryFilter === cat ? "#ffffff" : "#374151",
+                  border: "1px solid " + (categoryFilter === cat ? "#111827" : "#e5e7eb"),
+                }}
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Products Grid */}
+      {filteredProducts.length === 0 ? (
+        <div className="rounded-2xl py-16 text-center" style={{ background: "#ffffff", border: "1px solid #e5e7eb" }}>
+          <div className="w-12 h-12 rounded-full mx-auto mb-3 flex items-center justify-center" style={{ background: "#f3f4f6" }}>
+            <Package size={20} strokeWidth={1.5} style={{ color: "#9ca3af" }} />
+          </div>
+          <p className="text-[13px] font-medium" style={{ color: "#6b7280" }}>
+            {search || categoryFilter ? "কোনো মিল পাওয়া যায়নি" : "কোনো প্রডাক্ট নেই"}
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {products.map((p) => (
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+          {filteredProducts.map((p) => (
             <div
               key={p._id}
-              className="rounded-xl overflow-hidden group transition-shadow duration-200"
+              className="rounded-2xl overflow-hidden group transition-all hover:shadow-sm"
               style={{
-                background: "var(--bg-card)",
-                border: "1px solid var(--border-color)",
-                boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
+                background: "#ffffff",
+                border: "1px solid #e5e7eb",
               }}
             >
               {/* Image */}
               <div
                 className="relative w-full flex items-center justify-center overflow-hidden"
-                style={{ background: "var(--bg-input)" }}
+                style={{ background: "#fafafa" }}
               >
                 {p.image ? (
                   <Image
@@ -149,16 +260,14 @@ export default function AllProductsPage() {
                     width={400}
                     height={400}
                     className="w-full h-auto"
-                    style={{ objectFit: "contain", maxHeight: "220px" }}
+                    style={{ objectFit: "contain", maxHeight: "200px" }}
                     unoptimized
                   />
                 ) : (
                   <div className="flex items-center justify-center py-12 w-full">
-                    <Package size={40} style={{ color: "var(--border-color)" }} strokeWidth={1} />
+                    <Package size={40} style={{ color: "#d1d5db" }} strokeWidth={1} />
                   </div>
                 )}
-
-                {/* Stock badge */}
                 <span
                   className="absolute top-2 right-2 text-[10px] px-2 py-0.5 rounded-full font-semibold"
                   style={{
@@ -171,64 +280,56 @@ export default function AllProductsPage() {
               </div>
 
               {/* Info */}
-              <div className="p-3">
-                {/* Category */}
+              <div className="p-3.5">
                 <div className="flex items-center gap-1 mb-1.5">
-                  <Tag size={10} style={{ color: "var(--text-muted)" }} />
-                  <span className="text-[10px] font-medium" style={{ color: "var(--text-muted)" }}>
+                  <Tag size={10} style={{ color: "#9ca3af" }} />
+                  <span className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: "#9ca3af" }}>
                     {p.category}
                   </span>
                 </div>
-
-                {/* Name */}
                 <h3
-                  className="text-[14px] font-semibold leading-snug mb-2 line-clamp-2"
-                  style={{ color: "var(--text-primary)" }}
+                  className="text-[14px] font-semibold leading-snug mb-2.5 line-clamp-2"
+                  style={{ color: "#111827" }}
                 >
                   {p.name}
                 </h3>
-
-                {/* Price */}
-                <div className="flex items-center justify-between mb-3">
-                  <div>
-                    <span className="text-[16px] font-bold" style={{ color: "#66a80f" }}>
+                <div className="flex items-baseline justify-between mb-3">
+                  <div className="flex items-baseline gap-1.5">
+                    <span className="text-[18px] font-bold" style={{ color: "#111827", letterSpacing: "-0.02em", fontVariantNumeric: "tabular-nums" }}>
                       ৳{p.sellPrice}
                     </span>
-                    {p.buyPrice > 0 && (
-                      <span className="text-[11px] ml-1.5 line-through" style={{ color: "var(--text-muted)" }}>
-                        ৳{p.buyPrice}
-                      </span>
-                    )}
+                    <span className="text-[11px]" style={{ color: "#9ca3af" }}>/{p.unit}</span>
                   </div>
-                  <span className="text-[11px]" style={{ color: "var(--text-muted)" }}>
-                    /{p.unit}
-                  </span>
+                  {p.buyPrice > 0 && (
+                    <span className="text-[11px] font-medium" style={{ color: "#9ca3af" }}>
+                      ক্রয়: ৳{p.buyPrice}
+                    </span>
+                  )}
                 </div>
 
-                {/* Actions */}
                 <div className="flex gap-2">
                   <button
                     onClick={() => openEdit(p)}
-                    className="flex-1 h-8 rounded-lg text-[12px] font-medium flex items-center justify-center gap-1.5 cursor-pointer transition-colors duration-150"
+                    className="flex-1 h-9 rounded-lg text-[12px] font-semibold flex items-center justify-center gap-1.5 cursor-pointer transition-colors hover:bg-gray-50"
                     style={{
-                      background: "var(--bg-input)",
-                      color: "var(--text-secondary)",
-                      border: "1px solid var(--border-color)",
+                      background: "#ffffff",
+                      color: "#374151",
+                      border: "1px solid #e5e7eb",
                     }}
                   >
-                    <Pencil size={11} />
+                    <Pencil size={12} />
                     এডিট
                   </button>
                   <button
                     onClick={() => handleDelete(p._id)}
-                    className="h-8 px-3 rounded-lg text-[12px] font-medium flex items-center justify-center gap-1.5 cursor-pointer transition-colors duration-150"
+                    className="h-9 px-3 rounded-lg flex items-center justify-center cursor-pointer transition-colors hover:bg-red-100"
                     style={{
                       background: "#fef2f2",
                       color: "#dc2626",
                       border: "1px solid #fecaca",
                     }}
                   >
-                    <Trash2 size={11} />
+                    <Trash2 size={12} />
                   </button>
                 </div>
               </div>

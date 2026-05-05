@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Plus, Trash2, Pencil, X, User, Phone, MapPin, Banknote } from "lucide-react";
+import { Plus, Trash2, Pencil, User, Phone, MapPin, Banknote } from "lucide-react";
 import toast from "react-hot-toast";
 import AnimatedModal from "@/components/ui/AnimatedModal";
 
@@ -111,7 +111,7 @@ export default function CustomersPage() {
     loadData();
   };
 
-  const inputStyle = "w-full h-10 px-3 rounded-lg text-sm outline-none";
+  const inputStyle = "w-full h-10 px-3 rounded-lg text-[13px] outline-none transition-colors focus:border-[#66a80f]";
 
   if (loading) {
     return <div className="flex items-center justify-center h-64">
@@ -119,37 +119,111 @@ export default function CustomersPage() {
     </div>;
   }
 
+  // Stats
+  const totalCustomers = customers.length;
+  const customersWithDue = customers.filter((c) => c.totalDue > 0).length;
+  const totalDueAmount = customers.reduce((s, c) => s + c.totalDue, 0);
+  const avgDue = customersWithDue > 0 ? Math.round(totalDueAmount / customersWithDue) : 0;
+
   return (
-    <div>
-      <div className="flex items-center justify-between mb-5">
-        <h2 className="text-lg font-semibold" style={{ color: "var(--text-primary)" }}>কাস্টমার সমূহ</h2>
+    <div className="pb-8 space-y-5">
+      {/* Page Header */}
+      <div className="flex items-end justify-between flex-wrap gap-3">
+        <div>
+          <h1 className="text-[26px] sm:text-[28px] font-bold tracking-tight" style={{ color: "#111827", letterSpacing: "-0.02em" }}>কাস্টমার সমূহ</h1>
+          <p className="text-[13px] font-medium mt-1" style={{ color: "#6b7280" }}>মোট {totalCustomers} জন কাস্টমার · {customersWithDue} জনের বকেয়া আছে</p>
+        </div>
         <button onClick={() => setShowForm(!showForm)}
-          className="flex items-center gap-2 h-10 px-4 rounded-lg text-sm font-medium text-white cursor-pointer" style={{ background: "#66a80f" }}>
-          <Plus size={16} /> কাস্টমার এড
+          className="flex items-center gap-2 h-10 px-4 rounded-lg text-[13px] font-semibold text-white cursor-pointer transition-all hover:shadow-sm"
+          style={{ background: "#66a80f" }}>
+          <Plus size={16} /> নতুন কাস্টমার
         </button>
       </div>
 
+      {/* KPI Cards */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <div className="rounded-2xl p-5" style={{ background: "#ffffff", border: "1px solid #e5e7eb" }}>
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "#6b7280" }}>মোট কাস্টমার</p>
+            <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "rgba(102,168,15,0.1)" }}>
+              <User size={14} strokeWidth={2.2} style={{ color: "#66a80f" }} />
+            </div>
+          </div>
+          <p className="text-[26px] font-bold leading-none" style={{ color: "#111827", letterSpacing: "-0.025em", fontVariantNumeric: "tabular-nums" }}>
+            {totalCustomers.toLocaleString("en-US")}
+          </p>
+        </div>
+
+        <div className="rounded-2xl p-5" style={{ background: "#ffffff", border: "1px solid #e5e7eb" }}>
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "#6b7280" }}>বকেয়া কাস্টমার</p>
+            <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "#fffbeb" }}>
+              <Banknote size={14} strokeWidth={2.2} style={{ color: "#d97706" }} />
+            </div>
+          </div>
+          <p className="text-[26px] font-bold leading-none" style={{ color: "#111827", letterSpacing: "-0.025em", fontVariantNumeric: "tabular-nums" }}>
+            {customersWithDue.toLocaleString("en-US")}
+          </p>
+        </div>
+
+        <div className="rounded-2xl p-5" style={{ background: "#ffffff", border: "1px solid #e5e7eb" }}>
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "#6b7280" }}>মোট বকেয়া</p>
+            <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "#fef2f2" }}>
+              <Banknote size={14} strokeWidth={2.2} style={{ color: "#dc2626" }} />
+            </div>
+          </div>
+          <p className="text-[26px] font-bold leading-none" style={{ color: "#111827", letterSpacing: "-0.025em", fontVariantNumeric: "tabular-nums" }}>
+            ৳{totalDueAmount.toLocaleString("en-US")}
+          </p>
+        </div>
+
+        <div className="rounded-2xl p-5" style={{ background: "#ffffff", border: "1px solid #e5e7eb" }}>
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "#6b7280" }}>গড় বকেয়া</p>
+            <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "#f3f4f6" }}>
+              <Banknote size={14} strokeWidth={2.2} style={{ color: "#374151" }} />
+            </div>
+          </div>
+          <p className="text-[26px] font-bold leading-none" style={{ color: "#111827", letterSpacing: "-0.025em", fontVariantNumeric: "tabular-nums" }}>
+            ৳{avgDue.toLocaleString("en-US")}
+          </p>
+        </div>
+      </div>
+
+      {/* Add Customer Form */}
       {showForm && (
-        <div className="rounded-xl p-5 mb-5" style={{ background: "var(--bg-card)", border: "1px solid var(--border-color)" }}>
+        <div className="rounded-2xl p-5" style={{ background: "#ffffff", border: "1px solid #e5e7eb" }}>
+          <div className="flex items-center gap-2 mb-4">
+            <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: "rgba(102,168,15,0.1)" }}>
+              <Plus size={15} strokeWidth={2.2} style={{ color: "#66a80f" }} />
+            </div>
+            <h3 className="text-[14px] font-semibold" style={{ color: "#111827" }}>নতুন কাস্টমার যোগ করুন</h3>
+          </div>
           <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
-              <label className="block text-[12px] font-medium mb-1.5" style={{ color: "var(--text-secondary)" }}>নাম</label>
+              <label className="block text-[11px] font-semibold uppercase tracking-wider mb-1.5" style={{ color: "#6b7280" }}>নাম</label>
               <input value={name} onChange={(e) => setName(e.target.value)} placeholder="কাস্টমার নাম" className={inputStyle}
-                style={{ background: "var(--bg-input)", color: "var(--text-primary)", border: "1px solid var(--border-color)" }} />
+                style={{ background: "#fafafa", color: "#111827", border: "1px solid #e5e7eb" }} />
             </div>
             <div>
-              <label className="block text-[12px] font-medium mb-1.5" style={{ color: "var(--text-secondary)" }}>ফোন</label>
+              <label className="block text-[11px] font-semibold uppercase tracking-wider mb-1.5" style={{ color: "#6b7280" }}>ফোন</label>
               <input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="ফোন নম্বর" className={inputStyle}
-                style={{ background: "var(--bg-input)", color: "var(--text-primary)", border: "1px solid var(--border-color)" }} />
+                style={{ background: "#fafafa", color: "#111827", border: "1px solid #e5e7eb" }} />
             </div>
             <div>
-              <label className="block text-[12px] font-medium mb-1.5" style={{ color: "var(--text-secondary)" }}>ঠিকানা</label>
+              <label className="block text-[11px] font-semibold uppercase tracking-wider mb-1.5" style={{ color: "#6b7280" }}>ঠিকানা</label>
               <input value={address} onChange={(e) => setAddress(e.target.value)} placeholder="ঠিকানা" className={inputStyle}
-                style={{ background: "var(--bg-input)", color: "var(--text-primary)", border: "1px solid var(--border-color)" }} />
+                style={{ background: "#fafafa", color: "#111827", border: "1px solid #e5e7eb" }} />
             </div>
-            <div className="md:col-span-3">
+            <div className="md:col-span-3 flex gap-2">
+              <button type="button" onClick={() => setShowForm(false)}
+                className="h-10 px-5 rounded-lg text-[13px] font-semibold cursor-pointer transition-colors"
+                style={{ background: "#fafafa", color: "#374151", border: "1px solid #e5e7eb" }}>
+                বাতিল
+              </button>
               <button type="submit" disabled={submitting}
-                className="h-10 px-6 rounded-lg text-sm font-semibold text-white cursor-pointer disabled:opacity-50" style={{ background: "#66a80f" }}>
+                className="h-10 px-6 rounded-lg text-[13px] font-semibold text-white cursor-pointer disabled:opacity-50 transition-all hover:shadow-sm" style={{ background: "#66a80f" }}>
                 {submitting ? "সংরক্ষণ হচ্ছে..." : "সংরক্ষণ"}
               </button>
             </div>
@@ -157,27 +231,34 @@ export default function CustomersPage() {
         </div>
       )}
 
-      {/* Customer Cards List */}
-      <div className="flex flex-col gap-3">
+      {/* Customer Table-style List */}
+      <div className="rounded-2xl overflow-hidden" style={{ background: "#ffffff", border: "1px solid #e5e7eb" }}>
+        <div className="px-5 py-3.5 flex items-center justify-between" style={{ borderBottom: "1px solid #e5e7eb" }}>
+          <h3 className="text-[13px] font-semibold" style={{ color: "#111827" }}>কাস্টমার তালিকা</h3>
+          <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full" style={{ background: "#f3f4f6", color: "#374151" }}>{totalCustomers}</span>
+        </div>
         {customers.length === 0 ? (
-          <div className="rounded-xl py-12 text-center" style={{ background: "var(--bg-card)", border: "1px solid var(--border-color)" }}>
-            <p className="text-sm" style={{ color: "var(--text-muted)" }}>কোনো কাস্টমার নেই</p>
+          <div className="py-16 text-center">
+            <div className="w-12 h-12 rounded-full mx-auto mb-3 flex items-center justify-center" style={{ background: "#f3f4f6" }}>
+              <User size={20} strokeWidth={1.5} style={{ color: "#9ca3af" }} />
+            </div>
+            <p className="text-[13px] font-medium" style={{ color: "#6b7280" }}>কোনো কাস্টমার নেই</p>
           </div>
         ) : (
-          customers.map((c) => (
-            <div key={c._id} className="rounded-xl p-4" style={{ background: "var(--bg-card)", border: "1px solid var(--border-color)", boxShadow: "0 1px 3px rgba(0,0,0,0.04)" }}>
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0" style={{ background: "#f0fdf4" }}>
-                  <User size={18} style={{ color: "#66a80f" }} />
+          <div className="flex flex-col">
+            {customers.map((c, idx) => (
+              <div key={c._id} className="flex items-center gap-3 px-5 py-3.5 transition-colors hover:bg-gray-50" style={{ borderTop: idx > 0 ? "1px solid #f3f4f6" : "none" }}>
+                <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0 text-[13px] font-semibold" style={{ background: "#f3f4f6", color: "#111827" }}>
+                  {c.name[0]?.toUpperCase() || "?"}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-[14px] font-bold truncate" style={{ color: "var(--text-primary)" }}>{c.name}</p>
-                  <div className="flex items-center gap-3 mt-0.5">
-                    <span className="flex items-center gap-1 text-[11px]" style={{ color: "var(--text-muted)" }}>
+                  <p className="text-[14px] font-semibold truncate" style={{ color: "#111827" }}>{c.name}</p>
+                  <div className="flex items-center gap-3 mt-0.5 flex-wrap">
+                    <span className="flex items-center gap-1 text-[11px] font-medium" style={{ color: "#6b7280" }}>
                       <Phone size={10} /> {c.phone}
                     </span>
                     {c.address && (
-                      <span className="flex items-center gap-1 text-[11px]" style={{ color: "var(--text-muted)" }}>
+                      <span className="flex items-center gap-1 text-[11px] font-medium" style={{ color: "#6b7280" }}>
                         <MapPin size={10} /> {c.address}
                       </span>
                     )}
@@ -185,26 +266,29 @@ export default function CustomersPage() {
                 </div>
                 <div className="text-right shrink-0 mr-2">
                   {c.totalDue > 0 ? (
-                    <p className="text-[15px] font-extrabold" style={{ color: "#dc2626" }}>৳{c.totalDue}</p>
+                    <>
+                      <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: "#9ca3af" }}>বকেয়া</p>
+                      <p className="text-[15px] font-bold" style={{ color: "#dc2626", fontVariantNumeric: "tabular-nums" }}>৳{c.totalDue.toLocaleString("en-US")}</p>
+                    </>
                   ) : (
-                    <p className="text-[12px] font-medium" style={{ color: "#16a34a" }}>বাকি নেই</p>
+                    <span className="text-[11px] font-semibold px-2.5 py-1 rounded-full" style={{ background: "#f0fdf4", color: "#16a34a" }}>পরিশোধিত</span>
                   )}
                 </div>
                 <div className="flex items-center gap-1.5 shrink-0">
                   <button onClick={() => openEdit(c)}
-                    className="w-8 h-8 rounded-lg flex items-center justify-center cursor-pointer"
-                    style={{ background: "var(--bg-input)", color: "var(--text-muted)", border: "1px solid var(--border-color)" }} title="সম্পাদনা">
+                    className="w-8 h-8 rounded-lg flex items-center justify-center cursor-pointer transition-colors hover:bg-gray-100"
+                    style={{ background: "#ffffff", color: "#6b7280", border: "1px solid #e5e7eb" }} title="সম্পাদনা">
                     <Pencil size={13} />
                   </button>
                   <button onClick={() => handleDelete(c._id)}
-                    className="w-8 h-8 rounded-lg flex items-center justify-center cursor-pointer"
+                    className="w-8 h-8 rounded-lg flex items-center justify-center cursor-pointer transition-colors hover:bg-red-100"
                     style={{ background: "#fef2f2", color: "#dc2626", border: "1px solid #fecaca" }} title="মুছুন">
                     <Trash2 size={13} />
                   </button>
                 </div>
               </div>
-            </div>
-          ))
+            ))}
+          </div>
         )}
       </div>
 

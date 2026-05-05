@@ -88,7 +88,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
       {/* Sidebar */}
       <aside
-        className={`fixed lg:static inset-y-0 left-0 z-50 w-[260px] flex flex-col transition-transform duration-200 lg:translate-x-0 ${
+        className={`fixed lg:static inset-y-0 left-0 z-50 w-[256px] flex flex-col transition-transform duration-200 lg:translate-x-0 ${
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
         }`}
         style={{
@@ -97,15 +97,20 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         }}
       >
         {/* Logo */}
-        <div className="flex items-center gap-3 px-5 h-[60px]" style={{ borderBottom: "1px solid #e5e7eb" }}>
-          <Image src="/logo.png" alt="লোগো" width={30} height={30} className="rounded-lg" />
-          <span className="text-[14px] font-semibold tracking-tight" style={{ color: "#111827", letterSpacing: "-0.01em" }}>
-            ভ্যারাইটিজ কসমেটিক্স
-          </span>
+        <div className="flex items-center gap-2.5 px-5 h-[64px] shrink-0" style={{ borderBottom: "1px solid #f3f4f6" }}>
+          <div className="w-9 h-9 rounded-xl overflow-hidden flex items-center justify-center shrink-0" style={{ background: "#fafafa", border: "1px solid #f3f4f6" }}>
+            <Image src="/logo.png" alt="লোগো" width={32} height={32} className="rounded-lg" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-[13px] font-bold tracking-tight truncate" style={{ color: "#111827", letterSpacing: "-0.01em" }}>
+              ভ্যারাইটিজ
+            </p>
+            <p className="text-[10px] font-medium" style={{ color: "#9ca3af" }}>কসমেটিক্স ম্যানেজার</p>
+          </div>
           <button
             onClick={() => setSidebarOpen(false)}
-            className="ml-auto lg:hidden cursor-pointer w-8 h-8 rounded-lg flex items-center justify-center transition-colors"
-            style={{ color: "#374151", background: "#f3f4f6" }}
+            className="lg:hidden cursor-pointer w-8 h-8 rounded-lg flex items-center justify-center transition-colors hover:bg-gray-100"
+            style={{ color: "#6b7280", background: "#fafafa" }}
           >
             <X size={15} strokeWidth={2.5} />
           </button>
@@ -115,7 +120,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         <nav className="flex-1 py-4 px-3 overflow-y-auto">
           <p className="text-[10px] font-semibold uppercase tracking-wider px-3 mb-2" style={{ color: "#9ca3af" }}>মেনু</p>
           <div className="flex flex-col gap-0.5">
-            {allItems.map((item, idx) => {
+            {navItems.map((item, idx) => {
               const Icon = item.icon;
               const active = isActive(item.href);
               return (
@@ -123,47 +128,81 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   <Link
                     href={item.href}
                     onClick={() => setSidebarOpen(false)}
-                    className="relative flex items-center gap-3 px-3 py-2 rounded-lg text-[13px] transition-all duration-150 w-full group"
+                    className="relative flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-[13px] transition-all duration-150 w-full group"
                     style={{
-                      background: active ? "#f9fafb" : "transparent",
+                      background: active ? "#fafafa" : "transparent",
                       color: active ? "#111827" : "#4b5563",
                       fontWeight: active ? 600 : 500,
                     }}
                   >
                     {active && <div className="absolute left-0 top-1.5 bottom-1.5 w-[3px] rounded-r-full" style={{ background: "#66a80f" }} />}
-                    <Icon size={16} strokeWidth={active ? 2.2 : 1.8} style={{ color: active ? "#66a80f" : "#6b7280" }} />
+                    <div className="w-7 h-7 rounded-lg flex items-center justify-center transition-colors" style={{ background: active ? "rgba(102,168,15,0.1)" : "transparent" }}>
+                      <Icon size={15} strokeWidth={active ? 2.2 : 1.8} style={{ color: active ? "#66a80f" : "#6b7280" }} />
+                    </div>
                     {item.label}
                   </Link>
                 </motion.div>
               );
             })}
           </div>
+
+          {userInfo?.role === "admin" && adminItems.length > 0 && (
+            <>
+              <p className="text-[10px] font-semibold uppercase tracking-wider px-3 mt-5 mb-2" style={{ color: "#9ca3af" }}>এডমিন</p>
+              <div className="flex flex-col gap-0.5">
+                {adminItems.map((item, idx) => {
+                  const Icon = item.icon;
+                  const active = isActive(item.href);
+                  return (
+                    <motion.div key={item.href} initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: (navItems.length + idx) * 0.03 }}>
+                      <Link
+                        href={item.href}
+                        onClick={() => setSidebarOpen(false)}
+                        className="relative flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-[13px] transition-all duration-150 w-full group"
+                        style={{
+                          background: active ? "#fafafa" : "transparent",
+                          color: active ? "#111827" : "#4b5563",
+                          fontWeight: active ? 600 : 500,
+                        }}
+                      >
+                        {active && <div className="absolute left-0 top-1.5 bottom-1.5 w-[3px] rounded-r-full" style={{ background: "#66a80f" }} />}
+                        <div className="w-7 h-7 rounded-lg flex items-center justify-center transition-colors" style={{ background: active ? "rgba(102,168,15,0.1)" : "transparent" }}>
+                          <Icon size={15} strokeWidth={active ? 2.2 : 1.8} style={{ color: active ? "#66a80f" : "#6b7280" }} />
+                        </div>
+                        {item.label}
+                      </Link>
+                    </motion.div>
+                  );
+                })}
+              </div>
+            </>
+          )}
         </nav>
 
         {/* User info + Logout */}
-        <div className="px-3 pb-3" style={{ borderTop: "1px solid #e5e7eb" }}>
-          <div className="flex items-center gap-3 px-2 py-3 mt-2">
+        <div className="shrink-0" style={{ borderTop: "1px solid #f3f4f6" }}>
+          <div className="flex items-center gap-3 px-4 py-3">
             <div
-              className="w-9 h-9 rounded-full flex items-center justify-center text-[13px] font-semibold shrink-0"
-              style={{ background: "#f3f4f6", color: "#111827" }}
+              className="w-9 h-9 rounded-full flex items-center justify-center text-[13px] font-bold shrink-0"
+              style={{ background: "#66a80f", color: "#ffffff" }}
             >
-              {userInfo?.displayName?.[0] || "U"}
+              {userInfo?.displayName?.[0]?.toUpperCase() || "U"}
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-[13px] font-semibold truncate" style={{ color: "#111827" }}>
                 {userInfo?.displayName || "..."}
               </p>
-              <p className="text-[11px] font-medium" style={{ color: "#9ca3af" }}>
-                {userInfo?.role === "admin" ? "এডমিন" : "ইউজার"}
+              <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: "#9ca3af" }}>
+                {userInfo?.role === "admin" ? "এডমিন" : userInfo?.role === "manager" ? "ম্যানেজার" : "ইউজার"}
               </p>
             </div>
             <button
               onClick={handleLogout}
-              className="w-8 h-8 rounded-lg flex items-center justify-center cursor-pointer transition-colors hover:bg-red-50 group"
-              style={{ background: "#f9fafb" }}
+              className="w-8 h-8 rounded-lg flex items-center justify-center cursor-pointer transition-all hover:bg-red-50 group"
+              style={{ background: "#fafafa", border: "1px solid #e5e7eb" }}
               title="লগআউট"
             >
-              <LogOut size={14} strokeWidth={2} className="text-gray-500 group-hover:text-red-600 transition-colors" />
+              <LogOut size={13} strokeWidth={2} className="text-gray-500 group-hover:text-red-600 transition-colors" />
             </button>
           </div>
         </div>
@@ -173,7 +212,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <main className="flex-1 flex flex-col min-w-0">
         {/* Top bar */}
         <header
-          className="sticky top-0 z-30 flex items-center h-[56px] px-4 lg:px-6 gap-3"
+          className="sticky top-0 z-30 flex items-center h-[60px] px-4 lg:px-6 gap-3"
           style={{
             background: "rgba(255,255,255,0.85)",
             backdropFilter: "saturate(180%) blur(20px)",
@@ -183,14 +222,22 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         >
           <button
             onClick={() => setSidebarOpen(true)}
-            className="lg:hidden cursor-pointer w-9 h-9 rounded-lg flex items-center justify-center transition-colors"
-            style={{ color: "#374151", background: "#f3f4f6" }}
+            className="lg:hidden cursor-pointer w-9 h-9 rounded-lg flex items-center justify-center transition-colors hover:bg-gray-100"
+            style={{ color: "#374151", background: "#fafafa", border: "1px solid #e5e7eb" }}
           >
             <Menu size={17} strokeWidth={2.2} />
           </button>
-          <h2 className="text-[15px] font-semibold tracking-tight" style={{ color: "#111827", letterSpacing: "-0.01em" }}>
-            {allItems.find((i) => isActive(i.href))?.label || "ড্যাশবোর্ড"}
-          </h2>
+          <div className="flex items-center gap-2">
+            <h2 className="text-[15px] font-semibold tracking-tight" style={{ color: "#111827", letterSpacing: "-0.01em" }}>
+              {allItems.find((i) => isActive(i.href))?.label || "ড্যাশবোর্ড"}
+            </h2>
+          </div>
+          <div className="ml-auto flex items-center gap-2">
+            <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full" style={{ background: "#f0fdf4", border: "1px solid #bbf7d0" }}>
+              <div className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: "#16a34a" }} />
+              <span className="text-[11px] font-semibold" style={{ color: "#15803d" }}>অনলাইন</span>
+            </div>
+          </div>
         </header>
 
         {/* Content */}

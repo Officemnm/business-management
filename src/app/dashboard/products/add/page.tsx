@@ -2,8 +2,9 @@
 
 import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { Upload, X, ImageIcon, Loader2 } from "lucide-react";
+import { Upload, X, ImageIcon, Loader2, ArrowLeft } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 import toast from "react-hot-toast";
 import AnimatedDropdown from "@/components/ui/AnimatedDropdown";
 
@@ -99,35 +100,45 @@ export default function AddProductPage() {
     }
   };
 
-  const inputStyle = "w-full h-10 px-3 rounded-lg text-sm outline-none";
+  const inputStyle = "w-full h-10 px-3 rounded-lg text-[13px] outline-none transition-colors";
   const isProcessing = submitting || uploading;
+  const labelStyle = "block text-[11px] font-semibold uppercase tracking-wider mb-1.5";
+  const inputStyleObj = { background: "#fafafa", color: "#111827", border: "1px solid #e5e7eb" };
 
   return (
-    <div>
-      <h2 className="text-lg font-semibold mb-5" style={{ color: "var(--text-primary)" }}>
-        নতুন প্রডাক্ট
-      </h2>
-      <div
-        className="rounded-xl p-5 max-w-2xl"
-        style={{ background: "var(--bg-card)", border: "1px solid var(--border-color)" }}
-      >
-        <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div className="pb-8 space-y-5 max-w-3xl">
+      {/* Page Header */}
+      <div className="flex items-center gap-3">
+        <Link
+          href="/dashboard/products"
+          className="w-10 h-10 rounded-lg flex items-center justify-center cursor-pointer transition-colors hover:bg-gray-50"
+          style={{ background: "#ffffff", color: "#374151", border: "1px solid #e5e7eb" }}
+        >
+          <ArrowLeft size={16} strokeWidth={2} />
+        </Link>
+        <div>
+          <h1 className="text-[24px] sm:text-[26px] font-bold tracking-tight" style={{ color: "#111827", letterSpacing: "-0.02em" }}>নতুন প্রডাক্ট</h1>
+          <p className="text-[12px] font-medium mt-0.5" style={{ color: "#6b7280" }}>নতুন প্রডাক্ট যোগ করুন</p>
+        </div>
+      </div>
+
+      {/* Form Card */}
+      <div className="rounded-2xl p-5 sm:p-6" style={{ background: "#ffffff", border: "1px solid #e5e7eb" }}>
+        <form onSubmit={handleSubmit} className="space-y-5">
           {/* Image upload */}
-          <div className="md:col-span-2">
-            <label className="block text-[12px] font-medium mb-1.5" style={{ color: "var(--text-secondary)" }}>
-              প্রডাক্ট ছবি
-            </label>
+          <div>
+            <label className={labelStyle} style={{ color: "#6b7280" }}>প্রডাক্ট ছবি</label>
             {imagePreview ? (
               <div className="relative inline-block">
                 <div
                   className="rounded-xl overflow-hidden"
-                  style={{ border: "1px solid var(--border-color)", maxWidth: "240px" }}
+                  style={{ border: "1px solid #e5e7eb", maxWidth: "220px" }}
                 >
                   <Image
                     src={imagePreview}
                     alt="প্রিভিউ"
-                    width={240}
-                    height={240}
+                    width={220}
+                    height={220}
                     className="w-full h-auto"
                     style={{ objectFit: "contain" }}
                   />
@@ -135,26 +146,28 @@ export default function AddProductPage() {
                 <button
                   type="button"
                   onClick={removeImage}
-                  className="absolute -top-2 -right-2 w-6 h-6 rounded-full flex items-center justify-center cursor-pointer"
+                  className="absolute -top-2 -right-2 w-7 h-7 rounded-full flex items-center justify-center cursor-pointer shadow-sm"
                   style={{ background: "#dc2626", color: "#fff" }}
                 >
-                  <X size={12} />
+                  <X size={13} strokeWidth={2.5} />
                 </button>
               </div>
             ) : (
               <div
                 onClick={() => fileRef.current?.click()}
-                className="flex flex-col items-center justify-center gap-2 py-8 rounded-xl cursor-pointer transition-colors duration-150"
+                className="flex flex-col items-center justify-center gap-2 py-10 rounded-xl cursor-pointer transition-colors hover:bg-gray-50"
                 style={{
-                  background: "var(--bg-input)",
-                  border: "2px dashed var(--border-color)",
+                  background: "#fafafa",
+                  border: "2px dashed #e5e7eb",
                 }}
               >
-                <ImageIcon size={28} style={{ color: "var(--text-muted)" }} strokeWidth={1.5} />
-                <p className="text-[13px]" style={{ color: "var(--text-muted)" }}>
+                <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ background: "#ffffff", border: "1px solid #e5e7eb" }}>
+                  <ImageIcon size={20} style={{ color: "#6b7280" }} strokeWidth={1.8} />
+                </div>
+                <p className="text-[13px] font-semibold" style={{ color: "#374151" }}>
                   ছবি আপলোড করতে ক্লিক করুন
                 </p>
-                <p className="text-[11px]" style={{ color: "var(--text-placeholder)" }}>
+                <p className="text-[11px] font-medium" style={{ color: "#9ca3af" }}>
                   JPG, PNG, WEBP সাপোর্টেড
                 </p>
               </div>
@@ -168,104 +181,110 @@ export default function AddProductPage() {
             />
           </div>
 
-          <div className="md:col-span-2">
-            <label className="block text-[12px] font-medium mb-1.5" style={{ color: "var(--text-secondary)" }}>
-              প্রডাক্ট নাম
-            </label>
+          {/* Name */}
+          <div>
+            <label className={labelStyle} style={{ color: "#6b7280" }}>প্রডাক্ট নাম *</label>
             <input
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="প্রডাক্ট নাম"
               className={inputStyle}
-              style={{ background: "var(--bg-input)", color: "var(--text-primary)", border: "1px solid var(--border-color)" }}
+              style={inputStyleObj}
             />
           </div>
-          <div>
-            <label className="block text-[12px] font-medium mb-1.5" style={{ color: "var(--text-secondary)" }}>
-              ক্যাটেগরি
-            </label>
-            <input
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
-              placeholder="ক্যাটেগরি"
-              className={inputStyle}
-              style={{ background: "var(--bg-input)", color: "var(--text-primary)", border: "1px solid var(--border-color)" }}
-            />
+
+          {/* Category & Unit */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className={labelStyle} style={{ color: "#6b7280" }}>ক্যাটেগরি</label>
+              <input
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+                placeholder="ক্যাটেগরি"
+                className={inputStyle}
+                style={inputStyleObj}
+              />
+            </div>
+            <div>
+              <label className={labelStyle} style={{ color: "#6b7280" }}>একক</label>
+              <AnimatedDropdown
+                options={[
+                  { value: "পিস", label: "পিস" },
+                  { value: "কেজি", label: "কেজি" },
+                  { value: "লিটার", label: "লিটার" },
+                  { value: "প্যাকেট", label: "প্যাকেট" },
+                  { value: "বক্স", label: "বক্স" },
+                ]}
+                value={unit}
+                onChange={setUnit}
+                className="h-10"
+              />
+            </div>
           </div>
-          <div>
-            <label className="block text-[12px] font-medium mb-1.5" style={{ color: "var(--text-secondary)" }}>
-              একক
-            </label>
-            <AnimatedDropdown
-              options={[
-                { value: "পিস", label: "পিস" },
-                { value: "কেজি", label: "কেজি" },
-                { value: "লিটার", label: "লিটার" },
-                { value: "প্যাকেট", label: "প্যাকেট" },
-                { value: "বক্স", label: "বক্স" },
-              ]}
-              value={unit}
-              onChange={setUnit}
-              className="h-10"
-            />
+
+          {/* Prices & Stock */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label className={labelStyle} style={{ color: "#6b7280" }}>ক্রয় মূল্য</label>
+              <input
+                type="number"
+                value={buyPrice}
+                onChange={(e) => setBuyPrice(e.target.value)}
+                placeholder="০"
+                className={inputStyle}
+                style={inputStyleObj}
+              />
+            </div>
+            <div>
+              <label className={labelStyle} style={{ color: "#6b7280" }}>বিক্রয় মূল্য *</label>
+              <input
+                type="number"
+                value={sellPrice}
+                onChange={(e) => setSellPrice(e.target.value)}
+                placeholder="০"
+                className={inputStyle}
+                style={inputStyleObj}
+              />
+            </div>
+            <div>
+              <label className={labelStyle} style={{ color: "#6b7280" }}>স্টক</label>
+              <input
+                type="number"
+                value={stock}
+                onChange={(e) => setStock(e.target.value)}
+                placeholder="০"
+                className={inputStyle}
+                style={inputStyleObj}
+              />
+            </div>
           </div>
+
+          {/* Description */}
           <div>
-            <label className="block text-[12px] font-medium mb-1.5" style={{ color: "var(--text-secondary)" }}>
-              ক্রয় মূল্য
-            </label>
-            <input
-              type="number"
-              value={buyPrice}
-              onChange={(e) => setBuyPrice(e.target.value)}
-              placeholder="০"
-              className={inputStyle}
-              style={{ background: "var(--bg-input)", color: "var(--text-primary)", border: "1px solid var(--border-color)" }}
-            />
-          </div>
-          <div>
-            <label className="block text-[12px] font-medium mb-1.5" style={{ color: "var(--text-secondary)" }}>
-              বিক্রয় মূল্য
-            </label>
-            <input
-              type="number"
-              value={sellPrice}
-              onChange={(e) => setSellPrice(e.target.value)}
-              placeholder="০"
-              className={inputStyle}
-              style={{ background: "var(--bg-input)", color: "var(--text-primary)", border: "1px solid var(--border-color)" }}
-            />
-          </div>
-          <div>
-            <label className="block text-[12px] font-medium mb-1.5" style={{ color: "var(--text-secondary)" }}>
-              স্টক
-            </label>
-            <input
-              type="number"
-              value={stock}
-              onChange={(e) => setStock(e.target.value)}
-              placeholder="০"
-              className={inputStyle}
-              style={{ background: "var(--bg-input)", color: "var(--text-primary)", border: "1px solid var(--border-color)" }}
-            />
-          </div>
-          <div>
-            <label className="block text-[12px] font-medium mb-1.5" style={{ color: "var(--text-secondary)" }}>
-              বিবরণ
-            </label>
+            <label className={labelStyle} style={{ color: "#6b7280" }}>বিবরণ</label>
             <input
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="বিবরণ (ঐচ্ছিক)"
               className={inputStyle}
-              style={{ background: "var(--bg-input)", color: "var(--text-primary)", border: "1px solid var(--border-color)" }}
+              style={inputStyleObj}
             />
           </div>
-          <div className="md:col-span-2">
+
+          {/* Actions */}
+          <div className="flex gap-2 pt-2" style={{ borderTop: "1px solid #f3f4f6" }}>
+            <Link
+              href="/dashboard/products"
+              className="h-10 px-5 rounded-lg text-[13px] font-semibold flex items-center cursor-pointer transition-colors hover:bg-gray-50"
+              style={{ background: "#ffffff", color: "#374151", border: "1px solid #e5e7eb", marginTop: "1rem" }}
+            >
+              বাতিল
+            </Link>
             <button
               type="submit"
               disabled={isProcessing}
-              className="h-10 px-6 rounded-lg text-sm font-semibold text-white cursor-pointer disabled:opacity-50 flex items-center gap-2"
-              style={{ background: "#66a80f" }}
+              className="h-10 px-6 rounded-lg text-[13px] font-semibold text-white cursor-pointer disabled:opacity-50 flex items-center gap-2 transition-all hover:shadow-sm"
+              style={{ background: "#66a80f", marginTop: "1rem" }}
             >
               {isProcessing ? (
                 <>

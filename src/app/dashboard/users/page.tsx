@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Plus, Trash2, Shield, ShieldCheck, Pencil, X, User, KeyRound } from "lucide-react";
+import { Plus, Trash2, Shield, ShieldCheck, Pencil, User, KeyRound } from "lucide-react";
 import toast from "react-hot-toast";
 import AnimatedModal from "@/components/ui/AnimatedModal";
 import AnimatedDropdown from "@/components/ui/AnimatedDropdown";
@@ -114,7 +114,7 @@ export default function UsersPage() {
     loadData();
   };
 
-  const inputStyle = "w-full h-10 px-3 rounded-lg text-sm outline-none";
+  const inputStyle = "w-full h-10 px-3 rounded-lg text-[13px] outline-none transition-colors";
 
   if (loading) {
     return <div className="flex items-center justify-center h-64">
@@ -122,41 +122,115 @@ export default function UsersPage() {
     </div>;
   }
 
+  // Stats
+  const totalUsers = users.length;
+  const activeUsers = users.filter((u) => u.active).length;
+  const adminCount = users.filter((u) => u.role === "admin").length;
+  const managerCount = users.filter((u) => u.role === "manager").length;
+
   return (
-    <div>
-      <div className="flex items-center justify-between mb-5">
-        <h2 className="text-lg font-semibold" style={{ color: "var(--text-primary)" }}>ইউজার ম্যানেজমেন্ট</h2>
+    <div className="pb-8 space-y-5">
+      {/* Page Header */}
+      <div className="flex items-end justify-between flex-wrap gap-3">
+        <div>
+          <h1 className="text-[26px] sm:text-[28px] font-bold tracking-tight" style={{ color: "#111827", letterSpacing: "-0.02em" }}>ইউজার ম্যানেজমেন্ট</h1>
+          <p className="text-[13px] font-medium mt-1" style={{ color: "#6b7280" }}>মোট {totalUsers} জন ইউজার · {activeUsers} জন সক্রিয়</p>
+        </div>
         <button onClick={() => setShowForm(!showForm)}
-          className="flex items-center gap-2 h-10 px-4 rounded-lg text-sm font-medium text-white cursor-pointer" style={{ background: "#66a80f" }}>
+          className="flex items-center gap-2 h-10 px-4 rounded-lg text-[13px] font-semibold text-white cursor-pointer transition-all hover:shadow-sm"
+          style={{ background: "#66a80f" }}>
           <Plus size={16} /> নতুন ইউজার
         </button>
       </div>
 
+      {/* KPI Cards */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <div className="rounded-2xl p-5" style={{ background: "#ffffff", border: "1px solid #e5e7eb" }}>
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "#6b7280" }}>মোট ইউজার</p>
+            <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "rgba(102,168,15,0.1)" }}>
+              <User size={14} strokeWidth={2.2} style={{ color: "#66a80f" }} />
+            </div>
+          </div>
+          <p className="text-[26px] font-bold leading-none" style={{ color: "#111827", letterSpacing: "-0.025em", fontVariantNumeric: "tabular-nums" }}>
+            {totalUsers.toLocaleString("en-US")}
+          </p>
+        </div>
+
+        <div className="rounded-2xl p-5" style={{ background: "#ffffff", border: "1px solid #e5e7eb" }}>
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "#6b7280" }}>সক্রিয়</p>
+            <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "#f0fdf4" }}>
+              <ShieldCheck size={14} strokeWidth={2.2} style={{ color: "#16a34a" }} />
+            </div>
+          </div>
+          <p className="text-[26px] font-bold leading-none" style={{ color: "#111827", letterSpacing: "-0.025em", fontVariantNumeric: "tabular-nums" }}>
+            {activeUsers.toLocaleString("en-US")}
+          </p>
+        </div>
+
+        <div className="rounded-2xl p-5" style={{ background: "#ffffff", border: "1px solid #e5e7eb" }}>
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "#6b7280" }}>এডমিন</p>
+            <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "#fef2f2" }}>
+              <Shield size={14} strokeWidth={2.2} style={{ color: "#dc2626" }} />
+            </div>
+          </div>
+          <p className="text-[26px] font-bold leading-none" style={{ color: "#111827", letterSpacing: "-0.025em", fontVariantNumeric: "tabular-nums" }}>
+            {adminCount.toLocaleString("en-US")}
+          </p>
+        </div>
+
+        <div className="rounded-2xl p-5" style={{ background: "#ffffff", border: "1px solid #e5e7eb" }}>
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "#6b7280" }}>ম্যানেজার</p>
+            <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "#eff6ff" }}>
+              <Shield size={14} strokeWidth={2.2} style={{ color: "#2563eb" }} />
+            </div>
+          </div>
+          <p className="text-[26px] font-bold leading-none" style={{ color: "#111827", letterSpacing: "-0.025em", fontVariantNumeric: "tabular-nums" }}>
+            {managerCount.toLocaleString("en-US")}
+          </p>
+        </div>
+      </div>
+
+      {/* Add User Form */}
       {showForm && (
-        <div className="rounded-xl p-5 mb-5" style={{ background: "var(--bg-card)", border: "1px solid var(--border-color)" }}>
+        <div className="rounded-2xl p-5" style={{ background: "#ffffff", border: "1px solid #e5e7eb" }}>
+          <div className="flex items-center gap-2 mb-4">
+            <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: "rgba(102,168,15,0.1)" }}>
+              <Plus size={15} strokeWidth={2.2} style={{ color: "#66a80f" }} />
+            </div>
+            <h3 className="text-[14px] font-semibold" style={{ color: "#111827" }}>নতুন ইউজার তৈরি করুন</h3>
+          </div>
           <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-[12px] font-medium mb-1.5" style={{ color: "var(--text-secondary)" }}>ইউজারনেম</label>
+              <label className="block text-[11px] font-semibold uppercase tracking-wider mb-1.5" style={{ color: "#6b7280" }}>ইউজারনেম</label>
               <input value={username} onChange={(e) => setUsername(e.target.value)} placeholder="ইউজারনেম" className={inputStyle}
-                style={{ background: "var(--bg-input)", color: "var(--text-primary)", border: "1px solid var(--border-color)" }} />
+                style={{ background: "#fafafa", color: "#111827", border: "1px solid #e5e7eb" }} />
             </div>
             <div>
-              <label className="block text-[12px] font-medium mb-1.5" style={{ color: "var(--text-secondary)" }}>পাসওয়ার্ড</label>
+              <label className="block text-[11px] font-semibold uppercase tracking-wider mb-1.5" style={{ color: "#6b7280" }}>পাসওয়ার্ড</label>
               <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="পাসওয়ার্ড" className={inputStyle}
-                style={{ background: "var(--bg-input)", color: "var(--text-primary)", border: "1px solid var(--border-color)" }} />
+                style={{ background: "#fafafa", color: "#111827", border: "1px solid #e5e7eb" }} />
             </div>
             <div>
-              <label className="block text-[12px] font-medium mb-1.5" style={{ color: "var(--text-secondary)" }}>প্রদর্শন নাম</label>
+              <label className="block text-[11px] font-semibold uppercase tracking-wider mb-1.5" style={{ color: "#6b7280" }}>প্রদর্শন নাম</label>
               <input value={displayName} onChange={(e) => setDisplayName(e.target.value)} placeholder="পুরো নাম" className={inputStyle}
-                style={{ background: "var(--bg-input)", color: "var(--text-primary)", border: "1px solid var(--border-color)" }} />
+                style={{ background: "#fafafa", color: "#111827", border: "1px solid #e5e7eb" }} />
             </div>
             <div>
-              <label className="block text-[12px] font-medium mb-1.5" style={{ color: "var(--text-secondary)" }}>পদবি</label>
+              <label className="block text-[11px] font-semibold uppercase tracking-wider mb-1.5" style={{ color: "#6b7280" }}>পদবি</label>
               <AnimatedDropdown options={roles} value={role} onChange={setRole} className="h-10" />
             </div>
-            <div className="md:col-span-2">
+            <div className="md:col-span-2 flex gap-2">
+              <button type="button" onClick={() => setShowForm(false)}
+                className="h-10 px-5 rounded-lg text-[13px] font-semibold cursor-pointer transition-colors"
+                style={{ background: "#fafafa", color: "#374151", border: "1px solid #e5e7eb" }}>
+                বাতিল
+              </button>
               <button type="submit" disabled={submitting}
-                className="h-10 px-6 rounded-lg text-sm font-semibold text-white cursor-pointer disabled:opacity-50" style={{ background: "#66a80f" }}>
+                className="h-10 px-6 rounded-lg text-[13px] font-semibold text-white cursor-pointer disabled:opacity-50 transition-all hover:shadow-sm" style={{ background: "#66a80f" }}>
                 {submitting ? "তৈরি হচ্ছে..." : "ইউজার তৈরি"}
               </button>
             </div>
@@ -164,27 +238,34 @@ export default function UsersPage() {
         </div>
       )}
 
-      {/* User Cards */}
-      <div className="flex flex-col gap-3">
+      {/* User Table */}
+      <div className="rounded-2xl overflow-hidden" style={{ background: "#ffffff", border: "1px solid #e5e7eb" }}>
+        <div className="px-5 py-3.5 flex items-center justify-between" style={{ borderBottom: "1px solid #e5e7eb" }}>
+          <h3 className="text-[13px] font-semibold" style={{ color: "#111827" }}>ইউজার তালিকা</h3>
+          <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full" style={{ background: "#f3f4f6", color: "#374151" }}>{totalUsers}</span>
+        </div>
         {users.length === 0 ? (
-          <div className="rounded-xl py-12 text-center" style={{ background: "var(--bg-card)", border: "1px solid var(--border-color)" }}>
-            <p className="text-sm" style={{ color: "var(--text-muted)" }}>কোনো ইউজার নেই</p>
+          <div className="py-16 text-center">
+            <div className="w-12 h-12 rounded-full mx-auto mb-3 flex items-center justify-center" style={{ background: "#f3f4f6" }}>
+              <User size={20} strokeWidth={1.5} style={{ color: "#9ca3af" }} />
+            </div>
+            <p className="text-[13px] font-medium" style={{ color: "#6b7280" }}>কোনো ইউজার নেই</p>
           </div>
         ) : (
-          users.map((u) => (
-            <div key={u._id} className="rounded-xl p-4" style={{ background: "var(--bg-card)", border: "1px solid var(--border-color)" }}>
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0 text-[13px] font-bold text-white"
+          <div className="flex flex-col">
+            {users.map((u, idx) => (
+              <div key={u._id} className="flex items-center gap-3 px-5 py-3.5 transition-colors hover:bg-gray-50" style={{ borderTop: idx > 0 ? "1px solid #f3f4f6" : "none" }}>
+                <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0 text-[13px] font-semibold text-white"
                   style={{ background: u.active ? "#66a80f" : "#9ca3af" }}>
-                  {u.displayName[0]}
+                  {u.displayName[0]?.toUpperCase() || "?"}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <p className="text-[14px] font-bold truncate" style={{ color: "var(--text-primary)" }}>{u.displayName}</p>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <p className="text-[14px] font-semibold truncate" style={{ color: "#111827" }}>{u.displayName}</p>
                     <span className="text-[10px] px-2 py-0.5 rounded-full font-semibold shrink-0"
                       style={{
-                        background: u.role === "admin" ? "#fef2f2" : u.role === "manager" ? "#eff6ff" : "#f0fdf4",
-                        color: u.role === "admin" ? "#dc2626" : u.role === "manager" ? "#2563eb" : "#16a34a",
+                        background: u.role === "admin" ? "#fef2f2" : u.role === "manager" ? "#eff6ff" : u.role === "asr" ? "#fffbeb" : "#f0fdf4",
+                        color: u.role === "admin" ? "#dc2626" : u.role === "manager" ? "#2563eb" : u.role === "asr" ? "#d97706" : "#16a34a",
                       }}>
                       {roles.find((r) => r.value === u.role)?.label || u.role}
                     </span>
@@ -193,30 +274,30 @@ export default function UsersPage() {
                         style={{ background: "#fef2f2", color: "#dc2626" }}>নিষ্ক্রিয়</span>
                     )}
                   </div>
-                  <p className="text-[11px] mt-0.5 flex items-center gap-1" style={{ color: "var(--text-muted)" }}>
+                  <p className="text-[11px] mt-0.5 flex items-center gap-1 font-medium" style={{ color: "#6b7280" }}>
                     <User size={10} /> {u.username}
                   </p>
                 </div>
                 <div className="flex items-center gap-1.5 shrink-0">
                   <button onClick={() => handleToggleActive(u._id, u.active)}
-                    className="w-8 h-8 rounded-lg flex items-center justify-center cursor-pointer"
-                    style={{ background: "var(--bg-input)", border: "1px solid var(--border-color)" }} title={u.active ? "নিষ্ক্রিয় করুন" : "সক্রিয় করুন"}>
+                    className="w-8 h-8 rounded-lg flex items-center justify-center cursor-pointer transition-colors hover:bg-gray-100"
+                    style={{ background: "#ffffff", border: "1px solid #e5e7eb" }} title={u.active ? "নিষ্ক্রিয় করুন" : "সক্রিয় করুন"}>
                     {u.active ? <ShieldCheck size={14} style={{ color: "#16a34a" }} /> : <Shield size={14} style={{ color: "#dc2626" }} />}
                   </button>
                   <button onClick={() => openEdit(u)}
-                    className="w-8 h-8 rounded-lg flex items-center justify-center cursor-pointer"
-                    style={{ background: "var(--bg-input)", color: "var(--text-muted)", border: "1px solid var(--border-color)" }} title="সম্পাদনা">
+                    className="w-8 h-8 rounded-lg flex items-center justify-center cursor-pointer transition-colors hover:bg-gray-100"
+                    style={{ background: "#ffffff", color: "#6b7280", border: "1px solid #e5e7eb" }} title="সম্পাদনা">
                     <Pencil size={13} />
                   </button>
                   <button onClick={() => handleDelete(u._id)}
-                    className="w-8 h-8 rounded-lg flex items-center justify-center cursor-pointer"
+                    className="w-8 h-8 rounded-lg flex items-center justify-center cursor-pointer transition-colors hover:bg-red-100"
                     style={{ background: "#fef2f2", color: "#dc2626", border: "1px solid #fecaca" }} title="মুছুন">
                     <Trash2 size={13} />
                   </button>
                 </div>
               </div>
-            </div>
-          ))
+            ))}
+          </div>
         )}
       </div>
 
