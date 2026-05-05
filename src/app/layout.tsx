@@ -13,7 +13,7 @@ const kalpurush = localFont({
 
 export const metadata: Metadata = {
   title: {
-    default: "ভ্যারাইটিজ কসমেটিক্স — ব্যবসা ব্যবস্থাপনা",
+    default: "ভ্যারাইটিজ কসমেটিক্স",
     template: "%s | ভ্যারাইটিজ কসমেটিক্স",
   },
   description: "পেশাদার ব্যবসা ব্যবস্থাপনা প্ল্যাটফর্ম",

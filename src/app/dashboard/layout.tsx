@@ -103,9 +103,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-[13px] font-bold tracking-tight truncate" style={{ color: "#111827", letterSpacing: "-0.01em" }}>
-              ভ্যারাইটিজ
-            </p>
-            <p className="text-[10px] font-medium" style={{ color: "#9ca3af" }}>কসমেটিক্স ম্যানেজার</p>
+              ভ্যারাইটিজ কসমেটিক্স</p>
+            <p className="text-[10px] font-medium" style={{ color: "#9ca3af" }}>ম্যানেজমেন্ট সিস্টেম</p>
           </div>
           <button
             onClick={() => setSidebarOpen(false)}
