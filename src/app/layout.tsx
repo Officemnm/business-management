@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 import { Toaster } from "react-hot-toast";
 import "./globals.css";
@@ -7,15 +7,33 @@ const kalpurush = localFont({
   src: "../fonts/kalpurush.ttf",
   variable: "--font-kalpurush",
   display: "swap",
+  preload: true,
+  fallback: ["system-ui", "arial"],
 });
 
 export const metadata: Metadata = {
-  title: "ভ্যারাইটিজ কসমেটিক্স — ব্যবসা ব্যবস্থাপনা",
+  title: {
+    default: "ভ্যারাইটিজ কসমেটিক্স — ব্যবসা ব্যবস্থাপনা",
+    template: "%s | ভ্যারাইটিজ কসমেটিক্স",
+  },
   description: "পেশাদার ব্যবসা ব্যবস্থাপনা প্ল্যাটফর্ম",
   icons: {
     icon: "/favicon.png",
     apple: "/favicon.png",
   },
+  applicationName: "ভ্যারাইটিজ কসমেটিক্স",
+  formatDetection: {
+    email: false,
+    address: false,
+    telephone: false,
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#ffffff",
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
 };
 
 export default function RootLayout({
