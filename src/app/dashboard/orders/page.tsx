@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Plus, Package, Tag, X, ShoppingBag, ArrowLeft, Check, Eye, Pencil, Calendar, BarChart3, Trash2, Clock, User, Hash, Truck, Ban, CheckCircle2, RotateCcw, MapPin, CreditCard } from "lucide-react";
+import { Plus, Package, Tag, X, ShoppingBag, ArrowLeft, Check, Eye, Pencil, Calendar, BarChart3, Trash2, Clock, User, Hash, Truck, Ban, CheckCircle2, RotateCcw, MapPin, CreditCard, UserPlus, Search, Edit3, Sparkles } from "lucide-react";
 import Image from "next/image";
 import toast from "react-hot-toast";
+import { motion, AnimatePresence } from "framer-motion";
 import AnimatedModal from "@/components/ui/AnimatedModal";
 import AnimatedDropdown from "@/components/ui/AnimatedDropdown";
 
@@ -22,10 +23,22 @@ export default function OrdersPage() {
   // Order form state
   const [selectedCustomer, setSelectedCustomer] = useState("");
   const [customerName, setCustomerName] = useState("");
+  const [customerPhone, setCustomerPhone] = useState("");
+  const [customerAddressInput, setCustomerAddressInput] = useState("");
+  const [customerSearch, setCustomerSearch] = useState("");
+  const [showCustomerPicker, setShowCustomerPicker] = useState(false);
+  const [saveAsNewCustomer, setSaveAsNewCustomer] = useState(false);
   const [items, setItems] = useState<OrderItem[]>([]);
   const [paidAmount, setPaidAmount] = useState(0);
   const [note, setNote] = useState("");
   const [submitting, setSubmitting] = useState(false);
+
+  // Manual product modal state
+  const [showManualProduct, setShowManualProduct] = useState(false);
+  const [manualName, setManualName] = useState("");
+  const [manualQty, setManualQty] = useState<number | string>(1);
+  const [manualRate, setManualRate] = useState<number | string>("");
+  const [manualRemark, setManualRemark] = useState("");
 
   // Delivery tab filter
   const [deliveryTab, setDeliveryTab] = useState<"pending" | "delivered" | "not_delivered">("pending");
@@ -159,19 +172,54 @@ export default function OrdersPage() {
 
   const removeItem = (idx: number) => setItems(items.filter((_, i) => i !== idx));
 
+  const resetOrderForm = () => {
+    setItems([]);
+    setPaidAmount(0);
+    setNote("");
+    setCustomerName("");
+    setSelectedCustomer("");
+    setCustomerPhone("");
+    setCustomerAddressInput("");
+    setCustomerSearch("");
+    setSaveAsNewCustomer(false);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!customerName.trim()) { toast.error("কাস্টমার নাম লিখুন"); return; }
     if (items.length === 0) { toast.error("কমপক্ষে একটি প্রডাক্ট যোগ করুন"); return; }
+
     setSubmitting(true);
     try {
+      let customerIdToUse = selectedCustomer;
+      let customerAddress = selectedCustomer ? customers.find((c) => c._id === selectedCustomer)?.address || "" : customerAddressInput.trim();
+
+      // Auto-create instant customer if needed
+      if (!selectedCustomer && saveAsNewCustomer && customerPhone.trim()) {
+        const custRes = await fetch("/api/dashboard/customers", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: customerName.trim(),
+            phone: customerPhone.trim(),
+            address: customerAddressInput.trim(),
+          }),
+        });
+        if (custRes.ok) {
+          const newCust = await custRes.json();
+          customerIdToUse = newCust._id;
+          customerAddress = newCust.address || "";
+          toast.success("নতুন কাস্টমার সেভ হয়েছে");
+        }
+      }
+
       const res = await fetch("/api/dashboard/orders", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          customer: selectedCustomer || undefined,
+          customer: customerIdToUse || undefined,
           customerName: customerName.trim(),
-          customerAddress: selectedCustomer ? customers.find((c) => c._id === selectedCustomer)?.address || "" : "",
+          customerAddress,
           items: items.map(({ product, productName, quantity, unitPrice, total, remark }) => ({ product, productName, quantity, unitPrice, total, remark })),
           totalAmount, paidAmount, dueAmount,
           note,
@@ -180,10 +228,36 @@ export default function OrdersPage() {
       if (!res.ok) throw new Error();
       toast.success("অর্ডার সফলভাবে তৈরি হয়েছে");
       setShowForm(false);
-      setItems([]); setPaidAmount(0); setNote(""); setCustomerName(""); setSelectedCustomer("");
+      resetOrderForm();
+      // Reload customers if new one created
+      if (saveAsNewCustomer) {
+        fetch("/api/dashboard/customers").then((r) => r.json()).then(setCustomers);
+      }
       fetchOrders(filterDate);
     } catch { toast.error("অর্ডার তৈরিতে সমস্যা হয়েছে"); }
     finally { setSubmitting(false); }
+  };
+
+  // Add manual product to cart
+  const addManualProduct = () => {
+    const name = manualName.trim();
+    const qty = Number(manualQty) || 0;
+    const rate = Number(manualRate) || 0;
+    if (!name) { toast.error("পণ্যের নাম লিখুন"); return; }
+    if (qty < 1) { toast.error("পরিমাণ ১ এর কম হতে পারে না"); return; }
+    if (rate <= 0) { toast.error("দর লিখুন"); return; }
+
+    setItems([...items, {
+      product: `manual-${Date.now()}`,
+      productName: name,
+      quantity: qty,
+      unitPrice: rate,
+      total: qty * rate,
+      remark: manualRemark.trim(),
+    }]);
+    toast.success(`${name} যোগ হয়েছে`);
+    setShowManualProduct(false);
+    setManualName(""); setManualQty(1); setManualRate(""); setManualRemark("");
   };
 
   const inputStyle = "w-full h-10 px-3 rounded-lg text-sm outline-none transition-all duration-150";
@@ -837,7 +911,7 @@ export default function OrdersPage() {
           <h1 className="text-[26px] sm:text-[28px] font-bold tracking-tight" style={{ color: "#111827", letterSpacing: "-0.02em" }}>অর্ডার সমূহ</h1>
           <p className="text-[13px] font-medium mt-1" style={{ color: "#6b7280" }}>{todayLabel} · মোট {orders.length} টি অর্ডার</p>
         </div>
-        <button onClick={() => setShowForm(!showForm)}
+        <button onClick={() => { resetOrderForm(); setShowForm(true); }}
           className="flex items-center gap-2 h-10 px-4 rounded-lg text-[13px] font-semibold text-white cursor-pointer transition-all hover:shadow-sm"
           style={{ background: "#66a80f" }}>
           <Plus size={16} /> নতুন অর্ডার
@@ -984,112 +1058,6 @@ export default function OrdersPage() {
         </button>
       </div>
 
-      {showForm && (
-        <div className="rounded-xl p-5 mb-5" style={{ background: "var(--bg-card)", border: "1px solid var(--border-color)" }}>
-          <form onSubmit={handleSubmit}>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-              <div>
-                <label className="block text-[12px] font-medium mb-1.5" style={{ color: "var(--text-secondary)" }}>কাস্টমার</label>
-                <AnimatedDropdown
-                  options={[{ value: "", label: "নতুন কাস্টমার" }, ...customers.map(c => ({ value: c._id, label: `${c.name} - ${c.phone}` }))]}
-                  value={selectedCustomer}
-                  onChange={(v) => { setSelectedCustomer(v); const c = customers.find((x) => x._id === v); if (c) setCustomerName(c.name); }}
-                  className="h-10"
-                />
-              </div>
-              <div>
-                <label className="block text-[12px] font-medium mb-1.5" style={{ color: "var(--text-secondary)" }}>কাস্টমার নাম</label>
-                <input value={customerName} onChange={(e) => setCustomerName(e.target.value)} placeholder="কাস্টমার নাম"
-                  className={inputStyle}
-                  style={{ background: "var(--bg-input)", color: "var(--text-primary)", border: "1px solid var(--border-color)" }} />
-              </div>
-            </div>
-
-            {/* Product picker button */}
-            <div className="mb-4">
-              <label className="block text-[12px] font-medium mb-1.5" style={{ color: "var(--text-secondary)" }}>পণ্য নির্বাচন</label>
-              <button type="button" onClick={() => setShowCatalog(true)}
-                className="w-full h-12 rounded-xl flex items-center justify-center gap-3 cursor-pointer transition-colors duration-150 text-sm font-medium"
-                style={{ background: "var(--bg-input)", border: "2px dashed var(--border-color)", color: "var(--text-secondary)" }}>
-                <ShoppingBag size={18} style={{ color: "#66a80f" }} />
-                পণ্য ক্যাটালগ থেকে নির্বাচন করুন
-                {items.length > 0 && (
-                  <span className="text-[12px] px-2 py-0.5 rounded-full text-white font-bold" style={{ background: "#66a80f" }}>{items.length}</span>
-                )}
-              </button>
-            </div>
-
-            {/* Items summary */}
-            {items.length > 0 && (
-              <div className="mb-4 rounded-xl overflow-hidden" style={{ border: "1px solid var(--border-color)" }}>
-                <div className="px-4 py-2.5 flex items-center justify-between" style={{ background: "var(--bg-input)" }}>
-                  <span className="text-[12px] font-semibold" style={{ color: "var(--text-secondary)" }}>নির্বাচিত পণ্য ({items.length})</span>
-                  <span className="text-[13px] font-bold" style={{ color: "#66a80f" }}>৳{totalAmount}</span>
-                </div>
-                {items.map((item, idx) => (
-                  <div key={idx} className="flex items-center gap-3 px-4 py-3" style={{ borderTop: "1px solid var(--border-color)" }}>
-                    <div className="w-12 h-12 rounded-lg overflow-hidden shrink-0 flex items-center justify-center" style={{ background: "var(--bg-input)" }}>
-                      {item.image ? (
-                        <Image src={item.image} alt={item.productName} width={48} height={48} className="w-full h-full" style={{ objectFit: "contain" }} unoptimized />
-                      ) : (
-                        <Package size={18} style={{ color: "var(--border-color)" }} strokeWidth={1} />
-                      )}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-[13px] font-medium truncate" style={{ color: "var(--text-primary)" }}>{item.productName}</p>
-                      <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>
-                        {item.quantity} x ৳{item.unitPrice} = <b style={{ color: "var(--text-primary)" }}>৳{item.total}</b>
-                        {item.remark && <span className="ml-2" style={{ color: "var(--text-muted)" }}>&middot; {item.remark}</span>}
-                      </p>
-                    </div>
-                    <button type="button" onClick={() => removeItem(idx)} className="cursor-pointer shrink-0" style={{ color: "#dc2626" }}>
-                      <X size={15} />
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {/* Totals */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-              <div>
-                <label className="block text-[12px] font-medium mb-1.5" style={{ color: "var(--text-secondary)" }}>মোট</label>
-                <div className="h-10 px-3 flex items-center rounded-lg text-sm font-bold"
-                  style={{ background: "var(--bg-input)", color: "var(--text-primary)", border: "1px solid var(--border-color)" }}>
-                  ৳{totalAmount}
-                </div>
-              </div>
-              <div>
-                <label className="block text-[12px] font-medium mb-1.5" style={{ color: "var(--text-secondary)" }}>পরিশোধ</label>
-                <input type="number" value={paidAmount} onChange={(e) => setPaidAmount(Number(e.target.value))}
-                  className={inputStyle} min={0}
-                  style={{ background: "var(--bg-input)", color: "var(--text-primary)", border: "1px solid var(--border-color)" }} />
-              </div>
-              <div>
-                <label className="block text-[12px] font-medium mb-1.5" style={{ color: "var(--text-secondary)" }}>বাকি</label>
-                <div className="h-10 px-3 flex items-center rounded-lg text-sm font-bold"
-                  style={{ background: dueAmount > 0 ? "#fef2f2" : "var(--bg-input)", color: dueAmount > 0 ? "#dc2626" : "var(--text-primary)", border: "1px solid var(--border-color)" }}>
-                  ৳{dueAmount}
-                </div>
-              </div>
-            </div>
-
-            <div className="mb-4">
-              <label className="block text-[12px] font-medium mb-1.5" style={{ color: "var(--text-secondary)" }}>নোট</label>
-              <input value={note} onChange={(e) => setNote(e.target.value)} placeholder="অতিরিক্ত তথ্য"
-                className={inputStyle}
-                style={{ background: "var(--bg-input)", color: "var(--text-primary)", border: "1px solid var(--border-color)" }} />
-            </div>
-
-            <button type="submit" disabled={submitting}
-              className="h-10 px-6 rounded-lg text-sm font-semibold text-white cursor-pointer disabled:opacity-50"
-              style={{ background: "#66a80f" }}>
-              {submitting ? "সংরক্ষণ হচ্ছে..." : "অর্ডার সংরক্ষণ"}
-            </button>
-          </form>
-        </div>
-      )}
-
       {/* Orders List */}
       {(() => {
         const filteredOrders = orders.filter((o) => {
@@ -1201,6 +1169,492 @@ export default function OrdersPage() {
       {renderViewModal()}
       {renderEditModal()}
       {renderSummaryModal()}
+
+      {/* ===================== NEW ORDER FULL-SCREEN ANIMATED PANEL ===================== */}
+      <AnimatePresence>
+        {showForm && !showCatalog && (
+          <motion.div
+            className="fixed inset-0 z-[90] flex flex-col"
+            style={{ background: "#fafafa" }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+          >
+            {/* Overlay for mobile */}
+            <motion.div
+              initial={{ y: 30, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: 30, opacity: 0 }}
+              transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+              className="flex flex-col h-full"
+            >
+              {/* Header */}
+              <div
+                className="flex items-center gap-3 h-[60px] px-4 lg:px-6 shrink-0"
+                style={{
+                  background: "rgba(255,255,255,0.85)",
+                  backdropFilter: "saturate(180%) blur(20px)",
+                  WebkitBackdropFilter: "saturate(180%) blur(20px)",
+                  borderBottom: "1px solid #e5e7eb",
+                }}
+              >
+                <button
+                  type="button"
+                  onClick={() => { setShowForm(false); resetOrderForm(); }}
+                  className="w-9 h-9 rounded-lg flex items-center justify-center cursor-pointer transition-colors hover:bg-gray-100"
+                  style={{ background: "#ffffff", border: "1px solid #e5e7eb", color: "#374151" }}
+                >
+                  <ArrowLeft size={16} strokeWidth={2} />
+                </button>
+                <div className="flex-1 min-w-0">
+                  <h2 className="text-[16px] font-bold tracking-tight truncate" style={{ color: "#111827", letterSpacing: "-0.01em" }}>
+                    নতুন অর্ডার তৈরি করুন
+                  </h2>
+                  <p className="text-[11px] font-medium" style={{ color: "#6b7280" }}>
+                    {items.length > 0 ? `${items.length} টি পণ্য · ৳${totalAmount.toLocaleString("en-US")}` : "কাস্টমার ও পণ্য নির্বাচন করুন"}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleSubmit}
+                  disabled={submitting || items.length === 0 || !customerName.trim()}
+                  className="hidden sm:flex items-center gap-2 h-10 px-5 rounded-lg text-[13px] font-semibold text-white cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed transition-all hover:shadow-sm"
+                  style={{ background: "#66a80f" }}
+                >
+                  <Check size={15} strokeWidth={2.5} />
+                  {submitting ? "সংরক্ষণ হচ্ছে..." : "অর্ডার সংরক্ষণ"}
+                </button>
+              </div>
+
+              {/* Scrollable content */}
+              <div className="flex-1 overflow-y-auto">
+                <form onSubmit={handleSubmit} className="max-w-3xl mx-auto p-4 lg:p-6 space-y-5">
+                  {/* Customer Section */}
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.05, duration: 0.3 }}
+                    className="rounded-2xl p-5"
+                    style={{ background: "#ffffff", border: "1px solid #e5e7eb" }}
+                  >
+                    <div className="flex items-center gap-2 mb-4">
+                      <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: "rgba(102,168,15,0.1)" }}>
+                        <User size={15} strokeWidth={2.2} style={{ color: "#66a80f" }} />
+                      </div>
+                      <h3 className="text-[14px] font-semibold" style={{ color: "#111827" }}>কাস্টমার</h3>
+                      {selectedCustomer && (
+                        <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full ml-auto" style={{ background: "#f0fdf4", color: "#16a34a" }}>
+                          সেভড কাস্টমার
+                        </span>
+                      )}
+                      {!selectedCustomer && customerName && (
+                        <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full ml-auto" style={{ background: "#fffbeb", color: "#d97706" }}>
+                          ইনস্ট্যান্ট
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Customer search input */}
+                    <div className="relative mb-3">
+                      <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: "#9ca3af" }} />
+                      <input
+                        type="text"
+                        value={customerSearch}
+                        onChange={(e) => { setCustomerSearch(e.target.value); setShowCustomerPicker(true); }}
+                        onFocus={() => setShowCustomerPicker(true)}
+                        placeholder="কাস্টমার খুঁজুন (নাম অথবা ফোন)"
+                        className="w-full h-10 pl-9 pr-3 rounded-lg text-[13px] font-medium outline-none"
+                        style={{ background: "#fafafa", color: "#111827", border: "1px solid #e5e7eb" }}
+                      />
+                      {selectedCustomer && (
+                        <button
+                          type="button"
+                          onClick={() => { setSelectedCustomer(""); setCustomerName(""); setCustomerSearch(""); }}
+                          className="absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-lg flex items-center justify-center cursor-pointer hover:bg-gray-100"
+                        >
+                          <X size={13} style={{ color: "#6b7280" }} />
+                        </button>
+                      )}
+
+                      {/* Customer dropdown list */}
+                      <AnimatePresence>
+                        {showCustomerPicker && customerSearch && !selectedCustomer && (
+                          <motion.div
+                            initial={{ opacity: 0, y: -6 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -6 }}
+                            transition={{ duration: 0.15 }}
+                            className="absolute left-0 right-0 top-full mt-1.5 rounded-xl overflow-hidden z-20 max-h-72 overflow-y-auto"
+                            style={{ background: "#ffffff", border: "1px solid #e5e7eb", boxShadow: "0 8px 24px rgba(0,0,0,0.08)" }}
+                          >
+                            {(() => {
+                              const filtered = customers.filter((c) =>
+                                c.name.toLowerCase().includes(customerSearch.toLowerCase()) ||
+                                c.phone.includes(customerSearch)
+                              ).slice(0, 8);
+                              return filtered.length > 0 ? (
+                                filtered.map((c) => (
+                                  <button
+                                    key={c._id}
+                                    type="button"
+                                    onClick={() => {
+                                      setSelectedCustomer(c._id);
+                                      setCustomerName(c.name);
+                                      setCustomerPhone(c.phone);
+                                      setCustomerAddressInput(c.address || "");
+                                      setCustomerSearch(`${c.name} — ${c.phone}`);
+                                      setShowCustomerPicker(false);
+                                      setSaveAsNewCustomer(false);
+                                    }}
+                                    className="w-full flex items-center gap-3 px-4 py-2.5 cursor-pointer transition-colors hover:bg-gray-50 text-left"
+                                  >
+                                    <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 text-[12px] font-semibold" style={{ background: "#f3f4f6", color: "#111827" }}>
+                                      {c.name[0]?.toUpperCase()}
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                      <p className="text-[13px] font-semibold truncate" style={{ color: "#111827" }}>{c.name}</p>
+                                      <p className="text-[11px] font-medium" style={{ color: "#6b7280" }}>{c.phone}</p>
+                                    </div>
+                                  </button>
+                                ))
+                              ) : (
+                                <div className="p-4">
+                                  <div className="text-[12px] font-medium mb-3" style={{ color: "#6b7280" }}>
+                                    &ldquo;{customerSearch}&rdquo; খুঁজে পাওয়া যায়নি
+                                  </div>
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setCustomerName(customerSearch);
+                                      setCustomerPhone("");
+                                      setCustomerAddressInput("");
+                                      setSelectedCustomer("");
+                                      setSaveAsNewCustomer(true);
+                                      setShowCustomerPicker(false);
+                                    }}
+                                    className="w-full h-10 rounded-lg text-[12px] font-semibold text-white cursor-pointer flex items-center justify-center gap-2 transition-all hover:shadow-sm"
+                                    style={{ background: "#66a80f" }}
+                                  >
+                                    <UserPlus size={14} strokeWidth={2.2} />
+                                    ইনস্ট্যান্ট কাস্টমার হিসেবে যোগ করুন
+                                  </button>
+                                </div>
+                              );
+                            })()}
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
+
+                    {/* Customer name - always editable */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-[11px] font-semibold uppercase tracking-wider mb-1.5" style={{ color: "#6b7280" }}>নাম *</label>
+                        <input
+                          value={customerName}
+                          onChange={(e) => setCustomerName(e.target.value)}
+                          placeholder="কাস্টমার নাম"
+                          className="w-full h-10 px-3 rounded-lg text-[13px] outline-none"
+                          style={{ background: "#fafafa", color: "#111827", border: "1px solid #e5e7eb" }}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[11px] font-semibold uppercase tracking-wider mb-1.5" style={{ color: "#6b7280" }}>
+                          মোবাইল {saveAsNewCustomer && "*"}
+                        </label>
+                        <input
+                          type="tel"
+                          value={customerPhone}
+                          onChange={(e) => setCustomerPhone(e.target.value)}
+                          placeholder="01XXXXXXXXX"
+                          disabled={!!selectedCustomer}
+                          className="w-full h-10 px-3 rounded-lg text-[13px] outline-none disabled:opacity-60"
+                          style={{ background: "#fafafa", color: "#111827", border: "1px solid #e5e7eb" }}
+                        />
+                      </div>
+                    </div>
+                    <div className="mt-3">
+                      <label className="block text-[11px] font-semibold uppercase tracking-wider mb-1.5" style={{ color: "#6b7280" }}>ঠিকানা (ঐচ্ছিক)</label>
+                      <input
+                        value={customerAddressInput}
+                        onChange={(e) => setCustomerAddressInput(e.target.value)}
+                        placeholder="ঠিকানা"
+                        disabled={!!selectedCustomer}
+                        className="w-full h-10 px-3 rounded-lg text-[13px] outline-none disabled:opacity-60"
+                        style={{ background: "#fafafa", color: "#111827", border: "1px solid #e5e7eb" }}
+                      />
+                    </div>
+
+                    {/* Instant customer save toggle */}
+                    {!selectedCustomer && customerName && (
+                      <label className="flex items-start gap-2.5 mt-3 p-3 rounded-lg cursor-pointer transition-colors hover:bg-amber-50" style={{ background: "#fffbeb", border: "1px solid #fef3c7" }}>
+                        <input
+                          type="checkbox"
+                          checked={saveAsNewCustomer}
+                          onChange={(e) => setSaveAsNewCustomer(e.target.checked)}
+                          className="mt-0.5 w-4 h-4 cursor-pointer accent-amber-600"
+                        />
+                        <div className="flex-1">
+                          <p className="text-[12px] font-semibold flex items-center gap-1.5" style={{ color: "#92400e" }}>
+                            <Sparkles size={12} strokeWidth={2.2} /> কাস্টমার লিস্টে সেভ করুন
+                          </p>
+                          <p className="text-[11px] font-medium mt-0.5" style={{ color: "#a16207" }}>
+                            পরবর্তী অর্ডারে সহজে খুঁজে পাবেন (মোবাইল লাগবে)
+                          </p>
+                        </div>
+                      </label>
+                    )}
+                  </motion.div>
+
+                  {/* Products Section */}
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.1, duration: 0.3 }}
+                    className="rounded-2xl p-5"
+                    style={{ background: "#ffffff", border: "1px solid #e5e7eb" }}
+                  >
+                    <div className="flex items-center gap-2 mb-4">
+                      <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: "rgba(102,168,15,0.1)" }}>
+                        <ShoppingBag size={15} strokeWidth={2.2} style={{ color: "#66a80f" }} />
+                      </div>
+                      <h3 className="text-[14px] font-semibold" style={{ color: "#111827" }}>পণ্য</h3>
+                      {items.length > 0 && (
+                        <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full ml-auto" style={{ background: "#f0fdf4", color: "#16a34a" }}>
+                          {items.length} টি · ৳{totalAmount.toLocaleString("en-US")}
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Product action buttons */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-3">
+                      <button
+                        type="button"
+                        onClick={() => setShowCatalog(true)}
+                        className="h-12 rounded-xl flex items-center justify-center gap-2 cursor-pointer transition-all hover:shadow-sm text-[13px] font-semibold"
+                        style={{ background: "#66a80f", color: "#ffffff" }}
+                      >
+                        <ShoppingBag size={15} strokeWidth={2.2} />
+                        ক্যাটালগ থেকে বাছাই
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setShowManualProduct(true)}
+                        className="h-12 rounded-xl flex items-center justify-center gap-2 cursor-pointer transition-all hover:shadow-sm text-[13px] font-semibold"
+                        style={{ background: "#ffffff", color: "#374151", border: "1px dashed #d1d5db" }}
+                      >
+                        <Edit3 size={14} strokeWidth={2.2} />
+                        ম্যানুয়ালি পণ্য যোগ
+                      </button>
+                    </div>
+
+                    {/* Selected items list */}
+                    {items.length > 0 && (
+                      <div className="rounded-xl overflow-hidden mt-3" style={{ background: "#fafafa", border: "1px solid #e5e7eb" }}>
+                        {items.map((item, idx) => (
+                          <motion.div
+                            key={idx}
+                            initial={{ opacity: 0, x: -10 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            className="flex items-center gap-3 px-3.5 py-3"
+                            style={{ borderTop: idx > 0 ? "1px solid #f3f4f6" : "none" }}
+                          >
+                            <div className="w-10 h-10 rounded-lg overflow-hidden shrink-0 flex items-center justify-center" style={{ background: "#ffffff", border: "1px solid #e5e7eb" }}>
+                              {item.image ? (
+                                <Image src={item.image} alt={item.productName} width={40} height={40} className="w-full h-full" style={{ objectFit: "contain" }} unoptimized />
+                              ) : (
+                                <Package size={16} style={{ color: "#9ca3af" }} strokeWidth={1.5} />
+                              )}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="text-[13px] font-semibold truncate" style={{ color: "#111827" }}>{item.productName}</p>
+                              <p className="text-[11px] font-medium" style={{ color: "#6b7280" }}>
+                                {item.quantity} × ৳{item.unitPrice.toLocaleString("en-US")}
+                                {item.remark && <span className="ml-1">· {item.remark}</span>}
+                              </p>
+                            </div>
+                            <p className="text-[14px] font-bold shrink-0" style={{ color: "#111827", fontVariantNumeric: "tabular-nums" }}>
+                              ৳{item.total.toLocaleString("en-US")}
+                            </p>
+                            <button
+                              type="button"
+                              onClick={() => removeItem(idx)}
+                              className="w-7 h-7 rounded-lg flex items-center justify-center cursor-pointer shrink-0 transition-colors hover:bg-red-100"
+                              style={{ background: "#fef2f2", color: "#dc2626", border: "1px solid #fecaca" }}
+                            >
+                              <X size={12} strokeWidth={2.2} />
+                            </button>
+                          </motion.div>
+                        ))}
+                      </div>
+                    )}
+                  </motion.div>
+
+                  {/* Payment Section */}
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.15, duration: 0.3 }}
+                    className="rounded-2xl p-5"
+                    style={{ background: "#ffffff", border: "1px solid #e5e7eb" }}
+                  >
+                    <div className="flex items-center gap-2 mb-4">
+                      <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: "rgba(102,168,15,0.1)" }}>
+                        <CreditCard size={15} strokeWidth={2.2} style={{ color: "#66a80f" }} />
+                      </div>
+                      <h3 className="text-[14px] font-semibold" style={{ color: "#111827" }}>পেমেন্ট</h3>
+                    </div>
+
+                    <div className="grid grid-cols-3 gap-3 mb-4">
+                      <div>
+                        <label className="block text-[10px] font-semibold uppercase tracking-wider mb-1.5" style={{ color: "#9ca3af" }}>মোট</label>
+                        <div className="h-11 px-3 flex items-center rounded-lg text-[14px] font-bold" style={{ background: "#fafafa", color: "#111827", border: "1px solid #e5e7eb", fontVariantNumeric: "tabular-nums" }}>
+                          ৳{totalAmount.toLocaleString("en-US")}
+                        </div>
+                      </div>
+                      <div>
+                        <label className="block text-[10px] font-semibold uppercase tracking-wider mb-1.5" style={{ color: "#9ca3af" }}>পরিশোধ</label>
+                        <input
+                          type="number"
+                          value={paidAmount}
+                          onChange={(e) => setPaidAmount(Number(e.target.value) || 0)}
+                          onFocus={(e) => e.target.select()}
+                          className="w-full h-11 px-3 rounded-lg text-[14px] font-bold outline-none"
+                          min={0}
+                          style={{ background: "#fafafa", color: "#16a34a", border: "1px solid #e5e7eb", fontVariantNumeric: "tabular-nums" }}
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] font-semibold uppercase tracking-wider mb-1.5" style={{ color: "#9ca3af" }}>বাকি</label>
+                        <div className="h-11 px-3 flex items-center rounded-lg text-[14px] font-bold"
+                          style={{ background: dueAmount > 0 ? "#fef2f2" : "#fafafa", color: dueAmount > 0 ? "#dc2626" : "#111827", border: "1px solid " + (dueAmount > 0 ? "#fecaca" : "#e5e7eb"), fontVariantNumeric: "tabular-nums" }}>
+                          ৳{dueAmount.toLocaleString("en-US")}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-[11px] font-semibold uppercase tracking-wider mb-1.5" style={{ color: "#6b7280" }}>নোট (ঐচ্ছিক)</label>
+                      <input
+                        value={note}
+                        onChange={(e) => setNote(e.target.value)}
+                        placeholder="অতিরিক্ত তথ্য"
+                        className="w-full h-10 px-3 rounded-lg text-[13px] outline-none"
+                        style={{ background: "#fafafa", color: "#111827", border: "1px solid #e5e7eb" }}
+                      />
+                    </div>
+                  </motion.div>
+
+                  {/* Mobile submit button */}
+                  <button
+                    type="submit"
+                    disabled={submitting || items.length === 0 || !customerName.trim()}
+                    className="sm:hidden w-full h-12 rounded-xl text-[14px] font-semibold text-white cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed transition-all hover:shadow-sm flex items-center justify-center gap-2"
+                    style={{ background: "#66a80f" }}
+                  >
+                    <Check size={16} strokeWidth={2.5} />
+                    {submitting ? "সংরক্ষণ হচ্ছে..." : "অর্ডার সংরক্ষণ"}
+                  </button>
+                </form>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ===================== MANUAL PRODUCT MODAL ===================== */}
+      <AnimatedModal open={showManualProduct} onClose={() => setShowManualProduct(false)} title="ম্যানুয়ালি পণ্য যোগ" maxWidth="max-w-md">
+        <div className="flex items-center gap-2 mb-4 p-3 rounded-xl" style={{ background: "#fffbeb", border: "1px solid #fef3c7" }}>
+          <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "#ffffff" }}>
+            <Edit3 size={14} strokeWidth={2.2} style={{ color: "#d97706" }} />
+          </div>
+          <p className="text-[11px] font-medium" style={{ color: "#92400e" }}>
+            ক্যাটালগে না থাকা পণ্য ম্যানুয়ালি যোগ করুন
+          </p>
+        </div>
+
+        <div className="space-y-3">
+          <div>
+            <label className="block text-[11px] font-semibold uppercase tracking-wider mb-1.5" style={{ color: "#6b7280" }}>পণ্যের নাম *</label>
+            <input
+              value={manualName}
+              onChange={(e) => setManualName(e.target.value)}
+              placeholder="পণ্যের নাম লিখুন"
+              autoFocus
+              className="w-full h-10 px-3 rounded-lg text-[13px] outline-none"
+              style={{ background: "#fafafa", color: "#111827", border: "1px solid #e5e7eb" }}
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-[11px] font-semibold uppercase tracking-wider mb-1.5" style={{ color: "#6b7280" }}>পরিমাণ *</label>
+              <input
+                type="number"
+                value={manualQty}
+                onChange={(e) => setManualQty(e.target.value === "" ? "" : Number(e.target.value))}
+                onFocus={(e) => e.target.select()}
+                min={1}
+                className="w-full h-10 px-3 rounded-lg text-[13px] outline-none"
+                style={{ background: "#fafafa", color: "#111827", border: "1px solid #e5e7eb" }}
+              />
+            </div>
+            <div>
+              <label className="block text-[11px] font-semibold uppercase tracking-wider mb-1.5" style={{ color: "#6b7280" }}>দর *</label>
+              <input
+                type="number"
+                value={manualRate}
+                onChange={(e) => setManualRate(e.target.value === "" ? "" : Number(e.target.value))}
+                onFocus={(e) => e.target.select()}
+                placeholder="০"
+                min={0}
+                className="w-full h-10 px-3 rounded-lg text-[13px] outline-none"
+                style={{ background: "#fafafa", color: "#111827", border: "1px solid #e5e7eb" }}
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-[11px] font-semibold uppercase tracking-wider mb-1.5" style={{ color: "#6b7280" }}>রিমার্ক (ঐচ্ছিক)</label>
+            <input
+              value={manualRemark}
+              onChange={(e) => setManualRemark(e.target.value)}
+              placeholder="অতিরিক্ত তথ্য"
+              className="w-full h-10 px-3 rounded-lg text-[13px] outline-none"
+              style={{ background: "#fafafa", color: "#111827", border: "1px solid #e5e7eb" }}
+            />
+          </div>
+
+          {/* Total preview */}
+          <div className="flex items-center justify-between p-3 rounded-lg" style={{ background: "#fafafa", border: "1px solid #e5e7eb" }}>
+            <span className="text-[12px] font-semibold" style={{ color: "#6b7280" }}>মোট</span>
+            <span className="text-[16px] font-bold" style={{ color: "#66a80f", fontVariantNumeric: "tabular-nums" }}>
+              ৳{((Number(manualQty) || 0) * (Number(manualRate) || 0)).toLocaleString("en-US")}
+            </span>
+          </div>
+
+          <div className="flex gap-2 pt-2">
+            <button
+              type="button"
+              onClick={() => setShowManualProduct(false)}
+              className="flex-1 h-10 rounded-lg text-[13px] font-semibold cursor-pointer transition-colors hover:bg-gray-50"
+              style={{ background: "#ffffff", color: "#374151", border: "1px solid #e5e7eb" }}
+            >
+              বাতিল
+            </button>
+            <button
+              type="button"
+              onClick={addManualProduct}
+              className="flex-1 h-10 rounded-lg text-[13px] font-semibold text-white cursor-pointer transition-all hover:shadow-sm flex items-center justify-center gap-2"
+              style={{ background: "#66a80f" }}
+            >
+              <Plus size={14} strokeWidth={2.2} />
+              যোগ করুন
+            </button>
+          </div>
+        </div>
+      </AnimatedModal>
     </div>
   );
 }
