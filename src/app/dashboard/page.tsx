@@ -240,7 +240,7 @@ export default function DashboardPage() {
     );
   }
 
-  const todayLabel = new Date().toLocaleDateString("bn-BD", { year: "numeric", month: "long", day: "numeric" });
+  const todayLabel = new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "long", year: "numeric", timeZone: "Asia/Dhaka" });
   const greetHour = new Date().getHours();
   const greeting = greetHour < 12 ? "সুপ্রভাত" : greetHour < 17 ? "শুভ অপরাহ্ণ" : "শুভ সন্ধ্যা";
 
@@ -548,7 +548,7 @@ export default function DashboardPage() {
                         {new Date(item.createdAt).toLocaleTimeString("bn-BD", { hour: "2-digit", minute: "2-digit" })}
                       </p>
                       <p className="text-[10px] font-medium mt-0.5" style={{ color: "#9ca3af" }}>
-                        {new Date(item.createdAt).toLocaleDateString("bn-BD", { day: "numeric", month: "short" })}
+                        {new Date(item.createdAt).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric", timeZone: "Asia/Dhaka" })}
                       </p>
                     </div>
                   </div>
@@ -560,51 +560,65 @@ export default function DashboardPage() {
       </div>
 
       {/* Sales Detail Modal */}
-      <AnimatedModal open={showSalesModal} onClose={() => setShowSalesModal(false)} title="বিক্রির বিস্তারিত" maxWidth="max-w-md">
-        <div className="space-y-4">
-          <div className="grid grid-cols-2 gap-3">
+      <AnimatedModal open={showSalesModal} onClose={() => setShowSalesModal(false)} title="বিক্রির বিস্তারিত" maxWidth="max-w-xl">
+        <div className="space-y-6">
+          <div className="grid grid-cols-2 gap-4">
             {loadingPeriods ? (
-              <div className="col-span-2 py-8 text-center">
-                <div className="animate-spin w-5 h-5 border-2 border-t-transparent rounded-full mx-auto" style={{ borderColor: "#66a80f", borderTopColor: "transparent" }} />
+              <div className="col-span-2 py-12 text-center">
+                <div className="animate-spin w-8 h-8 border-[3px] border-t-transparent rounded-full mx-auto" style={{ borderColor: "#66a80f", borderTopColor: "transparent" }} />
+                <p className="text-[12px] font-medium mt-3" style={{ color: "#6b7280" }}>লোড হচ্ছে...</p>
               </div>
             ) : (
               <>
                 {[
-                  { label: "আজকে", data: periodStats.today },
-                  { label: "গতকাল", data: periodStats.yesterday },
-                  { label: "গত ৭ দিন", data: periodStats.last7 },
-                  { label: "গত ৩০ দিন", data: periodStats.last30 },
+                  { label: "আজকে", data: periodStats.today, icon: <Clock size={16} className="text-blue-500" />, bg: "bg-blue-50" },
+                  { label: "গতকাল", data: periodStats.yesterday, icon: <CalendarDays size={16} className="text-orange-500" />, bg: "bg-orange-50" },
+                  { label: "গত ৭ দিন", data: periodStats.last7, icon: <TrendingUp size={16} className="text-[#66a80f]" />, bg: "bg-[#66a80f]/10" },
+                  { label: "গত ৩০ দিন", data: periodStats.last30, icon: <CreditCard size={16} className="text-purple-500" />, bg: "bg-purple-50" },
                 ].map((item) => (
-                  <div key={item.label} className="rounded-xl p-4" style={{ background: "#ffffff", border: "1px solid #e5e7eb" }}>
-                    <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: "#9ca3af" }}>{item.label}</p>
-                    <p className="text-[20px] font-bold mt-1.5 leading-none" style={{ color: "#111827", letterSpacing: "-0.025em", fontVariantNumeric: "tabular-nums" }}>৳{(item.data?.revenue || 0).toLocaleString("en-US")}</p>
-                    <p className="text-[11px] font-medium mt-1.5" style={{ color: "#6b7280" }}>{item.data?.count || 0} অর্ডার</p>
+                  <div key={item.label} className="rounded-2xl p-4 flex flex-col justify-center relative overflow-hidden transition-all hover:-translate-y-1 hover:shadow-lg shadow-sm" style={{ background: "#ffffff", border: "1px solid rgba(0,0,0,0.05)" }}>
+                    <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-gray-50 to-transparent rounded-bl-full -mr-8 -mt-8 opacity-50" />
+                    <div className="flex items-center gap-2.5 mb-2 relative z-10">
+                      <div className={`w-8 h-8 rounded-full flex items-center justify-center ${item.bg}`}>
+                        {item.icon}
+                      </div>
+                      <p className="text-[12px] font-semibold text-gray-500">{item.label}</p>
+                    </div>
+                    <p className="text-[22px] font-extrabold mt-1 leading-none text-gray-900 tracking-tight">৳{(item.data?.revenue || 0).toLocaleString("en-US")}</p>
+                    <div className="flex items-center justify-between mt-2.5 pt-2.5 border-t border-gray-100">
+                      <p className="text-[12px] font-medium text-gray-500">{item.data?.count || 0} টি অর্ডার</p>
+                      <p className="text-[11px] font-semibold px-2 py-0.5 rounded text-gray-600 bg-gray-100">৳{item.data?.count ? Math.round((item.data?.revenue || 0)/item.data?.count).toLocaleString() : 0} /গড়</p>
+                    </div>
                   </div>
                 ))}
               </>
             )}
           </div>
 
-          <div className="rounded-xl p-4" style={{ background: "#fafafa", border: "1px solid #e5e7eb" }}>
-            <p className="text-[10px] font-semibold uppercase tracking-wider mb-3" style={{ color: "#6b7280" }}>তারিখ সিলেক্ট করুন</p>
-            <div className="flex items-center gap-2 mb-3">
+          <div className="rounded-2xl p-5 shadow-sm" style={{ background: "linear-gradient(145deg, #ffffff 0%, #f9fafb 100%)", border: "1px solid rgba(0,0,0,0.05)" }}>
+            <div className="flex items-center justify-between mb-4">
+              <h4 className="text-[14px] font-bold text-gray-800 flex items-center gap-2">
+                <CalendarDays size={16} className="text-[#66a80f]" />
+                দিনভিত্তিক রিপোর্ট
+              </h4>
+            </div>
+            
+            <div className="flex items-center justify-center gap-3 w-full p-1.5 rounded-xl bg-white shadow-sm border border-gray-100 mb-5">
               <button
                 onClick={() => {
                   const d = new Date(selectedDate);
                   d.setDate(d.getDate() - 1);
                   handleDateChange(d.toISOString().split("T")[0]);
                 }}
-                className="w-10 h-10 rounded-lg flex items-center justify-center cursor-pointer active:opacity-60 transition-opacity"
-                style={{ background: "#ffffff", border: "1px solid #e5e7eb" }}
+                className="w-10 h-10 rounded-lg flex items-center justify-center cursor-pointer hover:bg-gray-50 transition-colors"
               >
-                <ChevronLeft size={16} strokeWidth={2.2} style={{ color: "#374151" }} />
+                <ChevronLeft size={18} className="text-gray-600" />
               </button>
               <input
                 type="date"
                 value={selectedDate}
                 onChange={(e) => handleDateChange(e.target.value)}
-                className="flex-1 h-10 px-3 rounded-lg text-[13px] font-medium outline-none"
-                style={{ background: "#ffffff", color: "#111827", border: "1px solid #e5e7eb" }}
+                className="flex-1 h-10 px-4 text-center rounded-lg text-[14px] font-bold text-gray-800 bg-transparent outline-none cursor-pointer"
               />
               <button
                 onClick={() => {
@@ -612,38 +626,38 @@ export default function DashboardPage() {
                   d.setDate(d.getDate() + 1);
                   handleDateChange(d.toISOString().split("T")[0]);
                 }}
-                className="w-10 h-10 rounded-lg flex items-center justify-center cursor-pointer active:opacity-60 transition-opacity"
-                style={{ background: "#ffffff", border: "1px solid #e5e7eb" }}
+                className="w-10 h-10 rounded-lg flex items-center justify-center cursor-pointer hover:bg-gray-50 transition-colors"
               >
-                <ChevronRight size={16} strokeWidth={2.2} style={{ color: "#374151" }} />
+                <ChevronRight size={18} className="text-gray-600" />
               </button>
             </div>
 
-            {dateStats && (
-              <div className="rounded-lg p-4" style={{ background: "#ffffff", border: "1px solid #e5e7eb" }}>
-                <p className="text-[12px] font-semibold mb-3" style={{ color: "#111827" }}>
-                  {new Date(selectedDate).toLocaleDateString("bn-BD", { year: "numeric", month: "long", day: "numeric" })}
-                </p>
-                <div className="grid grid-cols-3 gap-3">
-                  <div>
-                    <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: "#9ca3af" }}>বিক্রি</p>
-                    <p className="text-[16px] font-bold mt-1" style={{ color: "#111827", letterSpacing: "-0.02em", fontVariantNumeric: "tabular-nums" }}>৳{dateStats.revenue}</p>
+            {dateStats ? (
+              <div className="grid grid-cols-2 gap-3">
+                <div className="rounded-xl p-4 bg-white border border-gray-100 shadow-sm relative overflow-hidden">
+                  <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-blue-400 to-blue-600" />
+                  <p className="text-[11px] font-semibold text-gray-500 mb-1">মোট বিক্রি</p>
+                  <p className="text-[20px] font-bold text-gray-900">৳{dateStats.revenue.toLocaleString()}</p>
+                </div>
+                <div className="rounded-xl p-4 bg-white border border-gray-100 shadow-sm relative overflow-hidden">
+                  <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-purple-400 to-purple-600" />
+                  <p className="text-[11px] font-semibold text-gray-500 mb-1">মোট অর্ডার</p>
+                  <p className="text-[20px] font-bold text-gray-900">{dateStats.count} টি</p>
+                </div>
+                <div className="col-span-2 grid grid-cols-2 gap-3 mt-1">
+                  <div className="rounded-xl p-4 bg-[#66a80f]/5 border border-[#66a80f]/20">
+                    <p className="text-[11px] font-semibold text-[#5a930d] mb-1">নগদ পরিশোধ</p>
+                    <p className="text-[18px] font-bold text-[#4d7c0f]">৳{dateStats.paid.toLocaleString()}</p>
                   </div>
-                  <div>
-                    <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: "#9ca3af" }}>অর্ডার</p>
-                    <p className="text-[16px] font-bold mt-1" style={{ color: "#111827", letterSpacing: "-0.02em", fontVariantNumeric: "tabular-nums" }}>{dateStats.count}</p>
-                  </div>
-                  <div>
-                    <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: "#9ca3af" }}>পরিশোধ</p>
-                    <p className="text-[16px] font-bold mt-1" style={{ color: "#66a80f", letterSpacing: "-0.02em", fontVariantNumeric: "tabular-nums" }}>৳{dateStats.paid}</p>
+                  <div className="rounded-xl p-4 bg-red-50 border border-red-100">
+                    <p className="text-[11px] font-semibold text-red-600 mb-1">মোট বাকি</p>
+                    <p className="text-[18px] font-bold text-red-600">৳{dateStats.due.toLocaleString()}</p>
                   </div>
                 </div>
-                {dateStats.due > 0 && (
-                  <div className="mt-3 pt-3" style={{ borderTop: "1px solid #f3f4f6" }}>
-                    <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: "#9ca3af" }}>বাকি</p>
-                    <p className="text-[16px] font-bold mt-1" style={{ color: "#dc2626", letterSpacing: "-0.02em", fontVariantNumeric: "tabular-nums" }}>৳{dateStats.due}</p>
-                  </div>
-                )}
+              </div>
+            ) : (
+              <div className="py-8 text-center bg-white rounded-xl border border-gray-100">
+                <p className="text-[13px] font-medium text-gray-500">কোনো ডাটা নেই</p>
               </div>
             )}
           </div>
@@ -651,130 +665,139 @@ export default function DashboardPage() {
       </AnimatedModal>
 
       {/* Collection Detail Modal */}
-      <AnimatedModal open={showCollectionModal} onClose={() => setShowCollectionModal(false)} title="আদায়ের বিস্তারিত" maxWidth="max-w-md">
-        <div className="space-y-4">
-          {/* Date Picker */}
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => {
-                const d = new Date(collectionDate);
-                d.setDate(d.getDate() - 1);
-                handleCollectionDateChange(d.toISOString().split("T")[0]);
-              }}
-              className="w-10 h-10 rounded-lg flex items-center justify-center cursor-pointer active:opacity-60 transition-opacity"
-              style={{ background: "#ffffff", border: "1px solid #e5e7eb" }}
-            >
-              <ChevronLeft size={16} strokeWidth={2.2} style={{ color: "#374151" }} />
-            </button>
-            <input
-              type="date"
-              value={collectionDate}
-              onChange={(e) => handleCollectionDateChange(e.target.value)}
-              className="flex-1 h-10 px-3 rounded-lg text-[13px] font-medium outline-none"
-              style={{ background: "#ffffff", color: "#111827", border: "1px solid #e5e7eb" }}
-            />
-            <button
-              onClick={() => {
-                const d = new Date(collectionDate);
-                d.setDate(d.getDate() + 1);
-                handleCollectionDateChange(d.toISOString().split("T")[0]);
-              }}
-              className="w-10 h-10 rounded-lg flex items-center justify-center cursor-pointer active:opacity-60 transition-opacity"
-              style={{ background: "#ffffff", border: "1px solid #e5e7eb" }}
-            >
-              <ChevronRight size={16} strokeWidth={2.2} style={{ color: "#374151" }} />
-            </button>
-          </div>
-
-          {loadingCollection ? (
-            <div className="py-8 text-center">
-              <div className="animate-spin w-5 h-5 border-2 border-t-transparent rounded-full mx-auto" style={{ borderColor: "#66a80f", borderTopColor: "transparent" }} />
+      <AnimatedModal open={showCollectionModal} onClose={() => setShowCollectionModal(false)} title="আদায়ের বিস্তারিত" maxWidth="max-w-xl">
+        <div className="space-y-6">
+          {/* Header Stats & Date */}
+          <div className="rounded-2xl p-5 shadow-sm" style={{ background: "linear-gradient(145deg, #ffffff 0%, #f9fafb 100%)", border: "1px solid rgba(0,0,0,0.05)" }}>
+            <div className="flex items-center justify-between mb-5">
+              <h4 className="text-[14px] font-bold text-gray-800 flex items-center gap-2">
+                <Banknote size={16} className="text-[#66a80f]" />
+                আদায় রিপোর্ট
+              </h4>
             </div>
-          ) : collectionData ? (
-            <>
-              {/* Total Hero */}
-              <div className="rounded-xl p-5" style={{ background: "#ffffff", border: "1px solid #e5e7eb" }}>
-                <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: "#6b7280" }}>মোট আদায়</p>
-                <p className="text-[32px] font-bold mt-1.5 leading-none" style={{ color: "#111827", letterSpacing: "-0.03em", fontVariantNumeric: "tabular-nums" }}>
-                  ৳{(collectionData.total).toLocaleString("en-US")}
-                </p>
-              </div>
 
-              {/* Summary */}
-              <div className="grid grid-cols-2 gap-3">
-                <div className="rounded-xl p-4" style={{ background: "#ffffff", border: "1px solid #e5e7eb" }}>
-                  <div className="w-8 h-8 rounded-lg flex items-center justify-center mb-3" style={{ background: "rgba(102,168,15,0.1)" }}>
-                    <Banknote size={14} strokeWidth={2.2} style={{ color: "#66a80f" }} />
-                  </div>
-                  <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: "#6b7280" }}>বাকি আদায়</p>
-                  <p className="text-[18px] font-bold mt-1" style={{ color: "#111827", letterSpacing: "-0.02em", fontVariantNumeric: "tabular-nums" }}>৳{collectionData.dueCollection}</p>
-                  <p className="text-[11px] font-medium mt-1" style={{ color: "#9ca3af" }}>{collectionData.dateCollections.length} টি</p>
-                </div>
-                <div className="rounded-xl p-4" style={{ background: "#ffffff", border: "1px solid #e5e7eb" }}>
-                  <div className="w-8 h-8 rounded-lg flex items-center justify-center mb-3" style={{ background: "#f3f4f6" }}>
-                    <ShoppingCart size={14} strokeWidth={2.2} style={{ color: "#374151" }} />
-                  </div>
-                  <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: "#6b7280" }}>অর্ডার থেকে</p>
-                  <p className="text-[18px] font-bold mt-1" style={{ color: "#111827", letterSpacing: "-0.02em", fontVariantNumeric: "tabular-nums" }}>৳{collectionData.orderPaid}</p>
-                </div>
-              </div>
+            <div className="flex items-center justify-center gap-3 w-full p-1.5 rounded-xl bg-white shadow-sm border border-gray-100 mb-6">
+              <button
+                onClick={() => {
+                  const d = new Date(collectionDate);
+                  d.setDate(d.getDate() - 1);
+                  handleCollectionDateChange(d.toISOString().split("T")[0]);
+                }}
+                className="w-10 h-10 rounded-lg flex items-center justify-center cursor-pointer hover:bg-gray-50 transition-colors"
+              >
+                <ChevronLeft size={18} className="text-gray-600" />
+              </button>
+              <input
+                type="date"
+                value={collectionDate}
+                onChange={(e) => handleCollectionDateChange(e.target.value)}
+                className="flex-1 h-10 px-4 text-center rounded-lg text-[14px] font-bold text-gray-800 bg-transparent outline-none cursor-pointer"
+              />
+              <button
+                onClick={() => {
+                  const d = new Date(collectionDate);
+                  d.setDate(d.getDate() + 1);
+                  handleCollectionDateChange(d.toISOString().split("T")[0]);
+                }}
+                className="w-10 h-10 rounded-lg flex items-center justify-center cursor-pointer hover:bg-gray-50 transition-colors"
+              >
+                <ChevronRight size={18} className="text-gray-600" />
+              </button>
+            </div>
 
-              {/* List */}
-              {collectionData.dateCollections.length > 0 && (
-                <div>
-                  <p className="text-[10px] font-semibold uppercase tracking-wider mb-2 px-1" style={{ color: "#6b7280" }}>
-                    বাকি আদায় · {new Date(collectionDate).toLocaleDateString("bn-BD", { month: "long", day: "numeric" })}
+            {loadingCollection ? (
+              <div className="py-12 text-center">
+                <div className="animate-spin w-8 h-8 border-[3px] border-t-transparent rounded-full mx-auto" style={{ borderColor: "#66a80f", borderTopColor: "transparent" }} />
+                <p className="text-[12px] font-medium mt-3" style={{ color: "#6b7280" }}>লোড হচ্ছে...</p>
+              </div>
+            ) : collectionData ? (
+              <div className="space-y-4">
+                <div className="rounded-2xl p-6 relative overflow-hidden bg-[#66a80f] shadow-[0_8px_20px_-6px_rgba(102,168,15,0.4)]">
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-white opacity-10 rounded-full blur-2xl transform translate-x-12 -translate-y-12"></div>
+                  <p className="text-[12px] font-semibold text-green-100 uppercase tracking-wider">সর্বমোট আদায়</p>
+                  <p className="text-[36px] font-extrabold mt-1 text-white leading-none tracking-tight">
+                    ৳{(collectionData.total).toLocaleString("en-US")}
                   </p>
-                  <div className="rounded-xl overflow-hidden" style={{ background: "#ffffff", border: "1px solid #e5e7eb" }}>
-                    {collectionData.dateCollections.map((c: { _id: string; customerName: string; amount: number; date: string }, idx: number) => (
-                      <div
-                        key={c._id}
-                        className="flex items-center px-4 py-3"
-                        style={{ borderTop: idx > 0 ? "1px solid #f3f4f6" : "none" }}
-                      >
-                        <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ background: "rgba(102,168,15,0.1)" }}>
-                          <Banknote size={13} strokeWidth={2.2} style={{ color: "#66a80f" }} />
-                        </div>
-                        <div className="flex-1 min-w-0 ml-3">
-                          <p className="text-[13px] font-semibold truncate" style={{ color: "#111827" }}>{c.customerName}</p>
-                          <p className="text-[11px] font-medium mt-0.5" style={{ color: "#9ca3af" }}>
-                            {new Date(c.date).toLocaleTimeString("bn-BD", { hour: "2-digit", minute: "2-digit" })}
-                          </p>
-                        </div>
-                        <div className="flex items-center gap-2 shrink-0">
-                          <p className="text-[14px] font-bold" style={{ color: "#66a80f", letterSpacing: "-0.01em", fontVariantNumeric: "tabular-nums" }}>+৳{c.amount}</p>
-                          {collectionData.isAdmin && (
-                            <button
-                              onClick={() => deletePayment(c._id)}
-                              disabled={deletingPayment === c._id}
-                              className="w-7 h-7 rounded-md flex items-center justify-center cursor-pointer disabled:opacity-50 active:opacity-60 transition-opacity"
-                              style={{ background: "#fef2f2" }}
-                              title="ডিলিট করুন"
-                            >
-                              {deletingPayment === c._id ? (
-                                <div className="animate-spin w-3 h-3 border-[1.5px] border-t-transparent rounded-full" style={{ borderColor: "#dc2626", borderTopColor: "transparent" }} />
-                              ) : (
-                                <Trash2 size={11} strokeWidth={2.2} style={{ color: "#dc2626" }} />
-                              )}
-                            </button>
-                          )}
-                        </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="rounded-xl p-4 bg-white border border-gray-100 shadow-sm transition-all hover:border-[#66a80f]/30">
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="w-7 h-7 rounded-lg bg-orange-50 flex items-center justify-center">
+                        <Banknote size={14} className="text-orange-500" />
                       </div>
-                    ))}
+                      <p className="text-[11px] font-semibold text-gray-500">বাকি আদায়</p>
+                    </div>
+                    <p className="text-[20px] font-bold text-gray-900">৳{collectionData.dueCollection.toLocaleString()}</p>
+                    <p className="text-[11px] font-medium text-gray-400 mt-1">{collectionData.dateCollections.length} জনের থেকে</p>
+                  </div>
+                  
+                  <div className="rounded-xl p-4 bg-white border border-gray-100 shadow-sm transition-all hover:border-[#66a80f]/30">
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="w-7 h-7 rounded-lg bg-blue-50 flex items-center justify-center">
+                        <ShoppingCart size={14} className="text-blue-500" />
+                      </div>
+                      <p className="text-[11px] font-semibold text-gray-500">অর্ডার থেকে</p>
+                    </div>
+                    <p className="text-[20px] font-bold text-gray-900">৳{collectionData.orderPaid.toLocaleString()}</p>
+                    <p className="text-[11px] font-medium text-gray-400 mt-1">ক্যাশ অন ডেলিভারি</p>
                   </div>
                 </div>
-              )}
-              {collectionData.dateCollections.length === 0 && (
-                <div className="py-10 text-center rounded-xl" style={{ background: "#fafafa", border: "1px solid #e5e7eb" }}>
-                  <p className="text-[13px] font-medium" style={{ color: "#6b7280" }}>এই তারিখে কোনো আদায় নেই</p>
-                </div>
-              )}
-            </>
-          ) : (
-            <div className="py-10 text-center">
-              <p className="text-[13px] font-medium" style={{ color: "#6b7280" }}>কোনো তথ্য পাওয়া যায়নি</p>
-            </div>
-          )}
+
+                {collectionData.dateCollections.length > 0 && (
+                  <div className="mt-6 pt-4 border-t border-gray-100">
+                    <div className="flex items-center justify-between mb-3 px-1">
+                      <p className="text-[12px] font-bold text-gray-800">বাকি আদায়ের তালিকা</p>
+                      <span className="text-[11px] font-semibold bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
+                        {collectionData.dateCollections.length} টি
+                      </span>
+                    </div>
+                    <div className="rounded-xl border border-gray-100 bg-white overflow-hidden shadow-sm">
+                      {collectionData.dateCollections.map((c: any, idx: number) => (
+                        <div key={c._id} className={`flex items-center p-3.5 hover:bg-gray-50 transition-colors ${idx > 0 ? "border-t border-gray-100" : ""}`}>
+                          <div className="w-9 h-9 rounded-full bg-[#66a80f]/10 flex items-center justify-center shrink-0">
+                            <span className="text-[14px] font-bold text-[#66a80f]">{c.customerName.charAt(0)}</span>
+                          </div>
+                          <div className="flex-1 min-w-0 ml-3">
+                            <p className="text-[14px] font-bold text-gray-800 truncate">{c.customerName}</p>
+                            <p className="text-[11px] font-medium text-gray-500 mt-0.5">
+                              {new Date(c.date).toLocaleTimeString("bn-BD", { hour: "2-digit", minute: "2-digit" })}
+                            </p>
+                          </div>
+                          <div className="flex items-center gap-3 shrink-0">
+                            <p className="text-[15px] font-bold text-[#66a80f]">+৳{c.amount.toLocaleString()}</p>
+                            {collectionData.isAdmin && (
+                              <button
+                                onClick={() => deletePayment(c._id)}
+                                disabled={deletingPayment === c._id}
+                                className="w-8 h-8 rounded-lg flex items-center justify-center bg-red-50 text-red-500 hover:bg-red-100 disabled:opacity-50 transition-colors"
+                              >
+                                {deletingPayment === c._id ? (
+                                  <div className="animate-spin w-4 h-4 border-2 border-t-transparent rounded-full border-red-500" />
+                                ) : (
+                                  <Trash2 size={14} />
+                                )}
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {collectionData.dateCollections.length === 0 && (
+                  <div className="mt-6 p-8 text-center bg-white rounded-xl border border-gray-100 shadow-sm">
+                    <Banknote size={24} className="mx-auto text-gray-300 mb-2" />
+                    <p className="text-[13px] font-medium text-gray-500">কোনো বাকি আদায় নেই</p>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="py-12 text-center bg-white rounded-xl border border-gray-100">
+                <p className="text-[13px] font-medium text-gray-500">কোনো তথ্য পাওয়া যায়নি</p>
+              </div>
+            )}
+          </div>
         </div>
       </AnimatedModal>
     </div>

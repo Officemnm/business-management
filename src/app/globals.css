@@ -30,7 +30,7 @@
   html,
   body {
     height: 100%;
-    font-family: var(--font-kalpurush), 'Kalpurush', system-ui, sans-serif;
+    font-family: var(--font-inter), var(--font-kalpurush), 'Kalpurush', system-ui, sans-serif;
     background: var(--bg-primary);
     color: var(--text-primary);
     -webkit-font-smoothing: antialiased;

@@ -50,6 +50,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
       body.paidAmount = newPaid;
       body.dueAmount = newDue;
       body.status = "completed";
+      body.deliveryDate = new Date(); // Record the exact date when it was delivered/collected
 
       // Add due to customer (due is NOT added at order creation)
       if (newDue > 0 && oldOrder.customer) {

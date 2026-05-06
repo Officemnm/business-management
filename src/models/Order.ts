@@ -27,6 +27,7 @@ export interface IOrder extends Document {
   returnItems: IReturnItem[];
   status: "pending" | "completed" | "cancelled";
   deliveryStatus: "pending" | "delivered" | "not_delivered";
+  deliveryDate?: Date;
   deliveryNote?: string;
   note?: string;
   createdBy: string;
@@ -92,6 +93,9 @@ const OrderSchema: Schema<IOrder> = new Schema(
       type: String,
       enum: ["pending", "delivered", "not_delivered"],
       default: "pending",
+    },
+    deliveryDate: {
+      type: Date,
     },
     deliveryNote: {
       type: String,

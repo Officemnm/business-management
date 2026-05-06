@@ -16,7 +16,7 @@ export default function AnimatedModal({ open, onClose, title, children, maxWidth
     <AnimatePresence>
       {open && (
         <motion.div
-          className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center"
+          className="fixed inset-0 z-[100] flex items-center justify-center px-4"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -25,7 +25,7 @@ export default function AnimatedModal({ open, onClose, title, children, maxWidth
           {/* Backdrop */}
           <motion.div
             className="absolute inset-0"
-            style={{ background: "rgba(0,0,0,0.4)", backdropFilter: "blur(4px)" }}
+            style={{ background: "rgba(0,0,0,0.6)", backdropFilter: "blur(8px)" }}
             onClick={onClose}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -34,29 +34,34 @@ export default function AnimatedModal({ open, onClose, title, children, maxWidth
 
           {/* Panel */}
           <motion.div
-            className={`relative w-[95%] ${maxWidth} rounded-2xl overflow-hidden max-h-[90vh] flex flex-col`}
-            style={{ background: "var(--bg-card)", boxShadow: "0 25px 50px -12px rgba(0,0,0,0.25)" }}
+            className={`relative w-full ${maxWidth} rounded-3xl overflow-hidden max-h-[90vh] flex flex-col`}
+            style={{ 
+              background: "rgba(255, 255, 255, 0.98)", 
+              backdropFilter: "blur(20px)",
+              boxShadow: "0 0 0 1px rgba(255,255,255,0.8) inset, 0 30px 60px -12px rgba(0,0,0,0.3)",
+            }}
             initial={{ opacity: 0, y: 40, scale: 0.97 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.97 }}
             transition={{ type: "spring", damping: 25, stiffness: 350 }}
           >
             {/* Header */}
-            <div className="flex items-center justify-between px-5 py-4 shrink-0" style={{ borderBottom: "1px solid var(--border-color)" }}>
-              <h3 className="text-[15px] font-bold" style={{ color: "var(--text-primary)" }}>{title}</h3>
+            <div className="flex items-center justify-between px-6 py-5 shrink-0 relative bg-white/50 backdrop-blur-sm shadow-[0_1px_0_0_rgba(0,0,0,0.05)]">
+              <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-[#66a80f]/50 to-transparent opacity-50" />
+              <h3 className="text-[17px] font-bold tracking-tight" style={{ color: "#111827", letterSpacing: "-0.01em" }}>{title}</h3>
               <motion.button
                 onClick={onClose}
-                className="w-7 h-7 rounded-full flex items-center justify-center cursor-pointer"
-                style={{ color: "var(--text-muted)", background: "var(--bg-input)" }}
-                whileHover={{ scale: 1.1, background: "var(--border-color)" }}
-                whileTap={{ scale: 0.9 }}
+                className="w-8 h-8 rounded-full flex items-center justify-center cursor-pointer transition-colors hover:bg-gray-100"
+                style={{ color: "#6b7280" }}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
               >
-                <X size={14} />
+                <X size={16} strokeWidth={2.5} />
               </motion.button>
             </div>
 
             {/* Body */}
-            <div className="flex-1 overflow-y-auto p-5">
+            <div className="flex-1 overflow-y-auto p-6 scrollbar-hide">
               {children}
             </div>
           </motion.div>

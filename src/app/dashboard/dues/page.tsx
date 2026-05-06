@@ -72,7 +72,7 @@ export default function DuesPage() {
   // Group payments by date for history modal
   const paymentsByDate: Record<string, Payment[]> = {};
   payments.forEach((p) => {
-    const dateKey = new Date(p.createdAt).toLocaleDateString("bn-BD", { year: "numeric", month: "long", day: "numeric" });
+    const dateKey = new Date(p.createdAt).toLocaleDateString("bn-BD", { day: "2-digit", month: "long", year: "numeric" });
     if (!paymentsByDate[dateKey]) paymentsByDate[dateKey] = [];
     paymentsByDate[dateKey].push(p);
   });

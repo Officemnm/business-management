@@ -194,14 +194,16 @@ export default function OrdersPage() {
       let customerIdToUse = selectedCustomer;
       let customerAddress = selectedCustomer ? customers.find((c) => c._id === selectedCustomer)?.address || "" : customerAddressInput.trim();
 
-      // Auto-create instant customer if needed
-      if (!selectedCustomer && saveAsNewCustomer && customerPhone.trim()) {
+      // Auto-create instant customer if needed OR if there's any due amount
+      const shouldCreateCustomer = (!selectedCustomer && saveAsNewCustomer) || (!selectedCustomer && dueAmount > 0);
+
+      if (shouldCreateCustomer) {
         const custRes = await fetch("/api/dashboard/customers", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             name: customerName.trim(),
-            phone: customerPhone.trim(),
+            phone: customerPhone.trim() || "N/A",
             address: customerAddressInput.trim(),
           }),
         });
@@ -209,7 +211,7 @@ export default function OrdersPage() {
           const newCust = await custRes.json();
           customerIdToUse = newCust._id;
           customerAddress = newCust.address || "";
-          toast.success("নতুন কাস্টমার সেভ হয়েছে");
+          toast.success("নতুন কাস্টমার অটো-সেভ হয়েছে");
         }
       }
 
@@ -230,7 +232,7 @@ export default function OrdersPage() {
       setShowForm(false);
       resetOrderForm();
       // Reload customers if new one created
-      if (saveAsNewCustomer) {
+      if (shouldCreateCustomer) {
         fetch("/api/dashboard/customers").then((r) => r.json()).then(setCustomers);
       }
       fetchOrders(filterDate);
@@ -494,7 +496,7 @@ export default function OrdersPage() {
           </div>
           <div>
             <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>তারিখ</p>
-            <p className="text-[13px] font-semibold" style={{ color: "var(--text-primary)" }}>{new Date(viewOrder.createdAt).toLocaleDateString("bn-BD")} {new Date(viewOrder.createdAt).toLocaleTimeString("bn-BD", { hour: "2-digit", minute: "2-digit" })}</p>
+            <p className="text-[13px] font-semibold" style={{ color: "var(--text-primary)" }}>{new Date(viewOrder.createdAt).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric", timeZone: "Asia/Dhaka" })} {new Date(viewOrder.createdAt).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}</p>
           </div>
           <div>
             <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>স্ট্যাটাস</p>
@@ -823,7 +825,7 @@ export default function OrdersPage() {
 
     const productList = Object.values(productMap).sort((a, b) => b.total - a.total);
     const dateLabel = filterDate
-      ? new Date(filterDate).toLocaleDateString("bn-BD", { year: "numeric", month: "long", day: "numeric" })
+      ? new Date(filterDate).toLocaleDateString("en-GB", { day: "2-digit", month: "long", year: "numeric", timeZone: "Asia/Dhaka" })
       : "সকল তারিখ";
 
     return (
@@ -893,7 +895,7 @@ export default function OrdersPage() {
   };
 
   // Calculate stats for display
-  const todayLabel = new Date().toLocaleDateString("bn-BD", { year: "numeric", month: "long", day: "numeric" });
+  const todayLabel = new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "long", year: "numeric", timeZone: "Asia/Dhaka" });
   const pendingOrders = orders.filter((o) => (o.deliveryStatus || "pending") === "pending");
   const deliveredOrders = orders.filter((o) => o.deliveryStatus === "delivered");
   const notDeliveredOrders = orders.filter((o) => o.deliveryStatus === "not_delivered");

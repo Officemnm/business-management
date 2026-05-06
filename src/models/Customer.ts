@@ -20,8 +20,8 @@ const CustomerSchema: Schema<ICustomer> = new Schema(
     },
     phone: {
       type: String,
-      required: [true, "Phone number is required"],
       trim: true,
+      default: "",
     },
     address: {
       type: String,

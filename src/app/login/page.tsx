@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Eye, EyeOff, User, Lock, Loader2 } from "lucide-react";
+import { Eye, EyeOff, User, Lock, Loader2, ArrowRight } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -48,65 +48,84 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-5 py-10">
+    <div className="min-h-screen relative flex items-center justify-center px-5 py-10 overflow-hidden bg-[var(--bg-primary)]">
+      {/* Decorative Background Elements */}
+      <div className="absolute top-[-10%] left-[-10%] w-[40vw] h-[40vw] rounded-full mix-blend-multiply filter blur-[100px] opacity-20 animate-pulse pointer-events-none" style={{ background: "var(--accent)" }}></div>
+      <div className="absolute bottom-[-10%] right-[-10%] w-[35vw] h-[35vw] rounded-full mix-blend-multiply filter blur-[100px] opacity-20 pointer-events-none" style={{ background: "#4ade80" }}></div>
+
       <motion.div
-        initial={{ opacity: 0, y: 12 }}
+        initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-        className="w-full max-w-[400px]"
+        transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+        className="w-full max-w-[420px] relative z-10"
       >
         {/* Header */}
-        <div className="flex flex-col items-center mb-8">
-          <Image
-            src="/logo.png"
-            alt="ভ্যারাইটিজ কসমেটিক্স"
-            width={80}
-            height={80}
-            className="mb-4"
-            priority
-          />
+        <div className="flex flex-col items-center mb-8 text-center">
+          <motion.div 
+            initial={{ scale: 0.8, opacity: 0 }} 
+            animate={{ scale: 1, opacity: 1 }} 
+            transition={{ duration: 0.5, delay: 0.1 }}
+            className="mb-5 p-3 rounded-2xl bg-white shadow-xl shadow-[var(--accent)]/10 ring-1 ring-black/5"
+          >
+            <Image
+              src="/logo.png"
+              alt="ভ্যারাইটিজ কসমেটিক্স"
+              width={70}
+              height={70}
+              className="object-contain"
+              priority
+            />
+          </motion.div>
 
-          <h1
-            className="text-[22px] font-semibold tracking-tight"
+          <motion.h1
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+            className="text-2xl font-bold tracking-tight mb-2"
             style={{ color: "var(--text-primary)" }}
           >
-            সাইন ইন করুন
-          </h1>
+            স্বাগতম ফিরে এসেছেন
+          </motion.h1>
 
-          <p
-            className="text-sm mt-1.5"
+          <motion.p
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.3 }}
+            className="text-sm font-medium"
             style={{ color: "var(--text-muted)" }}
           >
-            আপনার অ্যাকাউন্টে প্রবেশ করুন
-          </p>
+            আপনার প্যানেলে প্রবেশ করতে তথ্য দিন
+          </motion.p>
         </div>
 
         {/* Card */}
-        <div
-          className="rounded-2xl p-7"
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.4 }}
+          className="rounded-[24px] p-8 backdrop-blur-xl bg-white/80"
           style={{
-            background: "var(--bg-card)",
-            border: "1px solid var(--border-color)",
-            boxShadow: "0 1px 3px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.03)",
+            border: "1px solid rgba(255, 255, 255, 0.5)",
+            boxShadow: "0 10px 40px -10px rgba(0,0,0,0.08), 0 0 20px rgba(102,168,15,0.05)",
           }}
         >
           <form onSubmit={handleLogin}>
             {/* Username */}
             <div className="mb-5">
               <label
-                className="block text-[12px] font-medium mb-2"
+                className="block text-[13px] font-semibold mb-2 ml-1"
                 style={{ color: "var(--text-secondary)" }}
               >
                 ইউজারনেম
               </label>
-              <div className="relative">
+              <div className="relative group">
                 <div
-                  className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none"
+                  className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none transition-colors duration-300"
                   style={{
-                    color: focusedField === "username" ? "#66a80f" : "var(--text-muted)",
+                    color: focusedField === "username" ? "var(--accent)" : "var(--text-placeholder)",
                   }}
                 >
-                  <User size={16} strokeWidth={1.5} />
+                  <User size={18} strokeWidth={focusedField === "username" ? 2 : 1.5} />
                 </div>
                 <input
                   type="text"
@@ -114,13 +133,12 @@ export default function LoginPage() {
                   onChange={(e) => setUsername(e.target.value)}
                   onFocus={() => setFocusedField("username")}
                   onBlur={() => setFocusedField(null)}
-                  placeholder="ইউজারনেম লিখুন"
-                  className="w-full h-11 pl-10 pr-4 rounded-xl text-sm outline-none transition-all duration-150"
+                  placeholder="আপনার ইউজারনেম লিখুন"
+                  className="w-full h-12 pl-12 pr-4 rounded-xl text-[15px] outline-none transition-all duration-300 bg-white/50 hover:bg-white focus:bg-white"
                   style={{
-                    background: "var(--bg-input)",
                     color: "var(--text-primary)",
-                    border: `1.5px solid ${focusedField === "username" ? "#66a80f" : "var(--border-color)"}`,
-                    boxShadow: focusedField === "username" ? "0 0 0 3px rgba(102,168,15,0.1)" : "none",
+                    border: `1.5px solid ${focusedField === "username" ? "var(--accent)" : "var(--border-color)"}`,
+                    boxShadow: focusedField === "username" ? "0 0 0 4px rgba(102,168,15,0.1)" : "none",
                   }}
                   autoComplete="username"
                 />
@@ -128,30 +146,23 @@ export default function LoginPage() {
             </div>
 
             {/* Password */}
-            <div className="mb-6">
-              <div className="flex items-center justify-between mb-2">
+            <div className="mb-8">
+              <div className="mb-2 ml-1">
                 <label
-                  className="text-[12px] font-medium"
+                  className="text-[13px] font-semibold"
                   style={{ color: "var(--text-secondary)" }}
                 >
                   পাসওয়ার্ড
                 </label>
-                <Link
-                  href="/forgot-password"
-                  className="text-[12px] font-medium hover:underline"
-                  style={{ color: "#66a80f" }}
-                >
-                  পাসওয়ার্ড ভুলে গেছেন?
-                </Link>
               </div>
-              <div className="relative">
+              <div className="relative group">
                 <div
-                  className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none"
+                  className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none transition-colors duration-300"
                   style={{
-                    color: focusedField === "password" ? "#66a80f" : "var(--text-muted)",
+                    color: focusedField === "password" ? "var(--accent)" : "var(--text-placeholder)",
                   }}
                 >
-                  <Lock size={16} strokeWidth={1.5} />
+                  <Lock size={18} strokeWidth={focusedField === "password" ? 2 : 1.5} />
                 </div>
                 <input
                   type={showPassword ? "text" : "password"}
@@ -159,34 +170,33 @@ export default function LoginPage() {
                   onChange={(e) => setPassword(e.target.value)}
                   onFocus={() => setFocusedField("password")}
                   onBlur={() => setFocusedField(null)}
-                  placeholder="পাসওয়ার্ড লিখুন"
-                  className="w-full h-11 pl-10 pr-11 rounded-xl text-sm outline-none transition-all duration-150"
+                  placeholder="আপনার পাসওয়ার্ড লিখুন"
+                  className="w-full h-12 pl-12 pr-12 rounded-xl text-[15px] outline-none transition-all duration-300 bg-white/50 hover:bg-white focus:bg-white"
                   style={{
-                    background: "var(--bg-input)",
                     color: "var(--text-primary)",
-                    border: `1.5px solid ${focusedField === "password" ? "#66a80f" : "var(--border-color)"}`,
-                    boxShadow: focusedField === "password" ? "0 0 0 3px rgba(102,168,15,0.1)" : "none",
+                    border: `1.5px solid ${focusedField === "password" ? "var(--accent)" : "var(--border-color)"}`,
+                    boxShadow: focusedField === "password" ? "0 0 0 4px rgba(102,168,15,0.1)" : "none",
                   }}
                   autoComplete="current-password"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3.5 top-1/2 -translate-y-1/2 cursor-pointer"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 cursor-pointer p-1 rounded-full hover:bg-black/5 transition-colors"
                   style={{ color: "var(--text-muted)" }}
                 >
                   <AnimatePresence mode="wait" initial={false}>
                     <motion.div
                       key={showPassword ? "hide" : "show"}
-                      initial={{ opacity: 0, scale: 0.85 }}
+                      initial={{ opacity: 0, scale: 0.8 }}
                       animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.85 }}
-                      transition={{ duration: 0.12 }}
+                      exit={{ opacity: 0, scale: 0.8 }}
+                      transition={{ duration: 0.15 }}
                     >
                       {showPassword ? (
-                        <EyeOff size={16} strokeWidth={1.5} />
+                        <EyeOff size={18} strokeWidth={1.5} />
                       ) : (
-                        <Eye size={16} strokeWidth={1.5} />
+                        <Eye size={18} strokeWidth={1.5} />
                       )}
                     </motion.div>
                   </AnimatePresence>
@@ -198,29 +208,38 @@ export default function LoginPage() {
             <motion.button
               type="submit"
               disabled={isLoading}
-              className="w-full h-11 rounded-xl text-sm font-semibold text-white flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-              style={{ background: "#66a80f" }}
-              whileHover={{ background: "#5c940d" }}
+              className="w-full h-12 rounded-xl text-[15px] font-bold text-white flex items-center justify-center gap-2 cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed shadow-lg"
+              style={{ 
+                background: "linear-gradient(to right, var(--accent), #7ed013)",
+                boxShadow: "0 4px 14px rgba(102,168,15,0.4)"
+              }}
+              whileHover={{ 
+                scale: 1.01,
+                boxShadow: "0 6px 20px rgba(102,168,15,0.5)"
+              }}
               whileTap={{ scale: 0.98 }}
             >
               {isLoading ? (
-                <Loader2 size={18} className="animate-spin" />
+                <Loader2 size={20} className="animate-spin" />
               ) : (
-                "সাইন ইন"
+                <>
+                  সাইন ইন করুন
+                  <ArrowRight size={18} strokeWidth={2} />
+                </>
               )}
             </motion.button>
           </form>
-        </div>
+        </motion.div>
 
         {/* Footer */}
         <motion.p
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 0.4, duration: 0.5 }}
-          className="text-center text-[11px] mt-8"
-          style={{ color: "var(--text-muted)" }}
+          transition={{ delay: 0.6, duration: 0.5 }}
+          className="text-center text-[12px] mt-10 font-medium tracking-wide"
+          style={{ color: "var(--text-placeholder)" }}
         >
-          © {new Date().getFullYear()} ভ্যারাইটিজ কসমেটিক্স
+          © {new Date().getFullYear()} ভ্যারাইটিজ কসমেটিক্স • সর্বস্বত্ব সংরক্ষিত
         </motion.p>
       </motion.div>
     </div>

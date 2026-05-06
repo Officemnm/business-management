@@ -22,10 +22,17 @@ export async function GET(req: Request) {
       const orders = await Order.find({
         createdAt: { $gte: fromDate, $lte: toDate },
       }).lean();
+      
+      const deliveredOrdersWithPaidDate = await Order.find({
+         $or: [
+            { deliveryDate: { $gte: fromDate, $lte: toDate } },
+            { createdAt: { $gte: fromDate, $lte: toDate }, deliveryDate: { $exists: false } }
+         ]
+      }).lean();
 
       const revenue = orders.reduce((sum, o) => sum + (o.totalAmount || 0), 0);
       const count = orders.length;
-      const paid = orders.reduce((sum, o) => sum + (o.paidAmount || 0), 0);
+      const paid = deliveredOrdersWithPaidDate.reduce((sum, o) => sum + (o.paidAmount || 0), 0);
       const due = orders.reduce((sum, o) => sum + (o.dueAmount || 0), 0);
 
       return NextResponse.json({ revenue, count, paid, due });
@@ -37,13 +44,14 @@ export async function GET(req: Request) {
     const todayEnd = new Date();
     todayEnd.setHours(23, 59, 59, 999);
 
-    const [totalOrders, totalCustomers, totalProducts, allOrders, dueCustomers, todayOrders, allPayments, todayPayments] = await Promise.all([
+    const [totalOrders, totalCustomers, totalProducts, allOrders, dueCustomers, todayOrders, todayDeliveredOrders, allPayments, todayPayments] = await Promise.all([
       Order.countDocuments(),
       Customer.countDocuments({ active: true }),
       Product.countDocuments({ active: true }),
       Order.find().lean(),
       Customer.find({ totalDue: { $gt: 0 }, active: true }).lean(),
       Order.find({ createdAt: { $gte: todayStart, $lte: todayEnd } }).lean(),
+      Order.find({ deliveryDate: { $gte: todayStart, $lte: todayEnd } }).lean(),
       Payment.find().sort({ createdAt: -1 }).lean(),
       Payment.find({ createdAt: { $gte: todayStart, $lte: todayEnd } }).lean(),
     ]);
@@ -60,17 +68,31 @@ export async function GET(req: Request) {
 
     // Today's stats
     const todayRevenue = todayOrders.reduce((sum, o) => sum + (o.totalAmount || 0), 0);
-    const todayOrderPaid = todayOrders.reduce((sum, o) => sum + (o.paidAmount || 0), 0);
+    
+    // For today's collection: 
+    // 1. Orders created AND paid today (pending delivery but advance paid, or delivered immediately)
+    const todayCreatedPaid = todayOrders.reduce((sum, o) => {
+      // If it wasn't delivered today, it was advance payment at creation today
+      if (!o.deliveryDate || new Date(o.deliveryDate) > todayEnd || new Date(o.deliveryDate) < todayStart) {
+        return sum + (o.paidAmount || 0);
+      }
+      return sum;
+    }, 0);
+    // 2. Orders delivered today (their money is collected upon delivery, meaning today)
+    const todayDeliveredPaid = todayDeliveredOrders.reduce((sum, o) => sum + (o.paidAmount || 0), 0);
+    
+    const todayOrderPaid = todayCreatedPaid + todayDeliveredPaid;
+    
     const todayPaymentCollection = todayPayments
       .filter(p => p.amount > 0)
       .reduce((sum, p) => sum + (p.amount || 0), 0);
     const todayCollection = todayOrderPaid + todayPaymentCollection;
 
-    const todayDelivered = todayOrders.filter((o) => o.deliveryStatus === "delivered").length;
+    const todayDelivered = todayDeliveredOrders.filter((o) => o.deliveryStatus === "delivered").length;
     const todayPending = todayOrders.filter((o) => o.deliveryStatus !== "delivered" && o.deliveryStatus !== "not_delivered").length;
 
     // Last 7 days data for charts
-    const last7Days: { date: string; revenue: number; orders: number }[] = [];
+    const last7Days: { date: string; revenue: number; orders: number; collection?: number }[] = [];
     for (let i = 6; i >= 0; i--) {
       const d = new Date();
       d.setDate(d.getDate() - i);
@@ -80,10 +102,27 @@ export async function GET(req: Request) {
         const ct = new Date(o.createdAt);
         return ct >= dayStart && ct <= dayEnd;
       });
+      
+      const dayCollectionsFromOrders = allOrders.filter((o) => {
+        if (o.deliveryDate) {
+          const dt = new Date(o.deliveryDate);
+          return dt >= dayStart && dt <= dayEnd;
+        } else {
+          const ct = new Date(o.createdAt);
+          return ct >= dayStart && ct <= dayEnd;
+        }
+      });
+      
+      const dayPaymentsList = allPayments.filter((p) => {
+        const ct = new Date(p.createdAt);
+        return ct >= dayStart && ct <= dayEnd;
+      });
+
       last7Days.push({
         date: d.toLocaleDateString("bn-BD", { day: "numeric", month: "short" }),
         revenue: dayOrders.reduce((s, o) => s + (o.totalAmount || 0), 0),
         orders: dayOrders.length,
+        collection: dayCollectionsFromOrders.reduce((s, o) => s + (o.paidAmount || 0), 0) + dayPaymentsList.reduce((s, p) => s + (p.amount || 0), 0)
       });
     }
 

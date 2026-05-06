@@ -1,0 +1,35 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "fix-db",
+			"type": "shell",
+			"command": "node fix-db.cjs"
+		},
+		{
+			"label": "fix-db2",
+			"type": "shell",
+			"command": "node fix-db2.cjs; rm fix-db*.cjs"
+		},
+		{
+			"label": "check-api",
+			"type": "shell",
+			"command": "Get-Content src/app/dashboard/dues/page.tsx | Select-String -Pattern '/api'"
+		},
+		{
+			"label": "test-build",
+			"type": "shell",
+			"command": "npm run build"
+		},
+		{
+			"label": "test-build2",
+			"type": "shell",
+			"command": "npm run build"
+		},
+		{
+			"label": "fix-dues",
+			"type": "shell",
+			"command": "node fix-dues.cjs; rm fix-dues.cjs"
+		}
+	]
+}

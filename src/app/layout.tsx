@@ -1,7 +1,14 @@
 import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
+import { Inter } from "next/font/google";
 import { Toaster } from "react-hot-toast";
 import "./globals.css";
+
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-inter",
+  display: "swap",
+});
 
 const kalpurush = localFont({
   src: "../fonts/kalpurush.ttf",
@@ -42,8 +49,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="bn" className={kalpurush.variable}>
-      <body className={`${kalpurush.className} antialiased`}>
+    <html lang="bn" className={`${kalpurush.variable} ${inter.variable}`}>
+      <body className="antialiased">
         <Toaster
           position="top-center"
           toastOptions={{
