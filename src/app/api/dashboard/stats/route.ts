@@ -14,10 +14,8 @@ export async function GET(req: Request) {
 
     // If date range specified, return sales for that period
     if (dateFrom && dateTo) {
-      const fromDate = new Date(dateFrom);
-      fromDate.setHours(0, 0, 0, 0);
-      const toDate = new Date(dateTo);
-      toDate.setHours(23, 59, 59, 999);
+      const fromDate = new Date(`${dateFrom}T00:00:00.000+06:00`);
+      const toDate = new Date(`${dateTo}T23:59:59.999+06:00`);
 
       const orders = await Order.find({
         createdAt: { $gte: fromDate, $lte: toDate },
@@ -38,11 +36,11 @@ export async function GET(req: Request) {
       return NextResponse.json({ revenue, count, paid, due });
     }
 
-    // Today's date range
-    const todayStart = new Date();
-    todayStart.setHours(0, 0, 0, 0);
-    const todayEnd = new Date();
-    todayEnd.setHours(23, 59, 59, 999);
+    // Today's date range (Asia/Dhaka time)
+    const now = new Date();
+    const todayStr = new Intl.DateTimeFormat("en-GB", { timeZone: "Asia/Dhaka", year: "numeric", month: "2-digit", day: "2-digit" }).format(now).split('/').reverse().join('-');
+    const todayStart = new Date(`${todayStr}T00:00:00.000+06:00`);
+    const todayEnd = new Date(`${todayStr}T23:59:59.999+06:00`);
 
     const [totalOrders, totalCustomers, totalProducts, allOrders, dueCustomers, todayOrders, todayDeliveredOrders, allPayments, todayPayments] = await Promise.all([
       Order.countDocuments(),
@@ -96,8 +94,9 @@ export async function GET(req: Request) {
     for (let i = 6; i >= 0; i--) {
       const d = new Date();
       d.setDate(d.getDate() - i);
-      const dayStart = new Date(d); dayStart.setHours(0, 0, 0, 0);
-      const dayEnd = new Date(d); dayEnd.setHours(23, 59, 59, 999);
+      const dStr = new Intl.DateTimeFormat("en-GB", { timeZone: "Asia/Dhaka", year: "numeric", month: "2-digit", day: "2-digit" }).format(d).split('/').reverse().join('-');
+      const dayStart = new Date(`${dStr}T00:00:00.000+06:00`);
+      const dayEnd = new Date(`${dStr}T23:59:59.999+06:00`);
       const dayOrders = allOrders.filter((o) => {
         const ct = new Date(o.createdAt);
         return ct >= dayStart && ct <= dayEnd;

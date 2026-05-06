@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { ShoppingCart, Users, Package, CreditCard, Clock, TrendingUp, Truck, CheckCircle2, AlertCircle, CalendarDays, X, ChevronLeft, ChevronRight, Banknote, Trash2 } from "lucide-react";
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, BarChart, Bar } from "recharts";
 import AnimatedModal from "@/components/ui/AnimatedModal";
+import { getBDDateString } from "@/lib/utils";
 
 interface Stats {
   totalOrders: number;
@@ -52,8 +53,7 @@ export default function DashboardPage() {
   const [showSalesModal, setShowSalesModal] = useState(false);
   const [periodStats, setPeriodStats] = useState<{ [key: string]: PeriodStats }>({});
   const [selectedDate, setSelectedDate] = useState(() => {
-    const today = new Date();
-    return today.toISOString().split("T")[0];
+    return getBDDateString(new Date());
   });
   const [dateStats, setDateStats] = useState<PeriodStats | null>(null);
   const [loadingPeriods, setLoadingPeriods] = useState(false);
@@ -61,8 +61,7 @@ export default function DashboardPage() {
   // Collection detail modal state
   const [showCollectionModal, setShowCollectionModal] = useState(false);
   const [collectionDate, setCollectionDate] = useState(() => {
-    const today = new Date();
-    return today.toISOString().split("T")[0];
+    return getBDDateString(new Date());
   });
   const [collectionData, setCollectionData] = useState<{
     orderPaid: number;
@@ -97,7 +96,7 @@ export default function DashboardPage() {
     const last30Start = new Date(today);
     last30Start.setDate(last30Start.getDate() - 29);
 
-    const formatDate = (d: Date) => d.toISOString().split("T")[0];
+    const formatDate = (d: Date) => getBDDateString(d);
 
     try {
       const [todayRes, yesterdayRes, last7Res, last30Res] = await Promise.all([
@@ -560,11 +559,11 @@ export default function DashboardPage() {
       </div>
 
       {/* Sales Detail Modal */}
-      <AnimatedModal open={showSalesModal} onClose={() => setShowSalesModal(false)} title="বিক্রির বিস্তারিত" maxWidth="max-w-xl">
-        <div className="space-y-6">
-          <div className="grid grid-cols-2 gap-4">
+      <AnimatedModal open={showSalesModal} onClose={() => setShowSalesModal(false)} title="বিক্রির বিস্তারিত" maxWidth="max-w-md">
+        <div className="space-y-5">
+          <div className="grid grid-cols-2 gap-3">
             {loadingPeriods ? (
-              <div className="col-span-2 py-12 text-center">
+              <div className="col-span-2 py-10 text-center">
                 <div className="animate-spin w-8 h-8 border-[3px] border-t-transparent rounded-full mx-auto" style={{ borderColor: "#66a80f", borderTopColor: "transparent" }} />
                 <p className="text-[12px] font-medium mt-3" style={{ color: "#6b7280" }}>লোড হচ্ছে...</p>
               </div>
@@ -576,18 +575,18 @@ export default function DashboardPage() {
                   { label: "গত ৭ দিন", data: periodStats.last7, icon: <TrendingUp size={16} className="text-[#66a80f]" />, bg: "bg-[#66a80f]/10" },
                   { label: "গত ৩০ দিন", data: periodStats.last30, icon: <CreditCard size={16} className="text-purple-500" />, bg: "bg-purple-50" },
                 ].map((item) => (
-                  <div key={item.label} className="rounded-2xl p-4 flex flex-col justify-center relative overflow-hidden transition-all hover:-translate-y-1 hover:shadow-lg shadow-sm" style={{ background: "#ffffff", border: "1px solid rgba(0,0,0,0.05)" }}>
-                    <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-gray-50 to-transparent rounded-bl-full -mr-8 -mt-8 opacity-50" />
-                    <div className="flex items-center gap-2.5 mb-2 relative z-10">
-                      <div className={`w-8 h-8 rounded-full flex items-center justify-center ${item.bg}`}>
+                  <div key={item.label} className="rounded-2xl p-4 flex flex-col justify-center relative overflow-hidden transition-all hover:shadow-md shadow-sm" style={{ background: "#ffffff", border: "1px solid rgba(0,0,0,0.05)" }}>
+                    <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-gray-50 to-transparent rounded-bl-full -mr-6 -mt-6 opacity-50" />
+                    <div className="flex items-center gap-2 mb-2 relative z-10">
+                      <div className={`w-7 h-7 rounded-full flex items-center justify-center ${item.bg}`}>
                         {item.icon}
                       </div>
                       <p className="text-[12px] font-semibold text-gray-500">{item.label}</p>
                     </div>
-                    <p className="text-[22px] font-extrabold mt-1 leading-none text-gray-900 tracking-tight">৳{(item.data?.revenue || 0).toLocaleString("en-US")}</p>
-                    <div className="flex items-center justify-between mt-2.5 pt-2.5 border-t border-gray-100">
-                      <p className="text-[12px] font-medium text-gray-500">{item.data?.count || 0} টি অর্ডার</p>
-                      <p className="text-[11px] font-semibold px-2 py-0.5 rounded text-gray-600 bg-gray-100">৳{item.data?.count ? Math.round((item.data?.revenue || 0)/item.data?.count).toLocaleString() : 0} /গড়</p>
+                    <p className="text-[20px] font-extrabold mt-0.5 leading-none text-gray-900 tracking-tight">৳{(item.data?.revenue || 0).toLocaleString("en-US")}</p>
+                    <div className="flex items-center justify-between mt-2.5 pt-2 border-t border-gray-100">
+                      <p className="text-[11px] font-medium text-gray-500">{item.data?.count || 0} টি অর্ডার</p>
+                      <p className="text-[10px] font-semibold px-2 py-0.5 rounded text-gray-600 bg-gray-100">৳{item.data?.count ? Math.round((item.data?.revenue || 0)/item.data?.count).toLocaleString() : 0} /গড়</p>
                     </div>
                   </div>
                 ))}
@@ -595,36 +594,41 @@ export default function DashboardPage() {
             )}
           </div>
 
-          <div className="rounded-2xl p-5 shadow-sm" style={{ background: "linear-gradient(145deg, #ffffff 0%, #f9fafb 100%)", border: "1px solid rgba(0,0,0,0.05)" }}>
-            <div className="flex items-center justify-between mb-4">
-              <h4 className="text-[14px] font-bold text-gray-800 flex items-center gap-2">
-                <CalendarDays size={16} className="text-[#66a80f]" />
+          <div className="rounded-2xl p-4 shadow-sm" style={{ background: "linear-gradient(145deg, #ffffff 0%, #f9fafb 100%)", border: "1px solid rgba(0,0,0,0.05)" }}>
+            <div className="flex items-center justify-between mb-3">
+              <h4 className="text-[13px] font-bold text-gray-800 flex items-center gap-2">
+                <CalendarDays size={15} className="text-[#66a80f]" />
                 দিনভিত্তিক রিপোর্ট
               </h4>
             </div>
             
-            <div className="flex items-center justify-center gap-3 w-full p-1.5 rounded-xl bg-white shadow-sm border border-gray-100 mb-5">
+            <div className="flex items-center justify-between w-full p-1.5 rounded-xl bg-white shadow-sm border border-gray-100 mb-4">
               <button
                 onClick={() => {
                   const d = new Date(selectedDate);
                   d.setDate(d.getDate() - 1);
-                  handleDateChange(d.toISOString().split("T")[0]);
+                  handleDateChange(getBDDateString(d));
                 }}
                 className="w-10 h-10 rounded-lg flex items-center justify-center cursor-pointer hover:bg-gray-50 transition-colors"
               >
                 <ChevronLeft size={18} className="text-gray-600" />
               </button>
-              <input
-                type="date"
-                value={selectedDate}
-                onChange={(e) => handleDateChange(e.target.value)}
-                className="flex-1 h-10 px-4 text-center rounded-lg text-[14px] font-bold text-gray-800 bg-transparent outline-none cursor-pointer"
-              />
+              <div className="relative flex-1 flex justify-center items-center">
+                <div className="flex items-center gap-2 text-[14px] font-bold text-gray-800">
+                  {new Date(selectedDate).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric", timeZone: "Asia/Dhaka" })}
+                </div>
+                <input
+                  type="date"
+                  value={selectedDate}
+                  onChange={(e) => handleDateChange(e.target.value)}
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                />
+              </div>
               <button
                 onClick={() => {
                   const d = new Date(selectedDate);
                   d.setDate(d.getDate() + 1);
-                  handleDateChange(d.toISOString().split("T")[0]);
+                  handleDateChange(getBDDateString(d));
                 }}
                 className="w-10 h-10 rounded-lg flex items-center justify-center cursor-pointer hover:bg-gray-50 transition-colors"
               >
@@ -665,39 +669,44 @@ export default function DashboardPage() {
       </AnimatedModal>
 
       {/* Collection Detail Modal */}
-      <AnimatedModal open={showCollectionModal} onClose={() => setShowCollectionModal(false)} title="আদায়ের বিস্তারিত" maxWidth="max-w-xl">
-        <div className="space-y-6">
+      <AnimatedModal open={showCollectionModal} onClose={() => setShowCollectionModal(false)} title="আদায়ের বিস্তারিত" maxWidth="max-w-md">
+        <div className="space-y-5">
           {/* Header Stats & Date */}
-          <div className="rounded-2xl p-5 shadow-sm" style={{ background: "linear-gradient(145deg, #ffffff 0%, #f9fafb 100%)", border: "1px solid rgba(0,0,0,0.05)" }}>
-            <div className="flex items-center justify-between mb-5">
-              <h4 className="text-[14px] font-bold text-gray-800 flex items-center gap-2">
-                <Banknote size={16} className="text-[#66a80f]" />
+          <div className="rounded-2xl p-4 shadow-sm" style={{ background: "linear-gradient(145deg, #ffffff 0%, #f9fafb 100%)", border: "1px solid rgba(0,0,0,0.05)" }}>
+            <div className="flex items-center justify-between mb-4">
+              <h4 className="text-[13px] font-bold text-gray-800 flex items-center gap-2">
+                <Banknote size={15} className="text-[#66a80f]" />
                 আদায় রিপোর্ট
               </h4>
             </div>
 
-            <div className="flex items-center justify-center gap-3 w-full p-1.5 rounded-xl bg-white shadow-sm border border-gray-100 mb-6">
+            <div className="flex items-center justify-between w-full p-1.5 rounded-xl bg-white shadow-sm border border-gray-100 mb-5">
               <button
                 onClick={() => {
                   const d = new Date(collectionDate);
                   d.setDate(d.getDate() - 1);
-                  handleCollectionDateChange(d.toISOString().split("T")[0]);
+                  handleCollectionDateChange(getBDDateString(d));
                 }}
                 className="w-10 h-10 rounded-lg flex items-center justify-center cursor-pointer hover:bg-gray-50 transition-colors"
               >
                 <ChevronLeft size={18} className="text-gray-600" />
               </button>
-              <input
-                type="date"
-                value={collectionDate}
-                onChange={(e) => handleCollectionDateChange(e.target.value)}
-                className="flex-1 h-10 px-4 text-center rounded-lg text-[14px] font-bold text-gray-800 bg-transparent outline-none cursor-pointer"
-              />
+              <div className="relative flex-1 flex justify-center items-center">
+                <div className="flex items-center gap-2 text-[14px] font-bold text-gray-800">
+                  {new Date(collectionDate).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric", timeZone: "Asia/Dhaka" })}
+                </div>
+                <input
+                  type="date"
+                  value={collectionDate}
+                  onChange={(e) => handleCollectionDateChange(e.target.value)}
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                />
+              </div>
               <button
                 onClick={() => {
                   const d = new Date(collectionDate);
                   d.setDate(d.getDate() + 1);
-                  handleCollectionDateChange(d.toISOString().split("T")[0]);
+                  handleCollectionDateChange(getBDDateString(d));
                 }}
                 className="w-10 h-10 rounded-lg flex items-center justify-center cursor-pointer hover:bg-gray-50 transition-colors"
               >
@@ -761,7 +770,7 @@ export default function DashboardPage() {
                           <div className="flex-1 min-w-0 ml-3">
                             <p className="text-[14px] font-bold text-gray-800 truncate">{c.customerName}</p>
                             <p className="text-[11px] font-medium text-gray-500 mt-0.5">
-                              {new Date(c.date).toLocaleTimeString("bn-BD", { hour: "2-digit", minute: "2-digit" })}
+                              {new Date(c.date).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric", timeZone: "Asia/Dhaka" })} · {new Date(c.date).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", timeZone: "Asia/Dhaka" })}
                             </p>
                           </div>
                           <div className="flex items-center gap-3 shrink-0">

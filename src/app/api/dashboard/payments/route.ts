@@ -14,11 +14,8 @@ export async function GET(req: NextRequest) {
 
     // If date param is provided, return payments for that date
     if (date) {
-      const targetDate = new Date(date);
-      const dayStart = new Date(targetDate);
-      dayStart.setHours(0, 0, 0, 0);
-      const dayEnd = new Date(targetDate);
-      dayEnd.setHours(23, 59, 59, 999);
+      const dayStart = new Date(`${date}T00:00:00.000+06:00`);
+      const dayEnd = new Date(`${date}T23:59:59.999+06:00`);
 
       const payments = await Payment.find({
         amount: { $gt: 0 },

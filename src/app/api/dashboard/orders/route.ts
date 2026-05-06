@@ -16,11 +16,16 @@ export async function GET(req: NextRequest) {
     const filter: Record<string, unknown> = {};
     if (status) filter.status = status;
     if (date) {
-      const start = new Date(date);
-      start.setHours(0, 0, 0, 0);
-      const end = new Date(date);
-      end.setHours(23, 59, 59, 999);
-      filter.createdAt = { $gte: start, $lte: end };
+      // date is "YYYY-MM-DD". We want to query from midnight to midnight Asia/Dhaka time.
+      // Dhaka is UTC+6. So midnight Dhaka = previous day 18:00:00 UTC.
+      // Let's create an exact UTC start and end.
+      const start = new Date(`${date}T00:00:00.000+06:00`);
+      const end = new Date(`${date}T23:59:59.999+06:00`);
+      
+      filter.$or = [
+        { createdAt: { $gte: start, $lte: end } },
+        { deliveryStatus: "pending" }
+      ];
     }
 
     const orders = await Order.find(filter).sort({ createdAt: -1 }).limit(limit);
