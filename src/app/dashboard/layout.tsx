@@ -16,6 +16,7 @@ import {
   LogOut,
   Menu,
   X,
+  UserCheck,
 } from "lucide-react";
 import toast from "react-hot-toast";
 
@@ -35,6 +36,7 @@ const navItems = [
 
 const adminItems = [
   { href: "/dashboard/users", label: "ইউজার ম্যানেজমেন্ট", icon: UserCog },
+  { href: "/dashboard/premium", label: "ইউজার রিপোর্ট", icon: UserCheck },
 ];
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -70,7 +72,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const allItems = userInfo?.role === "admin" ? [...navItems, ...adminItems] : navItems;
 
   return (
-    <div className="min-h-screen flex" style={{ background: "var(--bg-primary)" }}>
+    <div className="h-screen w-full flex overflow-hidden" style={{ background: "var(--bg-primary)" }}>
       {/* Mobile overlay */}
       <AnimatePresence>
         {sidebarOpen && (

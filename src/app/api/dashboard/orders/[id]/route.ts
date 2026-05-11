@@ -1,14 +1,27 @@
 import { NextRequest, NextResponse } from "next/server";
+import { verifyToken } from "@/lib/jwt";
 import dbConnect from "@/lib/db";
 import Order from "@/models/Order";
 import Customer from "@/models/Customer";
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const token = req.cookies.get("token")?.value;
+    if (!token) return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+    const payload = verifyToken(token);
+    if (!payload || !payload.userId) return NextResponse.json({ error: "Invalid token" }, { status: 401 });
+    const isAdmin = payload.role === "admin";
+    const username = payload.username;
+
     await dbConnect();
     const { id } = await params;
     const order = await Order.findById(id);
     if (!order) return NextResponse.json({ error: "Not found" }, { status: 404 });
+
+    if (!isAdmin && order.createdBy !== username) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
     return NextResponse.json(order);
   } catch (error) {
     console.error("Get order error:", error);

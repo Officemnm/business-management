@@ -68,10 +68,12 @@ export default function DashboardPage() {
     dueCollection: number;
     total: number;
     dateCollections: { _id: string; customerName: string; amount: number; date: string }[];
+    orderCollections: any[];
     isAdmin: boolean;
   } | null>(null);
   const [loadingCollection, setLoadingCollection] = useState(false);
   const [deletingPayment, setDeletingPayment] = useState<string | null>(null);
+  const [collectionTab, setCollectionTab] = useState<"due" | "order">("due");
 
   useEffect(() => {
     fetch("/api/dashboard/stats")
@@ -175,12 +177,14 @@ export default function DashboardPage() {
 
       // Order paid amount from the date stats
       const orderPaid = dateStats.paid || 0;
+      const orderCollections = dateStats.paidOrders || [];
 
       setCollectionData({
         orderPaid,
         dueCollection: dueCollections,
         total: orderPaid + dueCollections,
         dateCollections,
+        orderCollections,
         isAdmin,
       });
     } catch {
@@ -730,7 +734,10 @@ export default function DashboardPage() {
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
-                  <div className="rounded-xl p-4 bg-white border border-gray-100 shadow-sm transition-all hover:border-[#66a80f]/30">
+                  <div 
+                    onClick={() => setCollectionTab("due")}
+                    className={`cursor-pointer rounded-xl p-4 bg-white border shadow-sm transition-all hover:border-[#66a80f]/30 ${collectionTab === "due" ? "border-[#66a80f] ring-1 ring-[#66a80f]" : "border-gray-100"}`}
+                  >
                     <div className="flex items-center gap-2 mb-2">
                       <div className="w-7 h-7 rounded-lg bg-orange-50 flex items-center justify-center">
                         <Banknote size={14} className="text-orange-500" />
@@ -738,67 +745,115 @@ export default function DashboardPage() {
                       <p className="text-[11px] font-semibold text-gray-500">বাকি আদায়</p>
                     </div>
                     <p className="text-[20px] font-bold text-gray-900">৳{collectionData.dueCollection.toLocaleString()}</p>
-                    <p className="text-[11px] font-medium text-gray-400 mt-1">{collectionData.dateCollections.length} জনের থেকে</p>
+                    <p className="text-[11px] font-medium mt-1" style={{ color: collectionTab === "due" ? "#66a80f" : "#9ca3af" }}>{collectionData.dateCollections.length} জনের থেকে</p>
                   </div>
                   
-                  <div className="rounded-xl p-4 bg-white border border-gray-100 shadow-sm transition-all hover:border-[#66a80f]/30">
+                  <div 
+                    onClick={() => setCollectionTab("order")}
+                    className={`cursor-pointer rounded-xl p-4 bg-white border shadow-sm transition-all hover:border-blue-500/30 ${collectionTab === "order" ? "border-blue-500 ring-1 ring-blue-500" : "border-gray-100"}`}
+                  >
                     <div className="flex items-center gap-2 mb-2">
                       <div className="w-7 h-7 rounded-lg bg-blue-50 flex items-center justify-center">
                         <ShoppingCart size={14} className="text-blue-500" />
                       </div>
-                      <p className="text-[11px] font-semibold text-gray-500">অর্ডার থেকে</p>
+                      <p className="text-[11px] font-semibold text-gray-500">নগদ আদায় (অর্ডার)</p>
                     </div>
                     <p className="text-[20px] font-bold text-gray-900">৳{collectionData.orderPaid.toLocaleString()}</p>
-                    <p className="text-[11px] font-medium text-gray-400 mt-1">ক্যাশ অন ডেলিভারি</p>
+                    <p className="text-[11px] font-medium mt-1" style={{ color: collectionTab === "order" ? "#3b82f6" : "#9ca3af" }}>{collectionData.orderCollections?.length || 0} টি অর্ডার</p>
                   </div>
                 </div>
 
-                {collectionData.dateCollections.length > 0 && (
-                  <div className="mt-6 pt-4 border-t border-gray-100">
-                    <div className="flex items-center justify-between mb-3 px-1">
-                      <p className="text-[12px] font-bold text-gray-800">বাকি আদায়ের তালিকা</p>
-                      <span className="text-[11px] font-semibold bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
-                        {collectionData.dateCollections.length} টি
-                      </span>
-                    </div>
-                    <div className="rounded-xl border border-gray-100 bg-white overflow-hidden shadow-sm">
-                      {collectionData.dateCollections.map((c: any, idx: number) => (
-                        <div key={c._id} className={`flex items-center p-3.5 hover:bg-gray-50 transition-colors ${idx > 0 ? "border-t border-gray-100" : ""}`}>
-                          <div className="w-9 h-9 rounded-full bg-[#66a80f]/10 flex items-center justify-center shrink-0">
-                            <span className="text-[14px] font-bold text-[#66a80f]">{c.customerName.charAt(0)}</span>
-                          </div>
-                          <div className="flex-1 min-w-0 ml-3">
-                            <p className="text-[14px] font-bold text-gray-800 truncate">{c.customerName}</p>
-                            <p className="text-[11px] font-medium text-gray-500 mt-0.5">
-                              {new Date(c.date).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric", timeZone: "Asia/Dhaka" })} · {new Date(c.date).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", timeZone: "Asia/Dhaka" })}
-                            </p>
-                          </div>
-                          <div className="flex items-center gap-3 shrink-0">
-                            <p className="text-[15px] font-bold text-[#66a80f]">+৳{c.amount.toLocaleString()}</p>
-                            {collectionData.isAdmin && (
-                              <button
-                                onClick={() => deletePayment(c._id)}
-                                disabled={deletingPayment === c._id}
-                                className="w-8 h-8 rounded-lg flex items-center justify-center bg-red-50 text-red-500 hover:bg-red-100 disabled:opacity-50 transition-colors"
-                              >
-                                {deletingPayment === c._id ? (
-                                  <div className="animate-spin w-4 h-4 border-2 border-t-transparent rounded-full border-red-500" />
-                                ) : (
-                                  <Trash2 size={14} />
-                                )}
-                              </button>
-                            )}
-                          </div>
+                {collectionTab === "due" && (
+                  <>
+                    {collectionData.dateCollections.length > 0 ? (
+                      <div className="mt-6 pt-4 border-t border-gray-100">
+                        <div className="flex items-center justify-between mb-3 px-1">
+                          <p className="text-[12px] font-bold text-gray-800">বাকি আদায়ের তালিকা</p>
+                          <span className="text-[11px] font-semibold bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
+                            {collectionData.dateCollections.length} টি
+                          </span>
                         </div>
-                      ))}
-                    </div>
-                  </div>
+                        <div className="rounded-xl border border-gray-100 bg-white overflow-hidden shadow-sm">
+                          {collectionData.dateCollections.map((c: any, idx: number) => (
+                            <div key={c._id} className={`flex items-center p-3.5 hover:bg-gray-50 transition-colors ${idx > 0 ? "border-t border-gray-100" : ""}`}>
+                              <div className="w-9 h-9 rounded-full bg-[#66a80f]/10 flex items-center justify-center shrink-0">
+                                <span className="text-[14px] font-bold text-[#66a80f]">{c.customerName.charAt(0).toUpperCase()}</span>
+                              </div>
+                              <div className="flex-1 min-w-0 ml-3">
+                                <p className="text-[14px] font-bold text-gray-800 truncate">{c.customerName}</p>
+                                <p className="text-[11px] font-medium text-gray-500 mt-0.5">
+                                  {new Date(c.date).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric", timeZone: "Asia/Dhaka" })} · {new Date(c.date).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", timeZone: "Asia/Dhaka" })}
+                                </p>
+                              </div>
+                              <div className="flex items-center gap-3 shrink-0">
+                                <p className="text-[15px] font-bold text-[#66a80f]">+৳{c.amount.toLocaleString()}</p>
+                                {collectionData.isAdmin && (
+                                  <button
+                                    onClick={() => deletePayment(c._id)}
+                                    disabled={deletingPayment === c._id}
+                                    className="w-8 h-8 rounded-lg flex items-center justify-center bg-red-50 text-red-500 hover:bg-red-100 disabled:opacity-50 transition-colors"
+                                  >
+                                    {deletingPayment === c._id ? (
+                                      <div className="animate-spin w-4 h-4 border-2 border-t-transparent rounded-full border-red-500" />
+                                    ) : (
+                                      <Trash2 size={14} />
+                                    )}
+                                  </button>
+                                )}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="mt-6 p-8 text-center bg-white rounded-xl border border-gray-100 shadow-sm">
+                        <Banknote size={24} className="mx-auto text-gray-300 mb-2" />
+                        <p className="text-[13px] font-medium text-gray-500">কোনো বাকি আদায় নেই</p>
+                      </div>
+                    )}
+                  </>
                 )}
-                {collectionData.dateCollections.length === 0 && (
-                  <div className="mt-6 p-8 text-center bg-white rounded-xl border border-gray-100 shadow-sm">
-                    <Banknote size={24} className="mx-auto text-gray-300 mb-2" />
-                    <p className="text-[13px] font-medium text-gray-500">কোনো বাকি আদায় নেই</p>
-                  </div>
+
+                {collectionTab === "order" && (
+                  <>
+                    {(collectionData?.orderCollections?.length || 0) > 0 ? (
+                      <div className="mt-6 pt-4 border-t border-gray-100">
+                        <div className="flex items-center justify-between mb-3 px-1">
+                          <p className="text-[12px] font-bold text-gray-800">অর্ডার থেকে আদায়ের তালিকা</p>
+                          <span className="text-[11px] font-semibold bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
+                            {collectionData.orderCollections.length} টি
+                          </span>
+                        </div>
+                        <div className="rounded-xl border border-gray-100 bg-white overflow-hidden shadow-sm">
+                          {collectionData.orderCollections.map((o: any, idx: number) => (
+                            <div key={o._id} className={`flex items-center p-3.5 hover:bg-gray-50 transition-colors ${idx > 0 ? "border-t border-gray-100" : ""}`}>
+                              <div className="w-9 h-9 rounded-full bg-blue-50 flex items-center justify-center shrink-0">
+                                <span className="text-[14px] font-bold text-blue-600">{o.customerName.charAt(0).toUpperCase()}</span>
+                              </div>
+                              <div className="flex-1 min-w-0 ml-3">
+                                <p className="text-[14px] font-bold text-gray-800 truncate">{o.customerName}</p>
+                                <p className="text-[11px] font-medium mt-0.5">
+                                  {o.dueAmount > 0 ? (
+                                     <span className="text-red-500 font-semibold">বাকি আছে: ৳{o.dueAmount.toLocaleString()}</span>
+                                  ) : (
+                                     <span className="text-[#66a80f] font-semibold">সম্পূর্ণ পরিশোধ</span>
+                                  )}
+                                </p>
+                              </div>
+                              <div className="flex items-center gap-3 shrink-0">
+                                <p className="text-[15px] font-bold text-blue-600">+৳{o.paidAmount.toLocaleString()}</p>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="mt-6 p-8 text-center bg-white rounded-xl border border-gray-100 shadow-sm">
+                        <ShoppingCart size={24} className="mx-auto text-gray-300 mb-2" />
+                        <p className="text-[13px] font-medium text-gray-500">কোনো নগদ আদায় নেই</p>
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
             ) : (

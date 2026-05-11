@@ -11,16 +11,23 @@ export async function GET(req: NextRequest) {
     const customerId = searchParams.get("customerId");
     const list = searchParams.get("list");
     const date = searchParams.get("date");
+    const targetUser = searchParams.get("targetUser"); // Add support for target user
 
     // If date param is provided, return payments for that date
     if (date) {
       const dayStart = new Date(`${date}T00:00:00.000+06:00`);
       const dayEnd = new Date(`${date}T23:59:59.999+06:00`);
 
-      const payments = await Payment.find({
+      const query: any = {
         amount: { $gt: 0 },
         createdAt: { $gte: dayStart, $lte: dayEnd },
-      })
+      };
+      
+      if (targetUser) {
+        query.collectedBy = targetUser;
+      }
+
+      const payments = await Payment.find(query)
         .sort({ createdAt: -1 })
         .lean();
       return NextResponse.json(payments);

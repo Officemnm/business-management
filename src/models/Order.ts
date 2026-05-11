@@ -15,6 +15,7 @@ export interface IReturnItem {
 }
 
 export interface IOrder extends Document {
+  orderNumber?: string;
   customer: mongoose.Types.ObjectId;
   customerName: string;
   customerAddress?: string;
@@ -46,6 +47,11 @@ const OrderItemSchema = new Schema({
 
 const OrderSchema: Schema<IOrder> = new Schema(
   {
+    orderNumber: {
+      type: String,
+      unique: true,
+      sparse: true,
+    },
     customer: {
       type: Schema.Types.ObjectId,
       ref: "Customer",

@@ -4,17 +4,34 @@ import dbConnect from "@/lib/db";
 import Order from "@/models/Order";
 import Product from "@/models/Product";
 
+import { verifyToken } from "@/lib/jwt";
+
 export async function GET(req: NextRequest) {
   try {
+    const token = req.cookies.get("token")?.value;
+    if (!token) return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+    const payload = verifyToken(token);
+    if (!payload || !payload.userId) return NextResponse.json({ error: "Invalid token" }, { status: 401 });
+    const isAdmin = payload.role === "admin";
+    const username = payload.username;
+
     await dbConnect();
     const { searchParams } = new URL(req.url);
     const limit = parseInt(searchParams.get("limit") || "50");
     const status = searchParams.get("status");
 
     const date = searchParams.get("date");
+    const targetUser = searchParams.get("targetUser");
 
     const filter: Record<string, unknown> = {};
     if (status) filter.status = status;
+    
+    if (isAdmin && targetUser) {
+      filter.createdBy = targetUser;
+    } else if (!isAdmin) {
+      filter.createdBy = username;
+    }
+    
     if (date) {
       // date is "YYYY-MM-DD". We want to query from midnight to midnight Asia/Dhaka time.
       // Dhaka is UTC+6. So midnight Dhaka = previous day 18:00:00 UTC.
@@ -43,8 +60,11 @@ export async function POST(req: NextRequest) {
     const createdBy = req.headers.get("x-user-name") || "unknown";
 
     // Force pending status — due only added to customer after delivery confirmation
+    const orderNumber = `ORD-${Date.now().toString().slice(-5)}${Math.floor(100 + Math.random() * 900)}`;
+    
     const order = await Order.create({
       ...body,
+      orderNumber,
       createdBy,
       status: "pending",
       deliveryStatus: "pending",

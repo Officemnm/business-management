@@ -1,14 +1,27 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
+import { verifyToken } from "@/lib/jwt";
 import dbConnect from "@/lib/db";
 import Order from "@/models/Order";
 import Customer from "@/models/Customer";
 import Product from "@/models/Product";
 import Payment from "@/models/Payment";
 
-export async function GET(req: Request) {
+export async function GET(req: NextRequest) {
+  const token = req.cookies.get("token")?.value;
+  if (!token) return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+  const payload = verifyToken(token);
+  if (!payload || !payload.userId) return NextResponse.json({ error: "Invalid token" }, { status: 401 });
+  const username = payload.username;
+  const isAdmin = payload.role === "admin";
+
   const { searchParams } = new URL(req.url);
   const dateFrom = searchParams.get("from");
   const dateTo = searchParams.get("to");
+  const targetUser = searchParams.get("targetUser");
+  
+  const queryUsername = (isAdmin && targetUser) ? targetUser : username;
+  const shouldFilterByUser = !isAdmin || !!targetUser;
+
   try {
     await dbConnect();
 
@@ -17,23 +30,38 @@ export async function GET(req: Request) {
       const fromDate = new Date(`${dateFrom}T00:00:00.000+06:00`);
       const toDate = new Date(`${dateTo}T23:59:59.999+06:00`);
 
+
       const orders = await Order.find({
+        ...((shouldFilterByUser) ? { createdBy: queryUsername } : {}),
         createdAt: { $gte: fromDate, $lte: toDate },
       }).lean();
       
       const deliveredOrdersWithPaidDate = await Order.find({
+         ...((shouldFilterByUser) ? { createdBy: queryUsername } : {}),
          $or: [
             { deliveryDate: { $gte: fromDate, $lte: toDate } },
             { createdAt: { $gte: fromDate, $lte: toDate }, deliveryDate: { $exists: false } }
          ]
       }).lean();
 
+
       const revenue = orders.reduce((sum, o) => sum + (o.totalAmount || 0), 0);
       const count = orders.length;
       const paid = deliveredOrdersWithPaidDate.reduce((sum, o) => sum + (o.paidAmount || 0), 0);
       const due = orders.reduce((sum, o) => sum + (o.dueAmount || 0), 0);
+      
+      const paidOrdersList = deliveredOrdersWithPaidDate
+        .filter(o => (o.paidAmount || 0) > 0)
+        .map(o => ({
+          _id: o._id,
+          customerName: o.customerName,
+          paidAmount: o.paidAmount,
+          dueAmount: o.dueAmount,
+          createdAt: o.createdAt,
+          deliveryDate: o.deliveryDate
+        }));
 
-      return NextResponse.json({ revenue, count, paid, due });
+      return NextResponse.json({ revenue, count, paid, due, paidOrders: paidOrdersList });
     }
 
     // Today's date range (Asia/Dhaka time)
@@ -42,17 +70,22 @@ export async function GET(req: Request) {
     const todayStart = new Date(`${todayStr}T00:00:00.000+06:00`);
     const todayEnd = new Date(`${todayStr}T23:59:59.999+06:00`);
 
+
+    const userFilter = { ...((shouldFilterByUser) ? { createdBy: queryUsername } : {}) };
+    const customerFilter = { ...((shouldFilterByUser) ? { createdBy: queryUsername } : {}), active: true };
+
     const [totalOrders, totalCustomers, totalProducts, allOrders, dueCustomers, todayOrders, todayDeliveredOrders, allPayments, todayPayments] = await Promise.all([
-      Order.countDocuments(),
-      Customer.countDocuments({ active: true }),
+      Order.countDocuments(userFilter),
+      Customer.countDocuments(customerFilter),
       Product.countDocuments({ active: true }),
-      Order.find().lean(),
-      Customer.find({ totalDue: { $gt: 0 }, active: true }).lean(),
-      Order.find({ createdAt: { $gte: todayStart, $lte: todayEnd } }).lean(),
-      Order.find({ deliveryDate: { $gte: todayStart, $lte: todayEnd } }).lean(),
-      Payment.find().sort({ createdAt: -1 }).lean(),
-      Payment.find({ createdAt: { $gte: todayStart, $lte: todayEnd } }).lean(),
+      Order.find(userFilter).lean(),
+      Customer.find({ ...customerFilter, totalDue: { $gt: 0 } }).lean(),
+      Order.find({ ...userFilter, createdAt: { $gte: todayStart, $lte: todayEnd } }).lean(),
+      Order.find({ ...userFilter, deliveryDate: { $gte: todayStart, $lte: todayEnd } }).lean(),
+      Payment.find({ ...((shouldFilterByUser) ? { collectedBy: queryUsername } : {}) }).sort({ createdAt: -1 }).lean(),
+      Payment.find({ ...((shouldFilterByUser) ? { collectedBy: queryUsername } : {}), createdAt: { $gte: todayStart, $lte: todayEnd } }).lean(),
     ]);
+
 
     const totalRevenue = allOrders.reduce((sum, o) => sum + (o.totalAmount || 0), 0);
     const totalDue = dueCustomers.reduce((sum, c) => sum + (c.totalDue || 0), 0);
@@ -126,8 +159,8 @@ export async function GET(req: Request) {
     }
 
     // Recent activity - combine orders and payments
-    const recentOrders = await Order.find().sort({ createdAt: -1 }).limit(10).lean();
-    const recentPayments = await Payment.find({ amount: { $gt: 0 } }).sort({ createdAt: -1 }).limit(10).lean();
+    const recentOrders = await Order.find({ ...((shouldFilterByUser) ? { createdBy: queryUsername } : {}) }).sort({ createdAt: -1 }).limit(10).lean();
+    const recentPayments = await Payment.find({ ...((shouldFilterByUser) ? { collectedBy: queryUsername } : {}), amount: { $gt: 0 } }).sort({ createdAt: -1 }).limit(10).lean();
 
     // Combine and sort by date
     const combinedActivity = [

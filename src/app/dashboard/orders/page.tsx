@@ -11,7 +11,7 @@ import AnimatedDropdown from "@/components/ui/AnimatedDropdown";
 interface Customer { _id: string; name: string; phone: string; address?: string; }
 interface Product { _id: string; name: string; sellPrice: number; stock: number; category: string; image?: string; unit: string; }
 interface OrderItem { product: string; productName: string; quantity: number; unitPrice: number; total: number; remark: string; image?: string; }
-interface Order { _id: string; customer?: string; customerName: string; customerAddress?: string; items: OrderItem[]; totalAmount: number; paidAmount: number; dueAmount: number; returnAmount?: number; finalAmount?: number; returnItems?: { productName: string; amount: number }[]; status: string; deliveryStatus?: string; deliveryNote?: string; createdBy: string; createdAt: string; }
+interface Order { _id: string; orderNumber?: string; customer?: string; customerName: string; customerAddress?: string; items: OrderItem[]; totalAmount: number; paidAmount: number; dueAmount: number; returnAmount?: number; finalAmount?: number; returnItems?: { productName: string; amount: number }[]; status: string; deliveryStatus?: string; deliveryNote?: string; createdBy: string; createdAt: string; }
 
 import { getBDDateString } from "@/lib/utils";
 
@@ -539,13 +539,19 @@ export default function OrdersPage() {
     return (
       <AnimatedModal open={!!viewOrder} onClose={() => { setViewOrder(null); setDeliveryAction("none"); }} title="অর্ডার বিবরণ" maxWidth="max-w-lg">
         <div className="grid grid-cols-2 gap-3 mb-4">
+          {viewOrder.orderNumber && (
+            <div className="col-span-2 bg-gray-50 p-2 rounded-lg border border-gray-100 mb-1 flex items-center justify-between">
+               <span className="text-[11px] font-semibold text-gray-500 uppercase">অর্ডার নং</span>
+               <span className="text-[13px] font-bold text-gray-800 tracking-wider">{viewOrder.orderNumber}</span>
+            </div>
+          )}
           <div>
             <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>কাস্টমার</p>
             <p className="text-[13px] font-semibold" style={{ color: "var(--text-primary)" }}>{viewOrder.customerName}</p>
           </div>
           <div>
             <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>তারিখ</p>
-            <p className="text-[13px] font-semibold" style={{ color: "var(--text-primary)" }}>{new Date(viewOrder.createdAt).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric", timeZone: "Asia/Dhaka" })} {new Date(viewOrder.createdAt).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}</p>
+            <p className="text-[13px] font-semibold" style={{ color: "var(--text-primary)" }}>{new Date(viewOrder.createdAt).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric", timeZone: "Asia/Dhaka" })} {new Date(viewOrder.createdAt).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: true, timeZone: "Asia/Dhaka" })}</p>
           </div>
           <div>
             <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>স্ট্যাটাস</p>
@@ -771,6 +777,12 @@ export default function OrdersPage() {
     if (!editOrder) return null;
     return (
       <AnimatedModal open={!!editOrder} onClose={() => setEditOrder(null)} title="অর্ডার সম্পাদনা" maxWidth="max-w-lg">
+            {editOrder.orderNumber && (
+              <div className="mb-3 bg-gray-50 p-2 rounded-lg border border-gray-100 flex items-center justify-between">
+                 <span className="text-[11px] font-semibold text-gray-500 uppercase">অর্ডার নং</span>
+                 <span className="text-[13px] font-bold tracking-wider">{editOrder.orderNumber}</span>
+              </div>
+            )}
             <div className="mb-3">
               <label className="block text-[11px] font-medium mb-1" style={{ color: "var(--text-secondary)" }}>কাস্টমার নাম</label>
               <input value={editOrder.customerName} onChange={(e) => setEditOrder({ ...editOrder, customerName: e.target.value })}
@@ -970,171 +982,152 @@ export default function OrdersPage() {
 
   // ===================== MAIN ORDER PAGE =====================
   return (
-    <div className="pb-8 space-y-5">
-      {/* Page Header */}
-      <div className="flex items-end justify-between flex-wrap gap-3">
+    <div className="pb-20 space-y-4 max-w-lg mx-auto md:max-w-none">
+      {/* App-like Header */}
+      <div className="flex items-center justify-between mt-2 mb-4 px-2">
         <div>
-          <h1 className="text-[26px] sm:text-[28px] font-bold tracking-tight" style={{ color: "#111827", letterSpacing: "-0.02em" }}>অর্ডার সমূহ</h1>
-          <p className="text-[13px] font-medium mt-1" style={{ color: "#6b7280" }}>{todayLabel} · মোট {orders.length} টি অর্ডার</p>
+          <h1 className="text-[22px] sm:text-[24px] font-extrabold tracking-tight" style={{ color: "#111827", letterSpacing: "-0.01em" }}>অর্ডার সমুহ</h1>
+          <p className="text-[12px] font-medium" style={{ color: "#6b7280" }}>{todayLabel}</p>
         </div>
         <button onClick={() => { resetOrderForm(); setShowForm(true); }}
-          className="flex items-center gap-2 h-10 px-4 rounded-lg text-[13px] font-semibold text-white cursor-pointer transition-all hover:shadow-sm"
-          style={{ background: "#66a80f" }}>
-          <Plus size={16} /> নতুন অর্ডার
+          className="w-10 h-10 rounded-full flex items-center justify-center text-white cursor-pointer transition-transform active:scale-95 shadow-md"
+          style={{ background: "#66a80f", boxShadow: "0 4px 10px rgba(102,168,15,0.25)" }}>
+          <Plus size={20} strokeWidth={2.5} />
         </button>
       </div>
 
-      {/* KPI Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        {/* Total Orders */}
-        <div className="rounded-2xl p-5" style={{ background: "#ffffff", border: "1px solid #e5e7eb" }}>
-          <div className="flex items-center justify-between mb-3">
-            <p className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "#6b7280" }}>মোট অর্ডার</p>
-            <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "#f3f4f6" }}>
-              <ShoppingBag size={14} strokeWidth={2.2} style={{ color: "#374151" }} />
-            </div>
+      {/* KPI Cards (Mobile App Style) */}
+      <div className="grid grid-cols-2 gap-3 mb-2">
+        {/* Total Orders / Pending */}
+        <div className="rounded-2xl p-4 shadow-sm relative overflow-hidden flex flex-col justify-end" style={{ background: "linear-gradient(135deg, #111827 0%, #1f2937 100%)", minHeight: "100px" }}>
+          <div className="absolute top-3 right-3 text-white opacity-20">
+            <ShoppingBag size={40} />
           </div>
-          <p className="text-[26px] font-bold leading-none" style={{ color: "#111827", letterSpacing: "-0.025em", fontVariantNumeric: "tabular-nums" }}>
+          <p className="text-[11px] font-semibold text-gray-300 uppercase tracking-wider mb-0.5 relative z-10">আজকের অর্ডার</p>
+          <p className="text-[26px] font-bold leading-none text-white relative z-10">
             {orders.length.toLocaleString("en-US")}
           </p>
-        </div>
-
-        {/* Pending Orders */}
-        <div className="rounded-2xl p-5" style={{ background: "#ffffff", border: "1px solid #e5e7eb" }}>
-          <div className="flex items-center justify-between mb-3">
-            <p className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "#6b7280" }}>পেন্ডিং</p>
-            <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "#fffbeb" }}>
-              <Truck size={14} strokeWidth={2.2} style={{ color: "#d97706" }} />
-            </div>
-          </div>
-          <p className="text-[26px] font-bold leading-none" style={{ color: "#111827", letterSpacing: "-0.025em", fontVariantNumeric: "tabular-nums" }}>
-            {pendingOrders.length.toLocaleString("en-US")}
-          </p>
-          <div className="flex items-center gap-1.5 mt-3">
-            <span className="text-[11px] font-semibold" style={{ color: "#d97706" }}>{notDeliveredOrders.length} ব্যর্থ</span>
+          <div className="mt-2 text-[10px] font-medium text-gray-300 flex items-center gap-1.5 relative z-10">
+             <span className="w-1.5 h-1.5 rounded-full bg-yellow-400"></span>
+             {pendingOrders.length} টি পেন্ডিং
           </div>
         </div>
 
         {/* Revenue */}
-        <div className="rounded-2xl p-5" style={{ background: "#ffffff", border: "1px solid #e5e7eb" }}>
-          <div className="flex items-center justify-between mb-3">
-            <p className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "#6b7280" }}>মোট বিক্রি</p>
-            <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "rgba(102,168,15,0.1)" }}>
-              <BarChart3 size={14} strokeWidth={2.2} style={{ color: "#66a80f" }} />
-            </div>
+        <div className="rounded-2xl p-4 shadow-sm relative overflow-hidden flex flex-col justify-end" style={{ background: "linear-gradient(135deg, #66a80f 0%, #4d7c0f 100%)", minHeight: "100px" }}>
+          <div className="absolute top-3 right-3 text-white opacity-20">
+            <BarChart3 size={40} />
           </div>
-          <p className="text-[26px] font-bold leading-none" style={{ color: "#111827", letterSpacing: "-0.025em", fontVariantNumeric: "tabular-nums" }}>
+          <p className="text-[11px] font-semibold text-green-100 uppercase tracking-wider mb-0.5 relative z-10">আজকের সেলস</p>
+          <p className="text-[22px] sm:text-[26px] font-bold leading-none text-white relative z-10 truncate">
             ৳{totalRevenue.toLocaleString("en-US")}
           </p>
-          <div className="flex items-center gap-1.5 mt-3">
-            <span className="text-[11px] font-semibold" style={{ color: "#66a80f" }}>৳{pendingRevenue.toLocaleString("en-US")}</span>
-            <span className="text-[11px] font-medium" style={{ color: "#9ca3af" }}>পেন্ডিং</span>
+          <div className="mt-2 text-[10px] font-medium text-green-200 flex items-center gap-1.5 relative z-10">
+             <span className="w-1.5 h-1.5 rounded-full bg-red-400"></span>
+             বাকি ৳{totalDue.toLocaleString()}
+          </div>
+        </div>
+
+        {/* Pending Orders */}
+        <div className="col-span-1 rounded-2xl p-4 shadow-sm relative overflow-hidden flex flex-col justify-end" style={{ background: "#ffffff", border: "1px solid #e5e7eb", minHeight: "100px" }}>
+          <div className="absolute top-3 right-3 text-orange-500 opacity-10">
+            <Truck size={40} />
+          </div>
+          <p className="text-[11px] font-semibold text-gray-500 uppercase tracking-wider mb-0.5 relative z-10">পেন্ডিং</p>
+          <p className="text-[22px] sm:text-[26px] font-bold leading-none text-gray-900 relative z-10">
+            {pendingOrders.length.toLocaleString("en-US")}
+          </p>
+          <div className="mt-2 text-[10px] font-medium text-orange-600 flex items-center gap-1.5 relative z-10">
+            {notDeliveredOrders.length} ব্যর্থ
           </div>
         </div>
 
         {/* Total Due */}
-        <div className="rounded-2xl p-5" style={{ background: "#ffffff", border: "1px solid #e5e7eb" }}>
-          <div className="flex items-center justify-between mb-3">
-            <p className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "#6b7280" }}>মোট বাকি</p>
-            <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "#fef2f2" }}>
-              <CreditCard size={14} strokeWidth={2.2} style={{ color: "#dc2626" }} />
-            </div>
+        <div className="col-span-1 rounded-2xl p-4 shadow-sm relative overflow-hidden flex flex-col justify-end" style={{ background: "#fef2f2", border: "1px solid #fecaca", minHeight: "100px" }}>
+          <div className="absolute top-3 right-3 text-red-500 opacity-10">
+            <CreditCard size={40} />
           </div>
-          <p className="text-[26px] font-bold leading-none" style={{ color: "#111827", letterSpacing: "-0.025em", fontVariantNumeric: "tabular-nums" }}>
+          <p className="text-[11px] font-semibold text-red-600 uppercase tracking-wider mb-0.5 relative z-10">মোট বাকি</p>
+          <p className="text-[22px] sm:text-[26px] font-bold leading-none text-red-600 relative z-10">
             ৳{totalDue.toLocaleString("en-US")}
           </p>
-          <div className="flex items-center gap-1.5 mt-3">
-            <span className="text-[11px] font-semibold" style={{ color: "#dc2626" }}>৳{pendingDue.toLocaleString("en-US")}</span>
-            <span className="text-[11px] font-medium" style={{ color: "#9ca3af" }}>পেন্ডিং</span>
+          <div className="mt-2 text-[10px] font-medium text-red-500 flex items-center gap-1.5 relative z-10">
+            ৳{pendingDue.toLocaleString("en-US")} পেন্ডিং
           </div>
         </div>
       </div>
 
-      {/* Date filter & Actions */}
-      <div className="rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3" style={{ background: "#ffffff", border: "1px solid #e5e7eb" }}>
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2">
-            <Calendar size={16} style={{ color: "#6b7280" }} />
-            <input type="date" value={filterDate}
-              onChange={(e) => { setFilterDate(e.target.value); fetchOrders(e.target.value); }}
-              className="h-10 px-3 rounded-lg text-[13px] font-medium outline-none"
-              style={{ background: "#fafafa", color: "#111827", border: "1px solid #e5e7eb" }} />
-          </div>
-          {filterDate && (
-            <button onClick={() => { setFilterDate(""); fetchOrders(""); }}
-              className="h-10 px-3 rounded-lg text-[12px] font-semibold cursor-pointer transition-colors hover:bg-gray-50"
-              style={{ background: "#fafafa", color: "#374151", border: "1px solid #e5e7eb" }}>
-              সব দেখুন
-            </button>
-          )}
-          {deliveryTab === "pending" && (
-            <button onClick={() => {
-              const pending = orders.filter((o) => (o.deliveryStatus || "pending") === "pending");
-              setSummarySelection(summarySelection.length === pending.length ? [] : pending.map(o => o._id));
-            }}
-              className="h-10 px-3 rounded-lg text-[12px] font-semibold cursor-pointer transition-colors hover:bg-gray-50"
-              style={{ background: "#fafafa", color: "#374151", border: "1px solid #e5e7eb" }}>
-              {summarySelection.length === pendingOrders.length ? "সব ডি-সিলেক্ট" : "সব সিলেক্ট"}
-            </button>
-          )}
+      {/* Filter and Tab Section */}
+      <div className="bg-white rounded-2xl p-2 shadow-sm border" style={{ borderColor: "#e5e7eb" }}>
+        
+        {/* Date Filter */}
+        <div className="flex items-center justify-between p-2">
+            <div className="flex items-center gap-2 flex-1">
+              <div className="w-8 h-8 rounded-full flex items-center justify-center bg-gray-50">
+                  <Calendar size={14} className="text-gray-500" />
+              </div>
+              <input type="date" value={filterDate}
+                onChange={(e) => { setFilterDate(e.target.value); fetchOrders(e.target.value); }}
+                className="h-8 text-[12px] font-medium outline-none bg-transparent w-[120px]"
+                style={{ color: "#111827" }} />
+            </div>
+            
+            <div className="flex gap-2">
+              {filterDate && (
+                <button onClick={() => { setFilterDate(""); fetchOrders(""); }}
+                  className="px-3 h-8 rounded-full text-[11px] font-bold tracking-wide transition-colors bg-gray-100 text-gray-600 hover:bg-gray-200">
+                  ALL
+                </button>
+              )}
+              <button 
+                onClick={() => setShowSummary(true)}
+                className="w-8 h-8 rounded-full flex items-center justify-center bg-gray-900 text-white relative">
+                 <BarChart3 size={14} />
+                 {deliveryTab === "pending" && summarySelection.length > 0 && (
+                    <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-red-500 text-[9px] font-bold flex items-center justify-center border-2 border-white">
+                      {summarySelection.length}
+                    </span>
+                 )}
+              </button>
+            </div>
         </div>
-        <button onClick={() => setShowSummary(true)}
-          className="h-10 px-4 rounded-lg text-[12px] font-semibold cursor-pointer flex items-center justify-center gap-2 transition-all hover:shadow-sm"
-          style={{ background: "#111827", color: "#ffffff" }}>
-          <BarChart3 size={15} /> পেন্ডিং সামারি {deliveryTab === "pending" && summarySelection.length > 0 && `(${summarySelection.length})`}
-        </button>
+
+        {/* Action Bar for Pending Tab */}
+        {deliveryTab === "pending" && (
+           <div className="flex items-center justify-between px-3 py-2 mt-1 bg-gray-50 rounded-xl border border-gray-100">
+              <span className="text-[11px] font-semibold text-gray-500">ব্যাচ একশন</span>
+              <button onClick={() => {
+                const pending = orders.filter((o) => (o.deliveryStatus || "pending") === "pending");
+                setSummarySelection(summarySelection.length === pending.length ? [] : pending.map(o => o._id));
+              }}
+                className="text-[11px] font-bold text-[#66a80f]">
+                {summarySelection.length === pendingOrders.length ? "সব ডি-সিলেক্ট" : "সব সিলেক্ট"}
+              </button>
+           </div>
+        )}
+
+        {/* Modern Tabs */}
+        <div className="flex bg-gray-100 p-1 rounded-xl mt-3">
+          {[
+            { id: "pending", label: "পেন্ডিং", icon: <Truck size={14} />, count: pendingOrders.length, color: "#d97706" },
+            { id: "delivered", label: "ডেলিভারড", icon: <CheckCircle2 size={14} />, count: deliveredOrders.length, color: "#16a34a" },
+            { id: "not_delivered", label: "ব্যর্থ", icon: <Ban size={14} />, count: notDeliveredOrders.length, color: "#dc2626" },
+          ].map((t) => (
+             <button key={t.id} onClick={() => setDeliveryTab(t.id as any)}
+                className={`flex-1 h-9 flex items-center justify-center gap-1.5 rounded-lg text-[11px] font-bold transition-all relative z-10 ${deliveryTab === t.id ? "bg-white text-gray-900 shadow-sm" : "text-gray-500 hover:text-gray-700"}`}>
+                <span style={{ color: deliveryTab === t.id ? t.color : "inherit" }}>{t.icon}</span>
+                {t.label} 
+                {t.count > 0 && (
+                   <span className="ml-0.5 px-1.5 py-0.5 rounded-md text-[9px] bg-gray-100 text-gray-500">
+                      {t.count}
+                   </span>
+                )}
+             </button>
+          ))}
+        </div>
       </div>
 
-      {/* Delivery Status Tabs */}
-      <div className="grid grid-cols-3 gap-3">
-        <button onClick={() => setDeliveryTab("pending")}
-          className="h-12 rounded-xl text-[13px] font-semibold cursor-pointer flex items-center justify-center gap-2 transition-all"
-          style={{
-            background: deliveryTab === "pending" ? "#ffffff" : "#fafafa",
-            color: deliveryTab === "pending" ? "#111827" : "#6b7280",
-            border: deliveryTab === "pending" ? "1px solid #e5e7eb" : "1px solid transparent",
-            boxShadow: deliveryTab === "pending" ? "0 1px 3px rgba(0,0,0,0.04)" : "none",
-          }}>
-          <Truck size={15} strokeWidth={2.2} style={{ color: deliveryTab === "pending" ? "#d97706" : "#9ca3af" }} /> 
-          পেন্ডিং
-          <span className="text-[11px] px-2 py-0.5 rounded-full font-bold"
-            style={{ background: deliveryTab === "pending" ? "#fffbeb" : "#f3f4f6", color: deliveryTab === "pending" ? "#d97706" : "#6b7280" }}>
-            {pendingOrders.length}
-          </span>
-        </button>
-        <button onClick={() => setDeliveryTab("delivered")}
-          className="h-12 rounded-xl text-[13px] font-semibold cursor-pointer flex items-center justify-center gap-2 transition-all"
-          style={{
-            background: deliveryTab === "delivered" ? "#ffffff" : "#fafafa",
-            color: deliveryTab === "delivered" ? "#111827" : "#6b7280",
-            border: deliveryTab === "delivered" ? "1px solid #e5e7eb" : "1px solid transparent",
-            boxShadow: deliveryTab === "delivered" ? "0 1px 3px rgba(0,0,0,0.04)" : "none",
-          }}>
-          <CheckCircle2 size={15} strokeWidth={2.2} style={{ color: deliveryTab === "delivered" ? "#16a34a" : "#9ca3af" }} /> 
-          ডেলিভারড
-          <span className="text-[11px] px-2 py-0.5 rounded-full font-bold"
-            style={{ background: deliveryTab === "delivered" ? "#f0fdf4" : "#f3f4f6", color: deliveryTab === "delivered" ? "#16a34a" : "#6b7280" }}>
-            {deliveredOrders.length}
-          </span>
-        </button>
-        <button onClick={() => setDeliveryTab("not_delivered")}
-          className="h-12 rounded-xl text-[13px] font-semibold cursor-pointer flex items-center justify-center gap-2 transition-all"
-          style={{
-            background: deliveryTab === "not_delivered" ? "#ffffff" : "#fafafa",
-            color: deliveryTab === "not_delivered" ? "#111827" : "#6b7280",
-            border: deliveryTab === "not_delivered" ? "1px solid #e5e7eb" : "1px solid transparent",
-            boxShadow: deliveryTab === "not_delivered" ? "0 1px 3px rgba(0,0,0,0.04)" : "none",
-          }}>
-          <Ban size={15} strokeWidth={2.2} style={{ color: deliveryTab === "not_delivered" ? "#dc2626" : "#9ca3af" }} /> 
-          ব্যর্থ
-          <span className="text-[11px] px-2 py-0.5 rounded-full font-bold"
-            style={{ background: deliveryTab === "not_delivered" ? "#fef2f2" : "#f3f4f6", color: deliveryTab === "not_delivered" ? "#dc2626" : "#6b7280" }}>
-            {notDeliveredOrders.length}
-          </span>
-        </button>
-      </div>
-
-      {/* Orders List */}
+      {/* Orders List (Card Style) */}
       {(() => {
         const filteredOrders = orders.filter((o) => {
           if (deliveryTab === "pending") return (o.deliveryStatus || "pending") === "pending";
@@ -1151,109 +1144,99 @@ export default function OrdersPage() {
           </p>
         </div>
       ) : (
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-4">
           {filteredOrders.map((order) => (
-            <div key={order._id} className="rounded-2xl overflow-hidden transition-all hover:shadow-sm"
-              style={{ background: "#ffffff", border: "1px solid #e5e7eb" }}>
-              {/* Order header */}
-              <div className="flex items-center gap-3 px-4 pt-3.5 pb-2">
-                {deliveryTab === "pending" && (
-                  <input
-                    type="checkbox"
-                    checked={summarySelection.includes(order._id)}
-                    onChange={(e) => {
-                      if (e.target.checked) setSummarySelection([...summarySelection, order._id]);
-                      else setSummarySelection(summarySelection.filter(id => id !== order._id));
-                    }}
-                    className="w-4 h-4 accent-[#66a80f] rounded-sm cursor-pointer shrink-0"
-                  />
-                )}
-                <div className="w-9 h-9 rounded-full flex items-center justify-center shrink-0" style={{ background: "#f0fdf4" }}>
-                  <User size={16} style={{ color: "#66a80f" }} />
+            <div key={order._id} className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 hover:shadow-md transition-shadow relative">
+              {/* Order Header / Top Section */}
+              <div className="flex justify-between items-start mb-3">
+                <div className="flex gap-3 items-center">
+                   {deliveryTab === "pending" && (
+                    <input
+                      type="checkbox"
+                      checked={summarySelection.includes(order._id)}
+                      onChange={(e) => {
+                        if (e.target.checked) setSummarySelection([...summarySelection, order._id]);
+                        else setSummarySelection(summarySelection.filter(id => id !== order._id));
+                      }}
+                      className="w-4 h-4 accent-[#66a80f] rounded-sm cursor-pointer shrink-0 mt-0.5"
+                    />
+                   )}
+                   <div>
+                     <div className="flex items-center gap-2 mb-1">
+                        <h3 className="text-[14px] font-bold text-gray-900 leading-none">{order.customerName}</h3>
+                     </div>
+                     
+                     <div className="flex flex-wrap items-center gap-2 text-[11px] font-medium text-gray-500">
+                        {order.orderNumber && (
+                          <span className="bg-gray-100 px-1.5 py-0.5 rounded text-gray-600 font-bold tracking-wider">{order.orderNumber}</span>
+                        )}
+                        <span className="flex items-center gap-1"><Clock size={10} /> {new Date(order.createdAt).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric", timeZone: "Asia/Dhaka" })} - {new Date(order.createdAt).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: true, timeZone: "Asia/Dhaka" })}</span>
+                        {(() => {
+                          const addr = order.customerAddress || (order.customer ? customers.find((c) => c._id === order.customer)?.address : undefined);
+                          return addr ? (
+                            <span className="flex items-center gap-1 max-w-[120px] truncate"><MapPin size={10} /> {addr}</span>
+                          ) : null;
+                        })()}
+                     </div>
+                   </div>
                 </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <p className="text-[14px] font-bold truncate" style={{ color: "var(--text-primary)" }}>{order.customerName}</p>
-                    <span className="text-[10px] px-2 py-0.5 rounded-full font-semibold shrink-0"
-                      style={{ background: order.status === "completed" ? "#f0fdf4" : order.status === "cancelled" ? "#fef2f2" : "#fffbeb", color: order.status === "completed" ? "#16a34a" : order.status === "cancelled" ? "#dc2626" : "#d97706" }}>
-                      {order.status === "completed" ? "সম্পন্ন" : order.status === "cancelled" ? "বাতিল" : "পেন্ডিং"}
-                    </span>
-                  </div>
-                  {(() => {
-                    const addr = order.customerAddress || (order.customer ? customers.find((c) => c._id === order.customer)?.address : undefined);
-                    return addr ? (
-                      <p className="flex items-center gap-1 text-[11px] mt-0.5" style={{ color: "var(--text-muted)" }}>
-                        <MapPin size={10} /> {addr}
-                      </p>
-                    ) : null;
-                  })()}
-                  <div className="flex items-center gap-3 mt-1 text-[11px]" style={{ color: "var(--text-muted)" }}>
-                    <span className="flex items-center gap-1">
-                      <Clock size={11} /> 
-                      {new Date(order.createdAt).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric", timeZone: "Asia/Dhaka" })} - {new Date(order.createdAt).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", timeZone: "Asia/Dhaka" })}
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <Hash size={11} /> {order.items.length} পণ্য
-                    </span>
-                    <span className="flex items-center gap-1 font-medium bg-gray-50 px-1.5 py-0.5 rounded-md" style={{ color: (order.deliveryStatus || "pending") === "delivered" ? "#059669" : (order.deliveryStatus || "pending") === "not_delivered" ? "#dc2626" : "#d97706" }}>
-                      <Truck size={11} /> {(order.deliveryStatus || "pending") === "delivered" ? "ডেলিভারড" : (order.deliveryStatus || "pending") === "not_delivered" ? "ডেলিভারি হয়নি" : "ডেলিভারি পেন্ডিং"}
-                    </span>
-                  </div>
+                <div className="flex flex-col items-end gap-1.5">
+                   <span className="text-[10px] px-2 py-0.5 rounded-full font-bold"
+                     style={{ background: order.status === "completed" ? "#f0fdf4" : order.status === "cancelled" ? "#fef2f2" : "#fffbeb", color: order.status === "completed" ? "#16a34a" : order.status === "cancelled" ? "#dc2626" : "#d97706" }}>
+                     {order.status === "completed" ? "সম্পন্ন" : order.status === "cancelled" ? "বাতিল" : "পেন্ডিং"}
+                   </span>
                 </div>
               </div>
 
-              {/* Product list compact */}
-              <div className="px-4 py-3" style={{ background: "#f8fafc", borderTop: "1px solid #f1f5f9", borderBottom: "1px solid #f1f5f9" }}>
-                {order.items.slice(0, 3).map((item, i) => (
-                  <div key={i} className="flex items-center justify-between py-1">
-                    <div className="flex items-center gap-2 flex-1 min-w-0">
-                      <div className="w-1.5 h-1.5 rounded-full bg-gray-300 shrink-0"></div>
-                      <span className="text-[12px] font-medium truncate" style={{ color: "#334155" }}>{item.productName}</span>
-                    </div>
-                    <div className="flex flex-col items-end shrink-0 ml-2">
-                       <span className="text-[11px] font-medium" style={{ color: "#64748b" }}>{item.quantity} x ৳{item.unitPrice}</span>
-                       <span className="text-[12px] font-bold" style={{ color: "#0f172a" }}>৳{item.total}</span>
-                    </div>
-                  </div>
-                ))}
-                {order.items.length > 3 && (
-                  <div className="mt-1 pt-1 border-t border-gray-200">
-                    <p className="text-[11px] font-medium text-center" style={{ color: "#6366f1" }}>+{order.items.length - 3} আরো পণ্য</p>
-                  </div>
-                )}
+              {/* Items summary */}
+              <div className="bg-gray-50 rounded-xl p-3 mb-3 border border-gray-100">
+                 <div className="flex items-center gap-2 mb-2 pb-2 border-b border-gray-200">
+                    <span className="bg-white border border-gray-200 w-6 h-6 rounded-md flex items-center justify-center text-[10px] font-bold text-gray-700">
+                      {order.items.length}
+                    </span>
+                    <span className="text-[11px] font-bold text-gray-600">পণ্য সমুহ</span>
+                 </div>
+                 <div className="space-y-1.5">
+                    {order.items.slice(0, 2).map((item, i) => (
+                      <div key={i} className="flex justify-between items-center text-[11px]">
+                         <span className="text-gray-600 truncate flex-1 min-w-0 pr-2">{"•"} {item.productName}</span>
+                         <span className="text-gray-400 font-medium shrink-0">{item.quantity} x {item.unitPrice} ৳</span>
+                      </div>
+                    ))}
+                    {order.items.length > 2 && (
+                      <div className="text-[10px] font-semibold text-indigo-500 pt-1">
+                        + আরো {order.items.length - 2} টি...
+                      </div>
+                    )}
+                 </div>
               </div>
 
-              {/* Order footer */}
-              <div className="flex items-center justify-between px-4 py-3" style={{ background: "#ffffff" }}>
-                <div className="flex items-center gap-5">
-                  <div className="flex flex-col">
-                    <span className="text-[10px] font-medium uppercase tracking-wider" style={{ color: "#94a3b8" }}>মোট</span>
-                    <span className="text-[15px] font-extrabold" style={{ color: "#0f172a" }}>৳{order.totalAmount}</span>
-                  </div>
-                  {order.paidAmount > 0 && (
-                    <div className="flex flex-col border-l pl-4 border-gray-100">
-                      <span className="text-[10px] font-medium uppercase tracking-wider" style={{ color: "#94a3b8" }}>পরিশোধ</span>
-                      <span className="text-[14px] font-bold" style={{ color: "#059669" }}>৳{order.paidAmount}</span>
+              {/* Order Footer & Actions */}
+              <div className="flex items-center justify-between mt-2 pt-2 border-t border-gray-50">
+                 <div className="flex gap-4">
+                    <div>
+                       <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-0.5">মোট বিল</p>
+                       <p className="text-[14px] font-extrabold text-gray-900">৳{order.totalAmount}</p>
                     </div>
-                  )}
-                  {order.dueAmount > 0 && (
-                    <div className="flex flex-col border-l pl-4 border-gray-100">
-                      <span className="text-[10px] font-medium uppercase tracking-wider" style={{ color: "#94a3b8" }}>বাকি</span>
-                      <span className="text-[14px] font-bold" style={{ color: "#e11d48" }}>৳{order.dueAmount}</span>
-                    </div>
-                  )}
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <button onClick={() => setViewOrder(order)} className="w-8 h-8 rounded-lg flex items-center justify-center cursor-pointer transition-colors" style={{ background: "var(--bg-card)", color: "var(--text-muted)", border: "1px solid var(--border-color)" }} title="দেখুন">
-                    <Eye size={14} />
-                  </button>
-                  <button onClick={() => setEditOrder(JSON.parse(JSON.stringify(order)))} className="w-8 h-8 rounded-lg flex items-center justify-center cursor-pointer transition-colors" style={{ background: "var(--bg-card)", color: "var(--text-muted)", border: "1px solid var(--border-color)" }} title="সম্পাদনা">
-                    <Pencil size={13} />
-                  </button>
-                  <button onClick={() => deleteOrder(order._id)} className="w-8 h-8 rounded-lg flex items-center justify-center cursor-pointer transition-colors" style={{ background: "#fef2f2", color: "#dc2626", border: "1px solid #fecaca" }} title="মুছুন">
-                    <Trash2 size={13} />
-                  </button>
-                </div>
+                    {order.dueAmount > 0 && (
+                      <div>
+                         <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-0.5">বাকি</p>
+                         <p className="text-[14px] font-extrabold text-red-500">৳{order.dueAmount}</p>
+                      </div>
+                    )}
+                 </div>
+                 
+                 <div className="flex items-center gap-2">
+                    <button onClick={() => setViewOrder(order)} className="w-8 h-8 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center hover:bg-blue-100 transition-colors">
+                      <Eye size={14} />
+                    </button>
+                    <button onClick={() => setEditOrder(JSON.parse(JSON.stringify(order)))} className="w-8 h-8 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center hover:bg-emerald-100 transition-colors">
+                      <Pencil size={13} />
+                    </button>
+                    <button onClick={() => deleteOrder(order._id)} className="w-8 h-8 rounded-full bg-red-50 text-red-600 flex items-center justify-center hover:bg-red-100 transition-colors">
+                      <Trash2 size={13} />
+                    </button>
+                 </div>
               </div>
             </div>
           ))}
