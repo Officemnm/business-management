@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { verifyToken } from "@/lib/jwt";
 import dbConnect from "@/lib/db";
 import Payment from "@/models/Payment";
 import Customer from "@/models/Customer";
@@ -6,6 +7,13 @@ import Customer from "@/models/Customer";
 // GET payments - either for a customer or all payments
 export async function GET(req: NextRequest) {
   try {
+    const token = req.cookies.get("token")?.value;
+    if (!token) return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+    const payload = verifyToken(token);
+    if (!payload || !payload.userId) return NextResponse.json({ error: "Invalid token" }, { status: 401 });
+    const isAdmin = payload.role === "admin";
+    const username = payload.username;
+
     await dbConnect();
     const { searchParams } = new URL(req.url);
     const customerId = searchParams.get("customerId");
@@ -13,19 +21,26 @@ export async function GET(req: NextRequest) {
     const date = searchParams.get("date");
     const targetUser = searchParams.get("targetUser"); // Add support for target user
 
+    // Base query wrapper for role filtering
+    const buildQuery = (baseFilter: any = {}) => {
+      const q = { ...baseFilter };
+      if (isAdmin && targetUser) {
+        q.collectedBy = targetUser;
+      } else if (!isAdmin) {
+        q.collectedBy = username;
+      }
+      return q;
+    };
+
     // If date param is provided, return payments for that date
     if (date) {
       const dayStart = new Date(`${date}T00:00:00.000+06:00`);
       const dayEnd = new Date(`${date}T23:59:59.999+06:00`);
 
-      const query: any = {
+      const query = buildQuery({
         amount: { $gt: 0 },
         createdAt: { $gte: dayStart, $lte: dayEnd },
-      };
-      
-      if (targetUser) {
-        query.collectedBy = targetUser;
-      }
+      });
 
       const payments = await Payment.find(query)
         .sort({ createdAt: -1 })
@@ -35,7 +50,7 @@ export async function GET(req: NextRequest) {
 
     // If list param is provided, return all positive payments (collections)
     if (list === "all") {
-      const payments = await Payment.find({ amount: { $gt: 0 } })
+      const payments = await Payment.find(buildQuery({ amount: { $gt: 0 } }))
         .sort({ createdAt: -1 })
         .limit(100)
         .lean();
@@ -44,7 +59,10 @@ export async function GET(req: NextRequest) {
 
     // If customerId provided, return payments for that customer
     if (customerId) {
-      const payments = await Payment.find({ customer: customerId }).sort({ createdAt: -1 });
+      // NOTE: Normally, if not admin, you'd verify if this customer belongs to username...
+      // But the customer list itself is already filtered. We apply buildQuery here too
+      // so users only see their own collections for this customer.
+      const payments = await Payment.find(buildQuery({ customer: customerId })).sort({ createdAt: -1 });
       return NextResponse.json(payments);
     }
 

@@ -3,13 +3,21 @@
 import { useEffect, useState, useCallback } from "react";
 import { X, Banknote, User, Phone, Calendar, CheckCircle2, History } from "lucide-react";
 import toast from "react-hot-toast";
+import AnimatedDropdown from "@/components/ui/AnimatedDropdown";
 
-interface Customer { _id: string; name: string; phone: string; totalDue: number; }
+interface Customer { _id: string; name: string; phone: string; totalDue: number; createdBy: string; }
 interface Payment { _id: string; customer: string; customerName: string; amount: number; note?: string; collectedBy: string; createdAt: string; }
 
 export default function DuesPage() {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // User filter stuff
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [currentUser, setCurrentUser] = useState<any>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [systemUsers, setSystemUsers] = useState<any[]>([]);
+  const [targetUser, setTargetUser] = useState("");
 
   // Collection modal
   const [collectCustomer, setCollectCustomer] = useState<Customer | null>(null);
@@ -21,11 +29,44 @@ export default function DuesPage() {
   const [payments, setPayments] = useState<Payment[]>([]);
   const [historyLoading, setHistoryLoading] = useState(false);
 
-  const loadCustomers = () => {
-    fetch("/api/dashboard/customers")
-      .then((r) => r.json())
-      .then((data) => setCustomers(data.filter((c: Customer) => c.totalDue > 0)))
-      .finally(() => setLoading(false));
+  const loadCustomers = (tUser?: string) => {
+    const t = tUser !== undefined ? tUser : targetUser;
+    let url = "/api/dashboard/customers";
+    if (t) {
+      url += `?targetUser=${t}`;
+    }
+
+    // Fetch auth to conditionally fetch system users if not loaded yet
+    if (!currentUser) {
+      fetch("/api/auth/me").then(r => r.json()).then(authData => {
+        const user = authData?.user;
+        setCurrentUser(user);
+        
+        const admin = user?.role === "admin";
+        
+        // If there's no explicitly passed targetUser parameter, and user is admin, use his username as the default
+        const effectiveTarget = (tUser === undefined && admin) ? user.username : t;
+        if (admin && tUser === undefined) {
+          setTargetUser(user.username);
+        }
+
+        const userListPromise = admin ? fetch("/api/dashboard/users").then(r => r.json()) : Promise.resolve([]);
+        const customersUrl = `/api/dashboard/customers${effectiveTarget ? `?targetUser=${effectiveTarget}` : ""}`;
+
+        Promise.all([
+          fetch(customersUrl).then((r) => r.json()),
+          userListPromise
+        ]).then(([data, u]) => {
+          setCustomers(data.filter((c: Customer) => c.totalDue > 0));
+          if (admin && Array.isArray(u)) setSystemUsers(u);
+        }).finally(() => setLoading(false));
+      });
+    } else {
+      fetch(url)
+        .then((r) => r.json())
+        .then((data) => setCustomers(data.filter((c: Customer) => c.totalDue > 0)))
+        .finally(() => setLoading(false));
+    }
   };
 
   useEffect(() => { loadCustomers(); }, []);
@@ -91,11 +132,32 @@ export default function DuesPage() {
   return (
     <div className="pb-8 space-y-5">
       {/* Page Header */}
-      <div className="flex items-end justify-between flex-wrap gap-3">
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3">
         <div>
           <h1 className="text-[26px] sm:text-[28px] font-bold tracking-tight" style={{ color: "#111827", letterSpacing: "-0.02em" }}>বাকি তালিকা</h1>
           <p className="text-[13px] font-medium mt-1" style={{ color: "#6b7280" }}>{customers.length} জন কাস্টমারের বকেয়া রয়েছে</p>
         </div>
+
+        {/* Target User Filter for Admin */}
+        {currentUser?.role === "admin" && systemUsers.length > 0 && (
+          <div className="w-full sm:w-64 z-20">
+            <AnimatedDropdown
+              options={[
+                { value: "", label: "সকল ইউজার (All)" },
+                ...systemUsers.map(u => ({
+                  value: u.username,
+                  label: `${u.displayName} - (${u.username})`
+                }))
+              ]}
+              value={targetUser}
+              onChange={(u) => {
+                setTargetUser(u);
+                loadCustomers(u);
+              }}
+              className="w-full h-10 shadow-sm"
+            />
+          </div>
+        )}
       </div>
 
       {/* KPI Cards */}
