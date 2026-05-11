@@ -11,7 +11,7 @@ import AnimatedDropdown from "@/components/ui/AnimatedDropdown";
 interface Customer { _id: string; name: string; phone: string; address?: string; }
 interface Product { _id: string; name: string; sellPrice: number; stock: number; category: string; image?: string; unit: string; }
 interface OrderItem { product: string; productName: string; quantity: number; unitPrice: number; total: number; remark: string; image?: string; }
-interface Order { _id: string; orderNumber?: string; customer?: string; customerName: string; customerAddress?: string; items: OrderItem[]; totalAmount: number; paidAmount: number; dueAmount: number; returnAmount?: number; finalAmount?: number; returnItems?: { productName: string; amount: number }[]; status: string; deliveryStatus?: string; deliveryNote?: string; createdBy: string; createdAt: string; }
+interface Order { _id: string; orderNumber?: string; customer?: string; customerName: string; customerAddress?: string; items: OrderItem[]; totalAmount: number; paidAmount: number; dueAmount: number; returnAmount?: number; finalAmount?: number; returnItems?: { productName: string; amount: number }[]; status: string; deliveryStatus?: string; deliveryDate?: string; deliveryNote?: string; createdBy: string; createdAt: string; }
 
 import { getBDDateString } from "@/lib/utils";
 
@@ -45,10 +45,13 @@ export default function OrdersPage() {
   // Delivery tab filter
   const [deliveryTab, setDeliveryTab] = useState<"pending" | "delivered" | "not_delivered">("pending");
 
-  // Date filter — default to today
-  const [filterDate, setFilterDate] = useState(() => {
-    return getBDDateString(new Date());
-  });
+  // Date filter — default to all dates (empty string)
+  const [filterDate, setFilterDate] = useState("");
+
+  // User filter stuff
+  const [currentUser, setCurrentUser] = useState<any>(null);
+  const [systemUsers, setSystemUsers] = useState<any[]>([]);
+  const [targetUser, setTargetUser] = useState("");
 
   // View/Edit modals
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -80,18 +83,36 @@ export default function OrdersPage() {
   const [popupRemark, setPopupRemark] = useState("");
 
   const loadData = () => {
-    const todayStr = getBDDateString(new Date());
-    Promise.all([
-      fetch(`/api/dashboard/orders?date=${todayStr}`).then((r) => r.json()),
-      fetch("/api/dashboard/customers").then((r) => r.json()),
-      fetch("/api/dashboard/products").then((r) => r.json()),
-    ]).then(([o, c, p]) => {
-      setOrders(o); setCustomers(c); setProducts(p);
-    }).finally(() => setLoading(false));
+    // Fetch auth to conditionally fetch system users
+    fetch("/api/auth/me").then(r => r.json()).then(authData => {
+      setCurrentUser(authData?.user);
+      
+      const admin = authData?.user?.role === "admin";
+      const userListPromise = admin ? fetch("/api/dashboard/users").then(r => r.json()) : Promise.resolve([]);
+
+      Promise.all([
+        fetch(`/api/dashboard/orders`).then((r) => r.json()),
+        fetch("/api/dashboard/customers").then((r) => r.json()),
+        fetch("/api/dashboard/products").then((r) => r.json()),
+        userListPromise
+      ]).then(([o, c, p, u]) => {
+        setOrders(o); setCustomers(c); setProducts(p); 
+        if (admin && Array.isArray(u)) setSystemUsers(u);
+      }).finally(() => setLoading(false));
+    });
   };
 
-  const fetchOrders = (date?: string) => {
-    const q = date ? `?date=${date}` : "";
+  const fetchOrders = (date?: string, tUser?: string) => {
+    const d = date !== undefined ? date : filterDate;
+    const t = tUser !== undefined ? tUser : targetUser;
+    
+    let q = "";
+    if (d || t) {
+      const params = new URLSearchParams();
+      if (d) params.append("date", d);
+      if (t) params.append("targetUser", t);
+      q = `?${params.toString()}`;
+    }
     fetch(`/api/dashboard/orders${q}`).then((r) => r.json()).then(setOrders);
   };
 
@@ -970,15 +991,27 @@ export default function OrdersPage() {
     );
   };
 
-  // Calculate stats for display
+  // Calculate today's delivery stats for the display cards
+  const todayStr = getBDDateString(new Date());
   const todayLabel = new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "long", year: "numeric", timeZone: "Asia/Dhaka" });
+  
+  
+  // General tab counts
   const pendingOrders = orders.filter((o) => (o.deliveryStatus || "pending") === "pending");
   const deliveredOrders = orders.filter((o) => o.deliveryStatus === "delivered");
   const notDeliveredOrders = orders.filter((o) => o.deliveryStatus === "not_delivered");
-  const totalRevenue = orders.reduce((s, o) => s + o.totalAmount, 0);
-  const totalDue = orders.reduce((s, o) => s + o.dueAmount, 0);
-  const pendingRevenue = pendingOrders.reduce((s, o) => s + o.totalAmount, 0);
-  const pendingDue = pendingOrders.reduce((s, o) => s + o.dueAmount, 0);
+  
+  // Today's delivered orders
+  const todaysDelivered = orders.filter((o) => {
+    if (o.deliveryStatus !== "delivered") return false;
+    const dateToUse = o.deliveryDate ? new Date(o.deliveryDate) : new Date(o.createdAt);
+    return getBDDateString(dateToUse) === todayStr;
+  });
+  
+  const todaysDeliveredCount = todaysDelivered.length;
+  const todaysDeliveredAmount = todaysDelivered.reduce((s, o) => s + (o.finalAmount ?? o.totalAmount), 0);
+  const todaysDeliveredPaid = todaysDelivered.reduce((s, o) => s + (o.paidAmount || 0), 0);
+  const todaysDeliveredDue = todaysDelivered.reduce((s, o) => s + (o.dueAmount || 0), 0);
 
   // ===================== MAIN ORDER PAGE =====================
   return (
@@ -998,93 +1031,116 @@ export default function OrdersPage() {
 
       {/* KPI Cards (Mobile App Style) */}
       <div className="grid grid-cols-2 gap-3 mb-2">
-        {/* Total Orders / Pending */}
+        {/* Today's Delivery Count */}
         <div className="rounded-2xl p-4 shadow-sm relative overflow-hidden flex flex-col justify-end" style={{ background: "linear-gradient(135deg, #111827 0%, #1f2937 100%)", minHeight: "100px" }}>
           <div className="absolute top-3 right-3 text-white opacity-20">
             <ShoppingBag size={40} />
           </div>
-          <p className="text-[11px] font-semibold text-gray-300 uppercase tracking-wider mb-0.5 relative z-10">আজকের অর্ডার</p>
+          <p className="text-[11px] font-semibold text-gray-300 uppercase tracking-wider mb-0.5 relative z-10">আজকের ডেলিভারি</p>
           <p className="text-[26px] font-bold leading-none text-white relative z-10">
-            {orders.length.toLocaleString("en-US")}
+            {todaysDeliveredCount.toLocaleString("en-US")} টি
           </p>
           <div className="mt-2 text-[10px] font-medium text-gray-300 flex items-center gap-1.5 relative z-10">
-             <span className="w-1.5 h-1.5 rounded-full bg-yellow-400"></span>
-             {pendingOrders.length} টি পেন্ডিং
+             <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+             আজকের হিসাব
           </div>
         </div>
 
-        {/* Revenue */}
+        {/* Today's Delivery Amount */}
         <div className="rounded-2xl p-4 shadow-sm relative overflow-hidden flex flex-col justify-end" style={{ background: "linear-gradient(135deg, #66a80f 0%, #4d7c0f 100%)", minHeight: "100px" }}>
           <div className="absolute top-3 right-3 text-white opacity-20">
             <BarChart3 size={40} />
           </div>
-          <p className="text-[11px] font-semibold text-green-100 uppercase tracking-wider mb-0.5 relative z-10">আজকের সেলস</p>
+          <p className="text-[11px] font-semibold text-green-100 uppercase tracking-wider mb-0.5 relative z-10">ডেলিভারি এমাউন্ট</p>
           <p className="text-[22px] sm:text-[26px] font-bold leading-none text-white relative z-10 truncate">
-            ৳{totalRevenue.toLocaleString("en-US")}
+            ৳{todaysDeliveredAmount.toLocaleString("en-US")}
           </p>
           <div className="mt-2 text-[10px] font-medium text-green-200 flex items-center gap-1.5 relative z-10">
-             <span className="w-1.5 h-1.5 rounded-full bg-red-400"></span>
-             বাকি ৳{totalDue.toLocaleString()}
+             সম্পূর্ণ ডেলিভারি ভ্যালু
           </div>
         </div>
 
-        {/* Pending Orders */}
-        <div className="col-span-1 rounded-2xl p-4 shadow-sm relative overflow-hidden flex flex-col justify-end" style={{ background: "#ffffff", border: "1px solid #e5e7eb", minHeight: "100px" }}>
-          <div className="absolute top-3 right-3 text-orange-500 opacity-10">
-            <Truck size={40} />
+        {/* Today's Delivery Paid */}
+        <div className="col-span-1 rounded-2xl p-4 shadow-sm relative overflow-hidden flex flex-col justify-end" style={{ background: "#f0fdf4", border: "1px solid #bbf7d0", minHeight: "100px" }}>
+          <div className="absolute top-3 right-3 text-green-500 opacity-10">
+            <CheckCircle2 size={40} />
           </div>
-          <p className="text-[11px] font-semibold text-gray-500 uppercase tracking-wider mb-0.5 relative z-10">পেন্ডিং</p>
-          <p className="text-[22px] sm:text-[26px] font-bold leading-none text-gray-900 relative z-10">
-            {pendingOrders.length.toLocaleString("en-US")}
+          <p className="text-[11px] font-semibold text-green-600 uppercase tracking-wider mb-0.5 relative z-10">মোট পরিশোধ</p>
+          <p className="text-[22px] sm:text-[26px] font-bold leading-none text-green-700 relative z-10">
+            ৳{todaysDeliveredPaid.toLocaleString("en-US")}
           </p>
-          <div className="mt-2 text-[10px] font-medium text-orange-600 flex items-center gap-1.5 relative z-10">
-            {notDeliveredOrders.length} ব্যর্থ
+          <div className="mt-2 text-[10px] font-medium text-green-600 flex items-center gap-1.5 relative z-10">
+            আজকের আদায়
           </div>
         </div>
 
-        {/* Total Due */}
+        {/* Today's Delivery Due */}
         <div className="col-span-1 rounded-2xl p-4 shadow-sm relative overflow-hidden flex flex-col justify-end" style={{ background: "#fef2f2", border: "1px solid #fecaca", minHeight: "100px" }}>
           <div className="absolute top-3 right-3 text-red-500 opacity-10">
             <CreditCard size={40} />
           </div>
           <p className="text-[11px] font-semibold text-red-600 uppercase tracking-wider mb-0.5 relative z-10">মোট বাকি</p>
           <p className="text-[22px] sm:text-[26px] font-bold leading-none text-red-600 relative z-10">
-            ৳{totalDue.toLocaleString("en-US")}
+            ৳{todaysDeliveredDue.toLocaleString("en-US")}
           </p>
           <div className="mt-2 text-[10px] font-medium text-red-500 flex items-center gap-1.5 relative z-10">
-            ৳{pendingDue.toLocaleString("en-US")} পেন্ডিং
+            আজকের ডেলিভারি থেকে
           </div>
         </div>
       </div>
 
       {/* Filter and Tab Section */}
-      <div className="bg-white rounded-2xl p-2 shadow-sm border" style={{ borderColor: "#e5e7eb" }}>
+      <div className="bg-white rounded-2xl p-2 shadow-sm border space-y-2" style={{ borderColor: "#e5e7eb" }}>
         
-        {/* Date Filter */}
-        <div className="flex items-center justify-between p-2">
-            <div className="flex items-center gap-2 flex-1">
-              <div className="w-8 h-8 rounded-full flex items-center justify-center bg-gray-50">
-                  <Calendar size={14} className="text-gray-500" />
+        {/* Date Filter & User Filter */}
+        <div className="flex flex-col sm:flex-row gap-2 px-2 pt-2">
+            <div className="flex items-center justify-between flex-1 bg-gray-50 rounded-lg p-1">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-full flex items-center justify-center bg-white shadow-sm border border-gray-100">
+                    <Calendar size={14} className="text-gray-500" />
+                </div>
+                <input type="date" value={filterDate}
+                  onChange={(e) => { setFilterDate(e.target.value); fetchOrders(e.target.value, targetUser); }}
+                  className="h-8 text-[12px] font-medium outline-none bg-transparent w-[120px]"
+                  style={{ color: "#111827" }} />
               </div>
-              <input type="date" value={filterDate}
-                onChange={(e) => { setFilterDate(e.target.value); fetchOrders(e.target.value); }}
-                className="h-8 text-[12px] font-medium outline-none bg-transparent w-[120px]"
-                style={{ color: "#111827" }} />
-            </div>
-            
-            <div className="flex gap-2">
               {filterDate && (
-                <button onClick={() => { setFilterDate(""); fetchOrders(""); }}
-                  className="px-3 h-8 rounded-full text-[11px] font-bold tracking-wide transition-colors bg-gray-100 text-gray-600 hover:bg-gray-200">
+                <button onClick={() => { setFilterDate(""); fetchOrders("", targetUser); }}
+                  className="px-3 h-8 rounded-full text-[11px] font-bold tracking-wide transition-colors bg-white text-gray-600 hover:bg-gray-100 border border-gray-200 shadow-sm mr-1">
                   ALL
                 </button>
               )}
+            </div>
+
+            {currentUser?.role === "admin" && systemUsers.length > 0 && (
+              <div className="flex items-center gap-2 flex-1 bg-gray-50 rounded-lg p-1">
+                <div className="w-8 h-8 rounded-full flex items-center justify-center bg-white shadow-sm border border-gray-100">
+                    <User size={14} className="text-gray-500" />
+                </div>
+                <select
+                  value={targetUser}
+                  onChange={(e) => {
+                    const u = e.target.value;
+                    setTargetUser(u);
+                    fetchOrders(filterDate, u);
+                  }}
+                  className="flex-1 h-8 text-[12px] font-medium outline-none bg-transparent text-gray-900 cursor-pointer"
+                >
+                  <option value="">সকল ইউজার</option>
+                  {systemUsers.map((u) => (
+                    <option key={u._id} value={u.username}>{u.displayName} ({u.username})</option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+            <div className="flex items-center justify-end sm:justify-start">
               <button 
                 onClick={() => setShowSummary(true)}
-                className="w-8 h-8 rounded-full flex items-center justify-center bg-gray-900 text-white relative">
-                 <BarChart3 size={14} />
+                className="w-10 h-10 rounded-xl flex items-center justify-center bg-gray-900 text-white relative shadow-sm cursor-pointer hover:bg-gray-800 transition-colors">
+                 <BarChart3 size={16} />
                  {deliveryTab === "pending" && summarySelection.length > 0 && (
-                    <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-red-500 text-[9px] font-bold flex items-center justify-center border-2 border-white">
+                    <span className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-red-500 text-[10px] font-bold flex items-center justify-center border-2 border-white shadow-sm">
                       {summarySelection.length}
                     </span>
                  )}

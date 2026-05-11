@@ -17,7 +17,7 @@ export async function GET(req: NextRequest) {
 
     await dbConnect();
     const { searchParams } = new URL(req.url);
-    const limit = parseInt(searchParams.get("limit") || "50");
+    const limit = parseInt(searchParams.get("limit") || "1000");
     const status = searchParams.get("status");
 
     const date = searchParams.get("date");
@@ -39,10 +39,7 @@ export async function GET(req: NextRequest) {
       const start = new Date(`${date}T00:00:00.000+06:00`);
       const end = new Date(`${date}T23:59:59.999+06:00`);
       
-      filter.$or = [
-        { createdAt: { $gte: start, $lte: end } },
-        { deliveryStatus: "pending" }
-      ];
+      filter.createdAt = { $gte: start, $lte: end };
     }
 
     const orders = await Order.find(filter).sort({ createdAt: -1 }).limit(limit);
