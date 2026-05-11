@@ -85,13 +85,17 @@ export default function OrdersPage() {
   const loadData = () => {
     // Fetch auth to conditionally fetch system users
     fetch("/api/auth/me").then(r => r.json()).then(authData => {
-      setCurrentUser(authData?.user);
+      const user = authData?.user;
+      setCurrentUser(user);
       
-      const admin = authData?.user?.role === "admin";
+      const admin = user?.role === "admin";
+      const initialTarget = admin ? user.username : "";
+      if (admin) setTargetUser(initialTarget);
+
       const userListPromise = admin ? fetch("/api/dashboard/users").then(r => r.json()) : Promise.resolve([]);
 
       Promise.all([
-        fetch(`/api/dashboard/orders`).then((r) => r.json()),
+        fetch(`/api/dashboard/orders${initialTarget ? `?targetUser=${initialTarget}` : ""}`).then((r) => r.json()),
         fetch("/api/dashboard/customers").then((r) => r.json()),
         fetch("/api/dashboard/products").then((r) => r.json()),
         userListPromise
@@ -1113,24 +1117,22 @@ export default function OrdersPage() {
             </div>
 
             {currentUser?.role === "admin" && systemUsers.length > 0 && (
-              <div className="flex items-center gap-2 flex-1 bg-gray-50 rounded-lg p-1">
-                <div className="w-8 h-8 rounded-full flex items-center justify-center bg-white shadow-sm border border-gray-100">
-                    <User size={14} className="text-gray-500" />
-                </div>
-                <select
+              <div className="flex-1 rounded-lg z-20">
+                <AnimatedDropdown
+                  options={[
+                    { value: "", label: "সকল ইউজার (All)" },
+                    ...systemUsers.map(u => ({
+                      value: u.username,
+                      label: `${u.displayName} - (${u.username})`
+                    }))
+                  ]}
                   value={targetUser}
-                  onChange={(e) => {
-                    const u = e.target.value;
+                  onChange={(u) => {
                     setTargetUser(u);
                     fetchOrders(filterDate, u);
                   }}
-                  className="flex-1 h-8 text-[12px] font-medium outline-none bg-transparent text-gray-900 cursor-pointer"
-                >
-                  <option value="">সকল ইউজার</option>
-                  {systemUsers.map((u) => (
-                    <option key={u._id} value={u.username}>{u.displayName} ({u.username})</option>
-                  ))}
-                </select>
+                  className="w-full h-10 shadow-sm"
+                />
               </div>
             )}
 
