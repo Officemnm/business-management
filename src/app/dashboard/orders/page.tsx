@@ -577,6 +577,9 @@ export default function OrdersPage() {
           <div>
             <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>তারিখ</p>
             <p className="text-[13px] font-semibold" style={{ color: "var(--text-primary)" }}>{new Date(viewOrder.createdAt).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric", timeZone: "Asia/Dhaka" })} {new Date(viewOrder.createdAt).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: true, timeZone: "Asia/Dhaka" })}</p>
+            {ds === "delivered" && viewOrder.deliveryDate && (
+              <p className="text-[11px] font-medium text-emerald-600 flex items-center gap-1 mt-0.5"><CheckCircle2 size={10} /> ডেলিভারি: {new Date(viewOrder.deliveryDate).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric", timeZone: "Asia/Dhaka" })} {new Date(viewOrder.deliveryDate).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: true, timeZone: "Asia/Dhaka" })}</p>
+            )}
           </div>
           <div>
             <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>স্ট্যাটাস</p>
@@ -1229,6 +1232,9 @@ export default function OrdersPage() {
                           <span className="bg-gray-100 px-1.5 py-0.5 rounded text-gray-600 font-bold tracking-wider">{order.orderNumber}</span>
                         )}
                         <span className="flex items-center gap-1"><Clock size={10} /> {new Date(order.createdAt).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric", timeZone: "Asia/Dhaka" })} - {new Date(order.createdAt).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: true, timeZone: "Asia/Dhaka" })}</span>
+                        {order.deliveryStatus === "delivered" && order.deliveryDate && (
+                          <span className="flex items-center gap-1 text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded ml-1"><CheckCircle2 size={10} /> ডেলিভারি: {new Date(order.deliveryDate).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric", timeZone: "Asia/Dhaka" })} - {new Date(order.deliveryDate).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: true, timeZone: "Asia/Dhaka" })}</span>
+                        )}
                         {(() => {
                           const addr = order.customerAddress || (order.customer ? customers.find((c) => c._id === order.customer)?.address : undefined);
                           return addr ? (
