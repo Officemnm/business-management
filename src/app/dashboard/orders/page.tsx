@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Plus, Package, Tag, X, ShoppingBag, ArrowLeft, Check, Eye, Pencil, Calendar, BarChart3, Trash2, Clock, User, Hash, Truck, Ban, CheckCircle2, RotateCcw, MapPin, CreditCard, UserPlus, Search, Edit3, Sparkles } from "lucide-react";
+import { Plus, Package, Tag, X, ShoppingBag, ArrowLeft, Check, Eye, Pencil, Calendar, BarChart3, Trash2, Clock, User, Hash, Truck, Ban, CheckCircle2, RotateCcw, MapPin, CreditCard, UserPlus, Search, Edit3, Sparkles, Printer } from "lucide-react";
 import Image from "next/image";
 import toast from "react-hot-toast";
 import { motion, AnimatePresence } from "framer-motion";
@@ -58,6 +58,8 @@ export default function OrdersPage() {
   const [viewOrder, setViewOrder] = useState<any>(null);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [editOrder, setEditOrder] = useState<any>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [invoiceOrder, setInvoiceOrder] = useState<any>(null);
   const [saving, setSaving] = useState(false);
   const [showSummary, setShowSummary] = useState(false);
   const [summarySelection, setSummarySelection] = useState<string[]>([]);
@@ -998,6 +1000,102 @@ export default function OrdersPage() {
     );
   };
 
+  const handlePrint = () => {
+    window.print();
+  };
+
+  const renderInvoiceModal = () => {
+    if (!invoiceOrder) return null;
+    return (
+      <div className="fixed inset-0 z-[100] bg-white flex flex-col no-print">
+        {/* Top Header Controls (Hidden in Print) */}
+        <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-gray-50 no-print">
+          <button onClick={() => setInvoiceOrder(null)} className="p-2 bg-white border border-gray-300 rounded-full hover:bg-gray-100">
+            <X size={18} />
+          </button>
+          <button onClick={handlePrint} className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700">
+            <Printer size={16} /> প্রিন্ট করুন
+          </button>
+        </div>
+
+        {/* Invoice Printable Area */}
+        <div className="flex-1 overflow-auto bg-gray-100 p-4 sm:p-8 flex justify-center no-print">
+          <div id="print-invoice" className="bg-white p-8 sm:p-12 w-full max-w-[210mm] shadow-xl relative text-gray-900" style={{ minHeight: "297mm", border: "1px solid #e5e7eb" }}>
+            <div className="flex justify-between items-start mb-8 pb-6 border-b border-gray-200 -mt-6">
+              <div className="flex flex-col items-start">
+                <img src="/logo.png" alt="লোগো" className="w-28 h-28 object-contain mb-3" />
+                <h2 className="text-3xl font-extrabold text-gray-900 tracking-tight mb-1">ভ্যারাইটিজ কসমেটিক্স</h2>
+                <p className="text-[14px] text-gray-600 max-w-[300px]">৫১ নং ওয়ার্ড, সাতাইশ রোড, খরতৈল, সুখিনগর, গাজীপুরা, টঙ্গী, গাজীপুর</p>
+                <p className="text-[14px] text-gray-600 mt-1 font-medium">মোবাইল: +88016084-19251, +8801962-090245</p>
+              </div>
+              <div className="text-right pt-4">
+                <p className="text-[15px] font-bold text-gray-800 bg-gray-100 px-4 py-2 rounded-lg inline-block mb-2 border border-gray-200">অর্ডার নং: {invoiceOrder.orderNumber || invoiceOrder._id.slice(-6).toUpperCase()}</p>
+                <p className="text-[14px] font-medium text-gray-500 block">তারিখ: {new Date(invoiceOrder.createdAt).toLocaleDateString("en-GB")}</p>
+              </div>
+            </div>
+
+            <div className="mb-8">
+              <p className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-2">কাস্টমার তথ্য</p>
+              <h3 className="text-lg font-bold text-gray-800">{invoiceOrder.customerName}</h3>
+              {invoiceOrder.customerPhone && <p className="text-sm text-gray-600">মোবাইল: {invoiceOrder.customerPhone}</p>}
+              {invoiceOrder.customerAddress && <p className="text-sm text-gray-600">ঠিকানা: {invoiceOrder.customerAddress}</p>}
+            </div>
+
+            <table className="w-full text-left border-collapse mb-8">
+              <thead>
+                <tr className="border-b-2 border-gray-300">
+                  <th className="py-3 px-2 text-sm font-bold text-gray-600 uppercase">পণ্য</th>
+                  <th className="py-3 px-2 text-sm font-bold text-gray-600 uppercase text-center">পরিমাণ</th>
+                  <th className="py-3 px-2 text-sm font-bold text-gray-600 uppercase text-right">মূল্য</th>
+                  <th className="py-3 px-2 text-sm font-bold text-gray-600 uppercase text-right">মোট</th>
+                </tr>
+              </thead>
+              <tbody>
+                {invoiceOrder.items.map((item: any, idx: number) => (
+                  <tr key={idx} className="border-b border-gray-100">
+                    <td className="py-3 px-2 text-sm font-medium text-gray-800">{item.productName}</td>
+                    <td className="py-3 px-2 text-sm text-gray-600 text-center">{item.quantity}</td>
+                    <td className="py-3 px-2 text-sm text-gray-600 text-right">৳{item.unitPrice}</td>
+                    <td className="py-3 px-2 text-sm font-bold text-gray-800 text-right">৳{item.total}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+
+            <div className="flex justify-end mb-10">
+              <div className="w-64 space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span className="font-semibold text-gray-600">মোট বিল:</span>
+                  <span className="font-bold text-gray-900">৳{invoiceOrder.totalAmount}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="font-semibold text-gray-600">পরিশোধ:</span>
+                  <span className="font-bold text-green-600">৳{invoiceOrder.paidAmount || 0}</span>
+                </div>
+                <div className="flex justify-between text-sm border-t border-gray-200 pt-2">
+                  <span className="font-bold text-gray-800">বাকি:</span>
+                  <span className="font-bold text-red-600">৳{invoiceOrder.dueAmount}</span>
+                </div>
+                {invoiceOrder.dueAmount === 0 && (
+                  <div className="text-center mt-4">
+                    <span className="inline-block px-3 py-1 bg-green-100 text-green-700 font-bold rounded text-xs border border-green-200">
+                      PAID
+                    </span>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="absolute bottom-12 left-12 right-12 border-t border-gray-200 pt-4 flex justify-between text-xs text-gray-500">
+              <p>ধন্যবাদ আমাদের সাথে থাকার জন্য!</p>
+              <p>Developer by Mehedi hasan and mobile +8801601465130</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   // Calculate today's delivery stats for the display cards
   const todayStr = getBDDateString(new Date());
   const todayLabel = new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "long", year: "numeric", timeZone: "Asia/Dhaka" });
@@ -1295,20 +1393,34 @@ export default function OrdersPage() {
 
               {/* Order Footer & Actions */}
               <div className="flex items-center justify-between mt-2 pt-2 border-t border-gray-50">
-                 <div className="flex gap-4">
+                 <div className="flex flex-wrap gap-4">
                     <div>
                        <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-0.5">মোট বিল</p>
                        <p className="text-[14px] font-extrabold text-gray-900">৳{order.totalAmount}</p>
                     </div>
-                    {order.dueAmount > 0 && (
+                    {order.dueAmount === 0 ? (
                       <div>
-                         <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-0.5">বাকি</p>
-                         <p className="text-[14px] font-extrabold text-red-500">৳{order.dueAmount}</p>
+                         <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-0.5">অবস্থা</p>
+                         <p className="text-[14px] font-extrabold text-emerald-600">পরিশোধিত</p>
                       </div>
+                    ) : (
+                      <>
+                        <div>
+                           <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-0.5">পরিশোধ</p>
+                           <p className="text-[14px] font-extrabold text-emerald-600">৳{order.paidAmount || 0}</p>
+                        </div>
+                        <div>
+                           <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-0.5">বাকি</p>
+                           <p className="text-[14px] font-extrabold text-red-500">৳{order.dueAmount}</p>
+                        </div>
+                      </>
                     )}
                  </div>
                  
                  <div className="flex items-center gap-2">
+                    <button onClick={() => setInvoiceOrder(order)} className="w-8 h-8 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center hover:bg-indigo-100 transition-colors" title="ইনভয়েস">
+                      <Printer size={14} />
+                    </button>
                     <button onClick={() => setViewOrder(order)} className="w-8 h-8 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center hover:bg-blue-100 transition-colors">
                       <Eye size={14} />
                     </button>
@@ -1329,6 +1441,7 @@ export default function OrdersPage() {
       {renderViewModal()}
       {renderEditModal()}
       {renderSummaryModal()}
+      {renderInvoiceModal()}
 
       {/* ===================== NEW ORDER FULL-SCREEN ANIMATED PANEL ===================== */}
       <AnimatePresence>
