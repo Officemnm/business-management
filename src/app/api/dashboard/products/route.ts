@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
+import { verifyToken } from "@/lib/jwt";
 import dbConnect from "@/lib/db";
 import Product from "@/models/Product";
+import User from "@/models/User";
 
 export async function GET() {
   try {
@@ -15,9 +17,19 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   try {
+    const token = req.cookies.get("token")?.value;
+    if (!token) return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+    const payload = verifyToken(token);
+    if (!payload || !payload.userId) return NextResponse.json({ error: "Invalid token" }, { status: 401 });
+
     await dbConnect();
+    const currentUser = await User.findById(payload.userId);
+    if (currentUser?.permissions && !currentUser.permissions.canEdit) {
+      return NextResponse.json({ error: "তোমার এই পারমিশন নেই (অনলি ভিউ)" }, { status: 403 });
+    }
+
     const body = await req.json();
-    const createdBy = req.headers.get("x-user-name") || "unknown";
+    const createdBy = currentUser?.assignedASR || currentUser?.username || "unknown";
     const product = await Product.create({ ...body, createdBy });
     return NextResponse.json(product, { status: 201 });
   } catch (error) {

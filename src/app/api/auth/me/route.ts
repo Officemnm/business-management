@@ -27,6 +27,8 @@ export async function GET(req: NextRequest) {
         username: user.username,
         displayName: user.displayName,
         role: user.role,
+        permissions: user.permissions || { canEdit: true, canDelete: true },
+        assignedASR: user.assignedASR || "",
       },
     });
   } catch (error) {

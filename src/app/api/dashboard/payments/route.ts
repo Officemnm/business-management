@@ -3,6 +3,7 @@ import { verifyToken } from "@/lib/jwt";
 import dbConnect from "@/lib/db";
 import Payment from "@/models/Payment";
 import Customer from "@/models/Customer";
+import User from "@/models/User";
 
 // GET payments - either for a customer or all payments
 export async function GET(req: NextRequest) {
@@ -15,6 +16,7 @@ export async function GET(req: NextRequest) {
     const username = payload.username;
 
     await dbConnect();
+    const currentUser = await User.findById(payload.userId);
     const { searchParams } = new URL(req.url);
     const customerId = searchParams.get("customerId");
     const list = searchParams.get("list");
@@ -27,7 +29,7 @@ export async function GET(req: NextRequest) {
       if (isAdmin && targetUser) {
         q.collectedBy = targetUser;
       } else if (!isAdmin) {
-        q.collectedBy = username;
+        q.collectedBy = currentUser?.assignedASR || username;
       }
       return q;
     };
@@ -76,12 +78,18 @@ export async function GET(req: NextRequest) {
 // DELETE payment - admin only
 export async function DELETE(req: NextRequest) {
   try {
-    await dbConnect();
+    const token = req.cookies.get("token")?.value;
+    if (!token) return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+    const payload = verifyToken(token);
+    if (!payload || !payload.userId) return NextResponse.json({ error: "Invalid token" }, { status: 401 });
 
-    // Check if user is admin
-    const userRole = req.headers.get("x-user-role");
-    if (userRole !== "admin") {
+    await dbConnect();
+    const currentUser = await User.findById(payload.userId);
+    if (currentUser?.role !== "admin") {
       return NextResponse.json({ error: "Unauthorized - Admin only" }, { status: 403 });
+    }
+    if (currentUser?.permissions && !currentUser.permissions.canDelete) {
+      return NextResponse.json({ error: "তোমার মুছে ফেলার পারমিশন নেই (অনলি ভিউ)" }, { status: 403 });
     }
 
     const { searchParams } = new URL(req.url);
@@ -114,9 +122,19 @@ export async function DELETE(req: NextRequest) {
 // POST collect a payment
 export async function POST(req: NextRequest) {
   try {
+    const token = req.cookies.get("token")?.value;
+    if (!token) return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+    const payload = verifyToken(token);
+    if (!payload || !payload.userId) return NextResponse.json({ error: "Invalid token" }, { status: 401 });
+
     await dbConnect();
+    const currentUser = await User.findById(payload.userId);
+    if (currentUser?.permissions && !currentUser.permissions.canEdit) {
+      return NextResponse.json({ error: "তোমার এই পারমিশন নেই (অনলি ভিউ)" }, { status: 403 });
+    }
+
     const body = await req.json();
-    const collectedBy = req.headers.get("x-user-name") || "unknown";
+    const collectedBy = currentUser?.assignedASR || currentUser?.username || "unknown";
 
     const { customerId, customerName, amount, note } = body;
     if (!customerId || amount === undefined || amount === 0) {

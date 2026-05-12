@@ -5,6 +5,7 @@ import Order from "@/models/Order";
 import Customer from "@/models/Customer";
 import Product from "@/models/Product";
 import Payment from "@/models/Payment";
+import User from "@/models/User";
 
 export async function GET(req: NextRequest) {
   const token = req.cookies.get("token")?.value;
@@ -14,16 +15,23 @@ export async function GET(req: NextRequest) {
   const username = payload.username;
   const isAdmin = payload.role === "admin";
 
-  const { searchParams } = new URL(req.url);
-  const dateFrom = searchParams.get("from");
-  const dateTo = searchParams.get("to");
-  const targetUser = searchParams.get("targetUser");
-  
-  const queryUsername = (isAdmin && targetUser) ? targetUser : username;
-  const shouldFilterByUser = !isAdmin || !!targetUser;
-
   try {
     await dbConnect();
+    const currentUser = await User.findById(payload.userId);
+
+    const { searchParams } = new URL(req.url);
+    const dateFrom = searchParams.get("from");
+    const dateTo = searchParams.get("to");
+    const targetUser = searchParams.get("targetUser");
+    
+    let queryUsername = username;
+    if (isAdmin && targetUser) {
+      queryUsername = targetUser;
+    } else if (!isAdmin) {
+      queryUsername = currentUser?.assignedASR || username;
+    }
+
+    const shouldFilterByUser = !isAdmin || !!targetUser;
 
     // If date range specified, return sales for that period
     if (dateFrom && dateTo) {

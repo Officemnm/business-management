@@ -1,12 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Plus, Trash2, Shield, ShieldCheck, Pencil, User, KeyRound } from "lucide-react";
+import { Plus, Trash2, Shield, ShieldCheck, Pencil, User, KeyRound, Eye, Lock } from "lucide-react";
 import toast from "react-hot-toast";
 import AnimatedModal from "@/components/ui/AnimatedModal";
 import AnimatedDropdown from "@/components/ui/AnimatedDropdown";
 
-interface UserData { _id: string; username: string; displayName: string; role: string; active: boolean; createdAt: string; }
+interface Permissions { canEdit: boolean; canDelete: boolean; }
+interface UserData { _id: string; username: string; displayName: string; role: string; active: boolean; createdAt: string; permissions?: Permissions; assignedASR?: string; }
 
 const roles = [
   { value: "admin", label: "এডমিন" },
@@ -32,6 +33,13 @@ export default function UsersPage() {
   const [editRole, setEditRole] = useState("user");
   const [editPassword, setEditPassword] = useState("");
   const [editSaving, setEditSaving] = useState(false);
+  const [editPermissions, setEditPermissions] = useState<Permissions>({ canEdit: true, canDelete: true });
+  const [editAssignedASR, setEditAssignedASR] = useState("");
+
+  const asrOptions = [
+    { value: "", label: "সব এএসআর (ডিফল্ট)" },
+    ...users.filter(u => u.role === "asr" || u.role === "manager").map(u => ({ value: u.username, label: u.displayName }))
+  ];
 
   const loadData = () => {
     fetch("/api/dashboard/users")
@@ -48,6 +56,8 @@ export default function UsersPage() {
     setEditUsername(u.username);
     setEditRole(u.role);
     setEditPassword("");
+    setEditPermissions(u.permissions || { canEdit: true, canDelete: true });
+    setEditAssignedASR(u.assignedASR || "");
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -76,9 +86,11 @@ export default function UsersPage() {
     if (!editDisplayName.trim()) { toast.error("প্রদর্শন নাম আবশ্যক"); return; }
     setEditSaving(true);
     try {
-      const body: Record<string, string> = {
+      const body: any = {
         displayName: editDisplayName.trim(),
         role: editRole,
+        permissions: editPermissions,
+        assignedASR: editAssignedASR,
       };
       if (editPassword.trim()) body.newPassword = editPassword.trim();
 
@@ -273,6 +285,14 @@ export default function UsersPage() {
                       <span className="text-[10px] px-2 py-0.5 rounded-full font-semibold shrink-0"
                         style={{ background: "#fef2f2", color: "#dc2626" }}>নিষ্ক্রিয়</span>
                     )}
+                    {(u.role === "user" || u.role === "asr") && u.permissions && (!u.permissions.canEdit || !u.permissions.canDelete) && (
+                      <span className="text-[10px] px-2 py-0.5 rounded-full font-semibold shrink-0 flex items-center gap-1"
+                        style={{ background: "#fef2f2", color: "#dc2626" }}><Eye size={10} /> অনলি ভিউ</span>
+                    )}
+                    {u.role === "user" && u.assignedASR && (
+                      <span className="text-[10px] px-2 py-0.5 rounded-full font-semibold shrink-0"
+                        style={{ background: "#f3f4f6", color: "#4b5563" }}>ASR: {u.assignedASR}</span>
+                    )}
                   </div>
                   <p className="text-[11px] mt-0.5 flex items-center gap-1 font-medium" style={{ color: "#6b7280" }}>
                     <User size={10} /> {u.username}
@@ -319,6 +339,30 @@ export default function UsersPage() {
             <label className="block text-[11px] font-medium mb-1" style={{ color: "var(--text-secondary)" }}>পদবি</label>
             <AnimatedDropdown options={roles} value={editRole} onChange={setEditRole} className="h-10" />
           </div>
+
+          {(editRole === "user" || editRole === "asr") && (
+            <div className="rounded-xl p-3 flex flex-col gap-3" style={{ background: "var(--bg-input)", border: "1px solid var(--border-color)" }}>
+              <div className="flex items-center gap-2">
+                <Lock size={14} style={{ color: "var(--text-primary)" }} />
+                <span className="text-[12px] font-semibold" style={{ color: "var(--text-primary)" }}>অনুমতি (Permissions)</span>
+              </div>
+              <div className="flex bg-white rounded-lg border overflow-hidden p-1 gap-1" style={{ borderColor: "var(--border-color)" }}>
+                <button type="button" onClick={() => setEditPermissions({ canEdit: false, canDelete: false })} className={`flex-1 py-1.5 text-[11px] font-semibold rounded-md transition-colors ${!editPermissions.canEdit && !editPermissions.canDelete ? "bg-red-50 text-red-600" : "text-gray-500 hover:bg-gray-50"}`}>
+                  <Eye size={12} className="inline mr-1" /> অনলি ভিউ
+                </button>
+                <button type="button" onClick={() => setEditPermissions({ canEdit: true, canDelete: true })} className={`flex-1 py-1.5 text-[11px] font-semibold rounded-md transition-colors ${editPermissions.canEdit || editPermissions.canDelete ? "bg-green-50 text-green-600" : "text-gray-500 hover:bg-gray-50"}`}>
+                  পূর্ণ অনুমতি
+                </button>
+              </div>
+              {editRole === "user" && (
+                <div className="mt-1">
+                  <label className="block text-[11px] font-medium mb-1" style={{ color: "var(--text-secondary)" }}>নির্দিষ্ট এএসআর বরাদ্দ</label>
+                  <AnimatedDropdown options={asrOptions} value={editAssignedASR} onChange={setEditAssignedASR} className="h-9 text-xs" />
+                </div>
+              )}
+            </div>
+          )}
+
           <div className="rounded-xl p-3" style={{ background: "var(--bg-input)", border: "1px solid var(--border-color)" }}>
             <div className="flex items-center gap-2 mb-2">
               <KeyRound size={12} style={{ color: "var(--text-muted)" }} />
