@@ -1004,21 +1004,39 @@ export default function OrdersPage() {
   
   
   // General tab counts
-  const pendingOrders = orders.filter((o) => (o.deliveryStatus || "pending") === "pending");
-  const deliveredOrders = orders.filter((o) => o.deliveryStatus === "delivered");
-  const notDeliveredOrders = orders.filter((o) => o.deliveryStatus === "not_delivered");
-  
-  // Today's delivered orders
-  const todaysDelivered = orders.filter((o) => {
+  const pendingOrders = orders.filter((o) => {
+    if ((o.deliveryStatus || "pending") !== "pending") return false;
+    if (filterDate && getBDDateString(new Date(o.createdAt)) !== filterDate) return false;
+    return true;
+  });
+  const deliveredOrders = orders.filter((o) => {
     if (o.deliveryStatus !== "delivered") return false;
-    const dateToUse = o.deliveryDate ? new Date(o.deliveryDate) : new Date(o.createdAt);
-    return getBDDateString(dateToUse) === todayStr;
+    if (filterDate) {
+      const dateToUse = o.deliveryDate ? new Date(o.deliveryDate) : new Date(o.createdAt);
+      if (getBDDateString(dateToUse) !== filterDate) return false;
+    }
+    return true;
+  });
+  const notDeliveredOrders = orders.filter((o) => {
+    if (o.deliveryStatus !== "not_delivered") return false;
+    if (filterDate) {
+      const dateToUse = o.deliveryDate ? new Date(o.deliveryDate) : new Date(o.createdAt);
+      if (getBDDateString(dateToUse) !== filterDate) return false;
+    }
+    return true;
   });
   
-  const todaysDeliveredCount = todaysDelivered.length;
-  const todaysDeliveredAmount = todaysDelivered.reduce((s, o) => s + (o.finalAmount ?? o.totalAmount), 0);
-  const todaysDeliveredPaid = todaysDelivered.reduce((s, o) => s + (o.paidAmount || 0), 0);
-  const todaysDeliveredDue = todaysDelivered.reduce((s, o) => s + (o.dueAmount || 0), 0);
+  // Stats for the selected date (or today if no filterDate)
+  const statsDateStr = filterDate || todayStr;
+  const filteredDateDelivered = deliveredOrders.filter((o) => {
+    const dateToUse = o.deliveryDate ? new Date(o.deliveryDate) : new Date(o.createdAt);
+    return getBDDateString(dateToUse) === statsDateStr;
+  });
+  
+  const todaysDeliveredCount = filteredDateDelivered.length;
+  const todaysDeliveredAmount = filteredDateDelivered.reduce((s, o) => s + (o.finalAmount ?? o.totalAmount), 0);
+  const todaysDeliveredPaid = filteredDateDelivered.reduce((s, o) => s + (o.paidAmount || 0), 0);
+  const todaysDeliveredDue = filteredDateDelivered.reduce((s, o) => s + (o.dueAmount || 0), 0);
 
   // ===================== MAIN ORDER PAGE =====================
   return (
@@ -1043,13 +1061,13 @@ export default function OrdersPage() {
           <div className="absolute top-3 right-3 text-white opacity-20">
             <ShoppingBag size={40} />
           </div>
-          <p className="text-[11px] font-semibold text-gray-300 uppercase tracking-wider mb-0.5 relative z-10">আজকের ডেলিভারি</p>
+          <p className="text-[11px] font-semibold text-gray-300 uppercase tracking-wider mb-0.5 relative z-10">{filterDate ? "নির্বাচিত তারিখের ডেলিভারি" : "আজকের ডেলিভারি"}</p>
           <p className="text-[26px] font-bold leading-none text-white relative z-10">
             {todaysDeliveredCount.toLocaleString("en-US")} টি
           </p>
           <div className="mt-2 text-[10px] font-medium text-gray-300 flex items-center gap-1.5 relative z-10">
              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
-             আজকের হিসাব
+             {filterDate ? "নির্বাচিত তারিখ" : "আজকের হিসাব"}
           </div>
         </div>
 
@@ -1058,7 +1076,7 @@ export default function OrdersPage() {
           <div className="absolute top-3 right-3 text-white opacity-20">
             <BarChart3 size={40} />
           </div>
-          <p className="text-[11px] font-semibold text-green-100 uppercase tracking-wider mb-0.5 relative z-10">ডেলিভারি এমাউন্ট</p>
+          <p className="text-[11px] font-semibold text-green-100 uppercase tracking-wider mb-0.5 relative z-10">{filterDate ? "নির্বাচিত তারিখের" : "আজকের"} এমাউন্ট</p>
           <p className="text-[22px] sm:text-[26px] font-bold leading-none text-white relative z-10 truncate">
             ৳{todaysDeliveredAmount.toLocaleString("en-US")}
           </p>
@@ -1077,7 +1095,7 @@ export default function OrdersPage() {
             ৳{todaysDeliveredPaid.toLocaleString("en-US")}
           </p>
           <div className="mt-2 text-[10px] font-medium text-green-600 flex items-center gap-1.5 relative z-10">
-            আজকের আদায়
+            {filterDate ? "নির্বাচিত তারিখের আদায়" : "আজকের আদায়"}
           </div>
         </div>
 
@@ -1091,7 +1109,7 @@ export default function OrdersPage() {
             ৳{todaysDeliveredDue.toLocaleString("en-US")}
           </p>
           <div className="mt-2 text-[10px] font-medium text-red-500 flex items-center gap-1.5 relative z-10">
-            আজকের ডেলিভারি থেকে
+            {filterDate ? "নির্বাচিত তারিখের ডেলিভারি থেকে" : "আজকের ডেলিভারি থেকে"}
           </div>
         </div>
       </div>

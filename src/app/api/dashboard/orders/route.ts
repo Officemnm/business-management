@@ -40,7 +40,10 @@ export async function GET(req: NextRequest) {
     if (date) {
       const start = new Date(`${date}T00:00:00.000+06:00`);
       const end = new Date(`${date}T23:59:59.999+06:00`);
-      filter.createdAt = { $gte: start, $lte: end };
+      filter.$or = [
+        { createdAt: { $gte: start, $lte: end } },
+        { deliveryDate: { $gte: start, $lte: end } }
+      ];
     }
 
     const orders = await Order.find(filter).sort({ createdAt: -1 }).limit(limit);
