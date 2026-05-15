@@ -23,6 +23,7 @@ export default function CustomersPage() {
   const [editAddress, setEditAddress] = useState("");
   const [editPrevDue, setEditPrevDue] = useState<number | string>("");
   const [editSaving, setEditSaving] = useState(false);
+  const [deleteConfirmation, setDeleteConfirmation] = useState<string | null>(null);
 
   const loadData = () => {
     fetch("/api/dashboard/customers")
@@ -104,11 +105,15 @@ export default function CustomersPage() {
     finally { setEditSaving(false); }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm("মুছে ফেলতে চান?")) return;
-    await fetch(`/api/dashboard/customers/${id}`, { method: "DELETE" });
-    toast.success("কাস্টমার মুছে ফেলা হয়েছে");
-    loadData();
+  const confirmDelete = async () => {
+    if (!deleteConfirmation) return;
+    try {
+      const res = await fetch(`/api/dashboard/customers/${deleteConfirmation}`, { method: "DELETE" });
+      if (!res.ok) throw new Error();
+      toast.success("কাস্টমার মুছে ফেলা হয়েছে");
+      loadData();
+    } catch { toast.error("মুছতে ব্যর্থ হয়েছে"); }
+    finally { setDeleteConfirmation(null); }
   };
 
   const inputStyle = "w-full h-10 px-3 rounded-lg text-[13px] outline-none transition-colors focus:border-[#66a80f]";
@@ -276,14 +281,12 @@ export default function CustomersPage() {
                 </div>
                 <div className="flex items-center gap-1.5 shrink-0">
                   <button onClick={() => openEdit(c)}
-                    className="w-8 h-8 rounded-lg flex items-center justify-center cursor-pointer transition-colors hover:bg-gray-100"
-                    style={{ background: "#ffffff", color: "#6b7280", border: "1px solid #e5e7eb" }} title="সম্পাদনা">
-                    <Pencil size={13} />
+                    className="w-10 h-10 rounded-[14px] bg-white border border-slate-200/80 text-slate-500 flex items-center justify-center hover:bg-slate-50 hover:text-emerald-600 hover:border-emerald-200 hover:shadow-[0_4px_12px_-4px_rgba(16,185,129,0.2)] transition-all shadow-sm group" title="সম্পাদনা">
+                    <Pencil size={15} className="group-hover:scale-110 transition-transform" />
                   </button>
-                  <button onClick={() => handleDelete(c._id)}
-                    className="w-8 h-8 rounded-lg flex items-center justify-center cursor-pointer transition-colors hover:bg-red-100"
-                    style={{ background: "#fef2f2", color: "#dc2626", border: "1px solid #fecaca" }} title="মুছুন">
-                    <Trash2 size={13} />
+                  <button onClick={() => setDeleteConfirmation(c._id)}
+                    className="w-10 h-10 rounded-[14px] bg-white border border-slate-200/80 text-slate-500 flex items-center justify-center hover:bg-slate-50 hover:text-rose-600 hover:border-rose-200 hover:shadow-[0_4px_12px_-4px_rgba(244,63,94,0.2)] transition-all shadow-sm group" title="মুছুন">
+                    <Trash2 size={15} className="group-hover:scale-110 transition-transform" />
                   </button>
                 </div>
               </div>
@@ -291,6 +294,38 @@ export default function CustomersPage() {
           </div>
         )}
       </div>
+
+      {/* ===================== DELETE CONFIRMATION MODAL ===================== */}
+      <AnimatedModal
+        open={!!deleteConfirmation}
+        onClose={() => setDeleteConfirmation(null)}
+        title=""
+        maxWidth="max-w-sm"
+      >
+        <div className="flex flex-col items-center justify-center pt-4 pb-2 px-2 text-center">
+          <div className="w-16 h-16 rounded-full bg-rose-50 border-4 border-rose-100 flex items-center justify-center mb-5 shrink-0">
+            <Trash2 size={24} className="text-rose-500" strokeWidth={2} />
+          </div>
+          <h3 className="text-[18px] font-black text-slate-900 mb-2">কাস্টমার ডিলিট</h3>
+          <p className="text-[14px] font-medium text-slate-500 mb-8 leading-relaxed max-w-[260px]">
+            আপনি কি নিশ্চিত যে এই কাস্টমারটিকে রিমুভ করতে চান? এটি একবার ডিলিট করলে এর ডাটা আর ফিরে পাওয়া যাবে না।
+          </p>
+          <div className="flex w-full gap-3">
+            <button
+              onClick={() => setDeleteConfirmation(null)}
+              className="flex-1 h-12 rounded-[14px] text-[14px] font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors shadow-sm"
+            >
+              বাতিল
+            </button>
+            <button
+              onClick={confirmDelete}
+              className="flex-1 h-12 rounded-[14px] text-[14px] font-bold text-white bg-rose-500 hover:bg-rose-600 shadow-[0_4px_15px_-3px_rgba(244,63,94,0.3)] hover:shadow-[0_6px_20px_-3px_rgba(244,63,94,0.4)] transition-all active:scale-95 flex items-center justify-center gap-2"
+            >
+              ডিলিট করুন
+            </button>
+          </div>
+        </div>
+      </AnimatedModal>
 
       {/* Edit Customer Modal */}
       <AnimatedModal open={!!editCustomer} onClose={() => setEditCustomer(null)} title="কাস্টমার সম্পাদনা" maxWidth="max-w-md">
