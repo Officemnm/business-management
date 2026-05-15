@@ -10,9 +10,9 @@ const inter = Inter({
   display: "swap",
 });
 
-const kalpurush = localFont({
-  src: "../fonts/kalpurush.ttf",
-  variable: "--font-kalpurush",
+const banglaFont = localFont({
+  src: "../fonts/BL_Shahid.ttf",
+  variable: "--font-bangla",
   display: "swap",
   preload: true,
   fallback: ["system-ui", "arial"],
@@ -49,7 +49,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="bn" className={`${kalpurush.variable} ${inter.variable}`}>
+    <html lang="bn" className={`${banglaFont.variable} ${inter.variable}`}>
       <body className="antialiased">
         <Toaster
           position="top-center"
