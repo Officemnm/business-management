@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Plus, Package, Tag, X, ShoppingBag, ArrowLeft, Check, Eye, Pencil, Calendar, BarChart3, Trash2, Clock, User, Hash, Truck, Ban, CheckCircle2, RotateCcw, MapPin, CreditCard, UserPlus, Search, Edit3, Sparkles, Printer } from "lucide-react";
+import { Plus, Package, Tag, X, ShoppingBag, ArrowLeft, Check, Eye, Pencil, Calendar, BarChart3, Trash2, Clock, User, Hash, Truck, Ban, CheckCircle2, RotateCcw, MapPin, CreditCard, UserPlus, Search, Edit3, Sparkles, Printer, ArrowUpRight } from "lucide-react";
 import Image from "next/image";
 import toast from "react-hot-toast";
 import { motion, AnimatePresence } from "framer-motion";
@@ -1138,105 +1138,119 @@ export default function OrdersPage() {
 
   // ===================== MAIN ORDER PAGE =====================
   return (
-    <div className="pb-20 space-y-4 max-w-lg mx-auto md:max-w-none">
+    <div className="pb-12 space-y-6 max-w-[1400px] mx-auto font-sans">
       {/* App-like Header */}
-      <div className="flex items-center justify-between mt-2 mb-4 px-2">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 px-2">
         <div>
-          <h1 className="text-[22px] sm:text-[24px] font-extrabold tracking-tight" style={{ color: "#111827", letterSpacing: "-0.01em" }}>অর্ডার সমুহ</h1>
-          <p className="text-[12px] font-medium" style={{ color: "#6b7280" }}>{todayLabel}</p>
+          <h1 className="text-[28px] md:text-[32px] font-bold tracking-tight text-slate-900 leading-tight">অর্ডার সমূহ</h1>
+          <p className="text-[14px] text-slate-500 mt-1 flex items-center gap-2">
+            <span>{todayLabel}</span>
+          </p>
         </div>
-        <button onClick={() => { resetOrderForm(); setShowForm(true); }}
-          className="w-10 h-10 rounded-full flex items-center justify-center text-white cursor-pointer transition-transform active:scale-95 shadow-md"
-          style={{ background: "#66a80f", boxShadow: "0 4px 10px rgba(102,168,15,0.25)" }}>
-          <Plus size={20} strokeWidth={2.5} />
-        </button>
+        <div className="flex items-center">
+          <button onClick={() => { resetOrderForm(); setShowForm(true); }}
+            className="flex items-center gap-2 h-11 px-5 rounded-full text-[14px] font-semibold text-white transition-all shadow-[0_4px_15px_-3px_rgba(16,185,129,0.3)] hover:shadow-[0_6px_20px_-3px_rgba(16,185,129,0.4)] active:scale-95"
+            style={{ background: "#10b981" }}>
+            <Plus size={18} strokeWidth={2.5} />
+            নতুন অর্ডার
+          </button>
+        </div>
       </div>
 
-      {/* KPI Cards (Mobile App Style) */}
-      <div className="grid grid-cols-2 gap-3 mb-2">
+      {/* KPI Cards (Premium Clean Style) */}
+      <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ type: "spring", stiffness: 300, damping: 24 }} className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
         {/* Today's Delivery Count */}
-        <div className="rounded-2xl p-4 shadow-sm relative overflow-hidden flex flex-col justify-end" style={{ background: "linear-gradient(135deg, #111827 0%, #1f2937 100%)", minHeight: "100px" }}>
-          <div className="absolute top-3 right-3 text-white opacity-20">
-            <ShoppingBag size={40} />
+        <div className="bg-white border border-slate-200/60 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.04)] rounded-[20px] transition-all duration-300 hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.08)] p-6 flex flex-col justify-between group">
+          <div className="flex items-start justify-between mb-4">
+            <div className="w-10 h-10 rounded-xl bg-slate-900 flex items-center justify-center border border-slate-700 shadow-md">
+              <ShoppingBag size={20} className="text-white" />
+            </div>
+            <span className="flex items-center gap-1 text-[11px] font-semibold text-slate-500 bg-slate-50 px-2 py-1 rounded-md border border-slate-100">
+              <Clock size={12} /> {filterDate ? "নির্বাচিত তারিখ" : "আজকে"}
+            </span>
           </div>
-          <p className="text-[11px] font-semibold text-gray-300 uppercase tracking-wider mb-0.5 relative z-10">{filterDate ? "নির্বাচিত তারিখের ডেলিভারি" : "আজকের ডেলিভারি"}</p>
-          <p className="text-[26px] font-bold leading-none text-white relative z-10">
-            {todaysDeliveredCount.toLocaleString("en-US")} টি
-          </p>
-          <div className="mt-2 text-[10px] font-medium text-gray-300 flex items-center gap-1.5 relative z-10">
-             <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
-             {filterDate ? "নির্বাচিত তারিখ" : "আজকের হিসাব"}
+          <div>
+            <p className="text-[13px] font-medium text-slate-500 mb-1">ডেলিভারি সংখ্যা</p>
+            <p className="text-[28px] md:text-[32px] font-bold text-slate-900 tracking-tight leading-none tabular-nums">
+              {todaysDeliveredCount.toLocaleString("en-US")} <span className="text-[16px] text-slate-500">টি</span>
+            </p>
           </div>
         </div>
 
         {/* Today's Delivery Amount */}
-        <div className="rounded-2xl p-4 shadow-sm relative overflow-hidden flex flex-col justify-end" style={{ background: "linear-gradient(135deg, #66a80f 0%, #4d7c0f 100%)", minHeight: "100px" }}>
-          <div className="absolute top-3 right-3 text-white opacity-20">
-            <BarChart3 size={40} />
+        <div className="bg-white border border-slate-200/60 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.04)] rounded-[20px] transition-all duration-300 hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.08)] p-6 flex flex-col justify-between group">
+          <div className="flex items-start justify-between mb-4">
+            <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center border border-emerald-100 group-hover:bg-emerald-100 transition-colors">
+              <BarChart3 size={20} className="text-emerald-600" />
+            </div>
+            <span className="flex items-center gap-1 text-[11px] font-semibold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-md border border-emerald-100">
+              <ArrowUpRight size={12} /> {filterDate ? "নির্বাচিত তারিখ" : "আজকে"}
+            </span>
           </div>
-          <p className="text-[11px] font-semibold text-green-100 uppercase tracking-wider mb-0.5 relative z-10">{filterDate ? "নির্বাচিত তারিখের" : "আজকের"} এমাউন্ট</p>
-          <p className="text-[22px] sm:text-[26px] font-bold leading-none text-white relative z-10 truncate">
-            ৳{todaysDeliveredAmount.toLocaleString("en-US")}
-          </p>
-          <div className="mt-2 text-[10px] font-medium text-green-200 flex items-center gap-1.5 relative z-10">
-             সম্পূর্ণ ডেলিভারি ভ্যালু
+          <div>
+            <p className="text-[13px] font-medium text-slate-500 mb-1">মোট এমাউন্ট</p>
+            <p className="text-[28px] md:text-[32px] font-bold text-slate-900 tracking-tight leading-none tabular-nums truncate">
+              ৳{todaysDeliveredAmount.toLocaleString("en-US")}
+            </p>
           </div>
         </div>
 
         {/* Today's Delivery Paid */}
-        <div className="col-span-1 rounded-2xl p-4 shadow-sm relative overflow-hidden flex flex-col justify-end" style={{ background: "#f0fdf4", border: "1px solid #bbf7d0", minHeight: "100px" }}>
-          <div className="absolute top-3 right-3 text-green-500 opacity-10">
-            <CheckCircle2 size={40} />
+        <div className="bg-white border border-slate-200/60 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.04)] rounded-[20px] transition-all duration-300 hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.08)] p-6 flex flex-col justify-between group">
+          <div className="flex items-start justify-between mb-4">
+            <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center border border-blue-100 group-hover:bg-blue-100 transition-colors">
+              <CheckCircle2 size={20} className="text-blue-600" />
+            </div>
           </div>
-          <p className="text-[11px] font-semibold text-green-600 uppercase tracking-wider mb-0.5 relative z-10">মোট পরিশোধ</p>
-          <p className="text-[22px] sm:text-[26px] font-bold leading-none text-green-700 relative z-10">
-            ৳{todaysDeliveredPaid.toLocaleString("en-US")}
-          </p>
-          <div className="mt-2 text-[10px] font-medium text-green-600 flex items-center gap-1.5 relative z-10">
-            {filterDate ? "নির্বাচিত তারিখের আদায়" : "আজকের আদায়"}
+          <div>
+            <p className="text-[13px] font-medium text-slate-500 mb-1">মোট আদায়</p>
+            <p className="text-[28px] md:text-[32px] font-bold text-slate-900 tracking-tight leading-none tabular-nums">
+              ৳{todaysDeliveredPaid.toLocaleString("en-US")}
+            </p>
           </div>
         </div>
 
         {/* Today's Delivery Due */}
-        <div className="col-span-1 rounded-2xl p-4 shadow-sm relative overflow-hidden flex flex-col justify-end" style={{ background: "#fef2f2", border: "1px solid #fecaca", minHeight: "100px" }}>
-          <div className="absolute top-3 right-3 text-red-500 opacity-10">
-            <CreditCard size={40} />
+        <div className="bg-white border border-slate-200/60 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.04)] rounded-[20px] transition-all duration-300 hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.08)] p-6 flex flex-col justify-between group">
+          <div className="flex items-start justify-between mb-4">
+            <div className="w-10 h-10 rounded-xl bg-rose-50 flex items-center justify-center border border-rose-100">
+              <CreditCard size={20} className="text-rose-600" />
+            </div>
           </div>
-          <p className="text-[11px] font-semibold text-red-600 uppercase tracking-wider mb-0.5 relative z-10">মোট বাকি</p>
-          <p className="text-[22px] sm:text-[26px] font-bold leading-none text-red-600 relative z-10">
-            ৳{todaysDeliveredDue.toLocaleString("en-US")}
-          </p>
-          <div className="mt-2 text-[10px] font-medium text-red-500 flex items-center gap-1.5 relative z-10">
-            {filterDate ? "নির্বাচিত তারিখের ডেলিভারি থেকে" : "আজকের ডেলিভারি থেকে"}
+          <div>
+            <p className="text-[13px] font-medium text-slate-500 mb-1">মোট বাকি</p>
+            <p className="text-[28px] md:text-[32px] font-bold text-rose-600 tracking-tight leading-none tabular-nums">
+              ৳{todaysDeliveredDue.toLocaleString("en-US")}
+            </p>
           </div>
         </div>
-      </div>
+      </motion.div>
 
       {/* Filter and Tab Section */}
-      <div className="bg-white rounded-2xl p-2 shadow-sm border space-y-2" style={{ borderColor: "#e5e7eb" }}>
+      <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="bg-white rounded-[20px] p-3 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.04)] border border-slate-200/60 space-y-3">
         
         {/* Date Filter & User Filter */}
-        <div className="flex flex-col sm:flex-row gap-2 px-2 pt-2">
-            <div className="flex items-center justify-between flex-1 bg-gray-50 rounded-lg p-1">
+        <div className="flex flex-col sm:flex-row gap-3 px-2 pt-2">
+            <div className="flex items-center justify-between flex-1 bg-slate-50 rounded-[14px] p-1.5 border border-slate-100">
               <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-full flex items-center justify-center bg-white shadow-sm border border-gray-100">
-                    <Calendar size={14} className="text-gray-500" />
+                <div className="w-9 h-9 rounded-xl flex items-center justify-center bg-white shadow-sm border border-slate-200/60">
+                    <Calendar size={16} className="text-slate-500" />
                 </div>
                 <input type="date" value={filterDate}
                   onChange={(e) => { setFilterDate(e.target.value); fetchOrders(e.target.value, targetUser); }}
-                  className="h-8 text-[12px] font-medium outline-none bg-transparent w-[120px]"
-                  style={{ color: "#111827" }} />
+                  className="h-9 text-[13px] font-medium outline-none bg-transparent w-[130px] text-slate-800"
+                  style={{ color: "#1e293b" }} />
               </div>
               {filterDate && (
                 <button onClick={() => { setFilterDate(""); fetchOrders("", targetUser); }}
-                  className="px-3 h-8 rounded-full text-[11px] font-bold tracking-wide transition-colors bg-white text-gray-600 hover:bg-gray-100 border border-gray-200 shadow-sm mr-1">
-                  ALL
+                  className="px-4 h-9 rounded-[10px] text-[12px] font-bold tracking-wide transition-all bg-white text-slate-600 hover:bg-slate-100 border border-slate-200 shadow-sm mr-1">
+                  সকল তারিখ
                 </button>
               )}
             </div>
 
             {currentUser?.role === "admin" && systemUsers.length > 0 && (
-              <div className="flex-1 rounded-lg z-20">
+              <div className="flex-1 rounded-[14px] z-20 relative">
                 <AnimatedDropdown
                   options={[
                     { value: "", label: "সকল ইউজার (All)" },
@@ -1250,7 +1264,7 @@ export default function OrdersPage() {
                     setTargetUser(u);
                     fetchOrders(filterDate, u);
                   }}
-                  className="w-full h-10 shadow-sm"
+                  className="w-full h-12 shadow-sm rounded-[14px]"
                 />
               </div>
             )}
@@ -1258,10 +1272,10 @@ export default function OrdersPage() {
             <div className="flex items-center justify-end sm:justify-start">
               <button 
                 onClick={() => setShowSummary(true)}
-                className="w-10 h-10 rounded-xl flex items-center justify-center bg-gray-900 text-white relative shadow-sm cursor-pointer hover:bg-gray-800 transition-colors">
-                 <BarChart3 size={16} />
+                className="w-12 h-12 rounded-[14px] flex items-center justify-center bg-slate-900 text-white relative shadow-md cursor-pointer hover:bg-slate-800 transition-colors">
+                 <BarChart3 size={18} />
                  {deliveryTab === "pending" && summarySelection.length > 0 && (
-                    <span className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-red-500 text-[10px] font-bold flex items-center justify-center border-2 border-white shadow-sm">
+                    <span className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-rose-500 text-[11px] font-bold flex items-center justify-center border-2 border-white shadow-sm">
                       {summarySelection.length}
                     </span>
                  )}
@@ -1271,38 +1285,38 @@ export default function OrdersPage() {
 
         {/* Action Bar for Pending Tab */}
         {deliveryTab === "pending" && (
-           <div className="flex items-center justify-between px-3 py-2 mt-1 bg-gray-50 rounded-xl border border-gray-100">
-              <span className="text-[11px] font-semibold text-gray-500">ব্যাচ একশন</span>
+           <div className="flex items-center justify-between px-4 py-3 mt-1 bg-slate-50/80 rounded-[14px] border border-slate-200/60">
+              <span className="text-[12px] font-semibold text-slate-500">ব্যাচ একশন</span>
               <button onClick={() => {
                 const pending = orders.filter((o) => (o.deliveryStatus || "pending") === "pending");
                 setSummarySelection(summarySelection.length === pending.length ? [] : pending.map(o => o._id));
               }}
-                className="text-[11px] font-bold text-[#66a80f]">
+                className="text-[12px] font-bold text-emerald-600 hover:text-emerald-700 transition-colors">
                 {summarySelection.length === pendingOrders.length ? "সব ডি-সিলেক্ট" : "সব সিলেক্ট"}
               </button>
            </div>
         )}
 
         {/* Modern Tabs */}
-        <div className="flex bg-gray-100 p-1 rounded-xl mt-3">
+        <div className="flex bg-slate-100/80 p-1.5 rounded-[16px]">
           {[
-            { id: "pending", label: "পেন্ডিং", icon: <Truck size={14} />, count: pendingOrders.length, color: "#d97706" },
-            { id: "delivered", label: "ডেলিভারড", icon: <CheckCircle2 size={14} />, count: deliveredOrders.length, color: "#16a34a" },
-            { id: "not_delivered", label: "ব্যর্থ", icon: <Ban size={14} />, count: notDeliveredOrders.length, color: "#dc2626" },
+            { id: "pending", label: "পেন্ডিং", icon: <Truck size={16} />, count: pendingOrders.length, color: "#f59e0b" },
+            { id: "delivered", label: "ডেলিভারড", icon: <CheckCircle2 size={16} />, count: deliveredOrders.length, color: "#10b981" },
+            { id: "not_delivered", label: "ব্যর্থ", icon: <Ban size={16} />, count: notDeliveredOrders.length, color: "#f43f5e" },
           ].map((t) => (
              <button key={t.id} onClick={() => setDeliveryTab(t.id as any)}
-                className={`flex-1 h-9 flex items-center justify-center gap-1.5 rounded-lg text-[11px] font-bold transition-all relative z-10 ${deliveryTab === t.id ? "bg-white text-gray-900 shadow-sm" : "text-gray-500 hover:text-gray-700"}`}>
+                className={`flex-1 h-11 flex items-center justify-center gap-2 rounded-[12px] text-[13px] font-bold transition-all relative z-10 ${deliveryTab === t.id ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:text-slate-700"}`}>
                 <span style={{ color: deliveryTab === t.id ? t.color : "inherit" }}>{t.icon}</span>
                 {t.label} 
                 {t.count > 0 && (
-                   <span className="ml-0.5 px-1.5 py-0.5 rounded-md text-[9px] bg-gray-100 text-gray-500">
+                   <span className="ml-1 px-2 py-0.5 rounded-md text-[10px] bg-slate-100 text-slate-600 font-bold">
                       {t.count}
                    </span>
                 )}
              </button>
           ))}
         </div>
-      </div>
+      </motion.div>
 
       {/* Orders List (Card Style) */}
       {(() => {
@@ -1312,79 +1326,91 @@ export default function OrdersPage() {
           return o.deliveryStatus === "not_delivered";
         });
         return filteredOrders.length === 0 ? (
-        <div className="rounded-2xl py-16 text-center" style={{ background: "#ffffff", border: "1px solid #e5e7eb" }}>
-          <div className="w-12 h-12 rounded-full mx-auto mb-3 flex items-center justify-center" style={{ background: "#f3f4f6" }}>
-            <ShoppingBag size={20} strokeWidth={1.5} style={{ color: "#9ca3af" }} />
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="rounded-[20px] py-20 text-center bg-white shadow-[0_2px_10px_-4px_rgba(0,0,0,0.04)] border border-slate-200/60">
+          <div className="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center bg-slate-50 border border-slate-100">
+            <ShoppingBag size={24} strokeWidth={1.5} className="text-slate-400" />
           </div>
-          <p className="text-[13px] font-medium" style={{ color: "#6b7280" }}>
+          <p className="text-[14px] font-medium text-slate-500">
             {deliveryTab === "pending" ? "কোনো পেন্ডিং অর্ডার নেই" : deliveryTab === "delivered" ? "কোনো ডেলিভারড অর্ডার নেই" : "কোনো ব্যর্থ অর্ডার নেই"}
           </p>
-        </div>
+        </motion.div>
       ) : (
-        <div className="flex flex-col gap-4">
-          {filteredOrders.map((order) => (
-            <div key={order._id} className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100 hover:shadow-md transition-shadow relative">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 gap-5">
+          {filteredOrders.map((order, index) => (
+            <motion.div 
+              initial={{ opacity: 0, y: 15 }} 
+              animate={{ opacity: 1, y: 0 }} 
+              transition={{ delay: index * 0.05 }}
+              key={order._id} 
+              className="bg-white rounded-[20px] p-5 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.04)] border border-slate-200/60 hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.08)] hover:border-slate-300/80 transition-all duration-300 relative flex flex-col h-full"
+            >
               {/* Order Header / Top Section */}
-              <div className="flex justify-between items-start mb-3">
+              <div className="flex justify-between items-start mb-4">
                 <div className="flex gap-3 items-center">
                    {deliveryTab === "pending" && (
-                    <input
-                      type="checkbox"
-                      checked={summarySelection.includes(order._id)}
-                      onChange={(e) => {
-                        if (e.target.checked) setSummarySelection([...summarySelection, order._id]);
-                        else setSummarySelection(summarySelection.filter(id => id !== order._id));
-                      }}
-                      className="w-4 h-4 accent-[#66a80f] rounded-sm cursor-pointer shrink-0 mt-0.5"
-                    />
+                    <div className="relative flex items-center justify-center w-5 h-5 cursor-pointer mt-0.5">
+                      <input
+                        type="checkbox"
+                        checked={summarySelection.includes(order._id)}
+                        onChange={(e) => {
+                          if (e.target.checked) setSummarySelection([...summarySelection, order._id]);
+                          else setSummarySelection(summarySelection.filter(id => id !== order._id));
+                        }}
+                        className="peer relative appearance-none w-5 h-5 border border-slate-300 rounded-md bg-white checked:bg-emerald-500 checked:border-emerald-500 cursor-pointer transition-all"
+                      />
+                      <Check size={14} strokeWidth={3} className="text-white absolute pointer-events-none opacity-0 peer-checked:opacity-100 transition-opacity" />
+                    </div>
                    )}
                    <div>
                      <div className="flex items-center gap-2 mb-1">
-                        <h3 className="text-[14px] font-bold text-gray-900 leading-none">{order.customerName}</h3>
+                        <h3 className="text-[15px] font-bold text-slate-900 leading-none">{order.customerName}</h3>
                      </div>
                      
-                     <div className="flex flex-wrap items-center gap-2 text-[11px] font-medium text-gray-500">
+                     <div className="flex flex-wrap items-center gap-2 text-[11px] font-medium text-slate-500">
                         {order.orderNumber && (
-                          <span className="bg-gray-100 px-1.5 py-0.5 rounded text-gray-600 font-bold tracking-wider">{order.orderNumber}</span>
+                          <span className="bg-slate-100 px-2 py-0.5 rounded-md text-slate-700 font-bold tracking-wider">{order.orderNumber}</span>
                         )}
-                        <span className="flex items-center gap-1"><Clock size={10} /> {new Date(order.createdAt).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric", timeZone: "Asia/Dhaka" })} - {new Date(order.createdAt).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: true, timeZone: "Asia/Dhaka" })}</span>
+                        <span className="flex items-center gap-1"><Clock size={12} className="text-slate-400" /> {new Date(order.createdAt).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric", timeZone: "Asia/Dhaka" })}</span>
                         {order.deliveryStatus === "delivered" && order.deliveryDate && (
-                          <span className="flex items-center gap-1 text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded ml-1"><CheckCircle2 size={10} /> ডেলিভারি: {new Date(order.deliveryDate).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric", timeZone: "Asia/Dhaka" })} - {new Date(order.deliveryDate).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: true, timeZone: "Asia/Dhaka" })}</span>
+                          <span className="flex items-center gap-1 text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-100 ml-1"><CheckCircle2 size={12} /> {new Date(order.deliveryDate).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric", timeZone: "Asia/Dhaka" })}</span>
                         )}
                         {(() => {
                           const addr = order.customerAddress || (order.customer ? customers.find((c) => c._id === order.customer)?.address : undefined);
                           return addr ? (
-                            <span className="flex items-center gap-1 max-w-[120px] truncate"><MapPin size={10} /> {addr}</span>
+                            <span className="flex items-center gap-1 max-w-[120px] truncate" title={addr}><MapPin size={12} className="text-slate-400" /> {addr}</span>
                           ) : null;
                         })()}
                      </div>
                    </div>
                 </div>
-                <div className="flex flex-col items-end gap-1.5">
-                   <span className="text-[10px] px-2 py-0.5 rounded-full font-bold"
-                     style={{ background: order.status === "completed" ? "#f0fdf4" : order.status === "cancelled" ? "#fef2f2" : "#fffbeb", color: order.status === "completed" ? "#16a34a" : order.status === "cancelled" ? "#dc2626" : "#d97706" }}>
+                <div className="flex flex-col items-end gap-1.5 shrink-0">
+                   <span className={`text-[11px] px-2.5 py-1 rounded-md font-semibold border ${
+                      order.status === "completed" ? "bg-emerald-50 text-emerald-600 border-emerald-100" : 
+                      order.status === "cancelled" ? "bg-rose-50 text-rose-600 border-rose-100" : 
+                      "bg-amber-50 text-amber-600 border-amber-100"
+                   }`}>
                      {order.status === "completed" ? "সম্পন্ন" : order.status === "cancelled" ? "বাতিল" : "পেন্ডিং"}
                    </span>
                 </div>
               </div>
 
               {/* Items summary */}
-              <div className="bg-gray-50 rounded-xl p-3 mb-3 border border-gray-100">
-                 <div className="flex items-center gap-2 mb-2 pb-2 border-b border-gray-200">
-                    <span className="bg-white border border-gray-200 w-6 h-6 rounded-md flex items-center justify-center text-[10px] font-bold text-gray-700">
+              <div className="bg-slate-50 rounded-[14px] p-3.5 mb-4 border border-slate-100 flex-1">
+                 <div className="flex items-center gap-2 mb-2 pb-2 border-b border-slate-200/60">
+                    <span className="bg-white border border-slate-200 w-6 h-6 rounded-lg flex items-center justify-center text-[11px] font-bold text-slate-700 shadow-sm">
                       {order.items.length}
                     </span>
-                    <span className="text-[11px] font-bold text-gray-600">পণ্য সমুহ</span>
+                    <span className="text-[12px] font-bold text-slate-600">পণ্য সমূহ</span>
                  </div>
-                 <div className="space-y-1.5">
+                 <div className="space-y-2">
                     {order.items.slice(0, 2).map((item, i) => (
-                      <div key={i} className="flex justify-between items-center text-[11px]">
-                         <span className="text-gray-600 truncate flex-1 min-w-0 pr-2">{"•"} {item.productName}</span>
-                         <span className="text-gray-400 font-medium shrink-0">{item.quantity} x {item.unitPrice} ৳</span>
+                      <div key={i} className="flex justify-between items-center text-[12px]">
+                         <span className="text-slate-700 font-medium truncate flex-1 min-w-0 pr-2">{"•"} {item.productName}</span>
+                         <span className="text-slate-500 font-semibold shrink-0">{item.quantity} x {item.unitPrice} ৳</span>
                       </div>
                     ))}
                     {order.items.length > 2 && (
-                      <div className="text-[10px] font-semibold text-indigo-500 pt-1">
+                      <div className="text-[11px] font-bold text-indigo-500 pt-1">
                         + আরো {order.items.length - 2} টি...
                       </div>
                     )}
@@ -1392,47 +1418,47 @@ export default function OrdersPage() {
               </div>
 
               {/* Order Footer & Actions */}
-              <div className="flex items-center justify-between mt-2 pt-2 border-t border-gray-50">
-                 <div className="flex flex-wrap gap-4">
+              <div className="flex items-center justify-between mt-auto pt-4 border-t border-slate-100">
+                 <div className="flex flex-wrap gap-5">
                     <div>
-                       <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-0.5">মোট বিল</p>
-                       <p className="text-[14px] font-extrabold text-gray-900">৳{order.totalAmount}</p>
+                       <p className="text-[11px] font-medium text-slate-500 mb-0.5">মোট বিল</p>
+                       <p className="text-[16px] font-bold text-slate-900 tabular-nums leading-none">৳{order.totalAmount}</p>
                     </div>
                     {order.dueAmount === 0 ? (
                       <div>
-                         <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-0.5">অবস্থা</p>
-                         <p className="text-[14px] font-extrabold text-emerald-600">পরিশোধিত</p>
+                         <p className="text-[11px] font-medium text-slate-500 mb-0.5">অবস্থা</p>
+                         <p className="text-[16px] font-bold text-emerald-600 leading-none">পরিশোধিত</p>
                       </div>
                     ) : (
                       <>
                         <div>
-                           <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-0.5">পরিশোধ</p>
-                           <p className="text-[14px] font-extrabold text-emerald-600">৳{order.paidAmount || 0}</p>
+                           <p className="text-[11px] font-medium text-slate-500 mb-0.5">পরিশোধ</p>
+                           <p className="text-[16px] font-bold text-emerald-600 tabular-nums leading-none">৳{order.paidAmount || 0}</p>
                         </div>
                         <div>
-                           <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-0.5">বাকি</p>
-                           <p className="text-[14px] font-extrabold text-red-500">৳{order.dueAmount}</p>
+                           <p className="text-[11px] font-medium text-slate-500 mb-0.5">বাকি</p>
+                           <p className="text-[16px] font-bold text-rose-600 tabular-nums leading-none">৳{order.dueAmount}</p>
                         </div>
                       </>
                     )}
                  </div>
                  
                  <div className="flex items-center gap-2">
-                    <button onClick={() => setInvoiceOrder(order)} className="w-8 h-8 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center hover:bg-indigo-100 transition-colors" title="ইনভয়েস">
-                      <Printer size={14} />
+                    <button onClick={() => setInvoiceOrder(order)} className="w-9 h-9 rounded-xl bg-slate-50 border border-slate-100 text-slate-600 flex items-center justify-center hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-100 transition-all shadow-sm" title="ইনভয়েস">
+                      <Printer size={16} />
                     </button>
-                    <button onClick={() => setViewOrder(order)} className="w-8 h-8 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center hover:bg-blue-100 transition-colors">
-                      <Eye size={14} />
+                    <button onClick={() => setViewOrder(order)} className="w-9 h-9 rounded-xl bg-slate-50 border border-slate-100 text-slate-600 flex items-center justify-center hover:bg-blue-50 hover:text-blue-600 hover:border-blue-100 transition-all shadow-sm" title="বিস্তারিত">
+                      <Eye size={16} />
                     </button>
-                    <button onClick={() => setEditOrder(JSON.parse(JSON.stringify(order)))} className="w-8 h-8 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center hover:bg-emerald-100 transition-colors">
-                      <Pencil size={13} />
+                    <button onClick={() => setEditOrder(JSON.parse(JSON.stringify(order)))} className="w-9 h-9 rounded-xl bg-slate-50 border border-slate-100 text-slate-600 flex items-center justify-center hover:bg-emerald-50 hover:text-emerald-600 hover:border-emerald-100 transition-all shadow-sm" title="এডিট">
+                      <Pencil size={15} />
                     </button>
-                    <button onClick={() => deleteOrder(order._id)} className="w-8 h-8 rounded-full bg-red-50 text-red-600 flex items-center justify-center hover:bg-red-100 transition-colors">
-                      <Trash2 size={13} />
+                    <button onClick={() => deleteOrder(order._id)} className="w-9 h-9 rounded-xl bg-slate-50 border border-slate-100 text-slate-600 flex items-center justify-center hover:bg-rose-50 hover:text-rose-600 hover:border-rose-100 transition-all shadow-sm" title="ডিলিট">
+                      <Trash2 size={15} />
                     </button>
                  </div>
               </div>
-            </div>
+            </motion.div>
           ))}
         </div>
       );
@@ -1447,8 +1473,7 @@ export default function OrdersPage() {
       <AnimatePresence>
         {showForm && !showCatalog && (
           <motion.div
-            className="fixed inset-0 z-[90] flex flex-col"
-            style={{ background: "#fafafa" }}
+            className="fixed inset-0 z-[90] flex flex-col bg-slate-50/50"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -1460,31 +1485,24 @@ export default function OrdersPage() {
               animate={{ y: 0, opacity: 1 }}
               exit={{ y: 30, opacity: 0 }}
               transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-              className="flex flex-col h-full"
+              className="flex flex-col h-full w-full max-w-[1400px] mx-auto bg-white md:rounded-t-[32px] md:mt-12 md:shadow-[0_-8px_30px_-5px_rgba(0,0,0,0.1)] overflow-hidden border border-slate-200/60"
             >
               {/* Header */}
               <div
-                className="flex items-center gap-3 h-[60px] px-4 lg:px-6 shrink-0"
-                style={{
-                  background: "rgba(255,255,255,0.85)",
-                  backdropFilter: "saturate(180%) blur(20px)",
-                  WebkitBackdropFilter: "saturate(180%) blur(20px)",
-                  borderBottom: "1px solid #e5e7eb",
-                }}
+                className="flex items-center gap-4 h-[72px] px-4 lg:px-8 shrink-0 bg-white/80 backdrop-blur-xl border-b border-slate-200/60 sticky top-0 z-10"
               >
                 <button
                   type="button"
                   onClick={() => { setShowForm(false); resetOrderForm(); }}
-                  className="w-9 h-9 rounded-lg flex items-center justify-center cursor-pointer transition-colors hover:bg-gray-100"
-                  style={{ background: "#ffffff", border: "1px solid #e5e7eb", color: "#374151" }}
+                  className="w-10 h-10 rounded-xl flex items-center justify-center cursor-pointer transition-colors hover:bg-slate-100 bg-slate-50 border border-slate-200/60 text-slate-600"
                 >
-                  <ArrowLeft size={16} strokeWidth={2} />
+                  <ArrowLeft size={20} strokeWidth={2} />
                 </button>
                 <div className="flex-1 min-w-0">
-                  <h2 className="text-[16px] font-bold tracking-tight truncate" style={{ color: "#111827", letterSpacing: "-0.01em" }}>
+                  <h2 className="text-[18px] md:text-[20px] font-bold tracking-tight text-slate-900 truncate">
                     নতুন অর্ডার তৈরি করুন
                   </h2>
-                  <p className="text-[11px] font-medium" style={{ color: "#6b7280" }}>
+                  <p className="text-[12px] md:text-[13px] font-medium text-slate-500 mt-0.5">
                     {items.length > 0 ? `${items.length} টি পণ্য · ৳${totalAmount.toLocaleString("en-US")}` : "কাস্টমার ও পণ্য নির্বাচন করুন"}
                   </p>
                 </div>
@@ -1492,61 +1510,58 @@ export default function OrdersPage() {
                   type="button"
                   onClick={handleSubmit}
                   disabled={submitting || items.length === 0 || !customerName.trim()}
-                  className="hidden sm:flex items-center gap-2 h-10 px-5 rounded-lg text-[13px] font-semibold text-white cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed transition-all hover:shadow-sm"
-                  style={{ background: "#66a80f" }}
+                  className="hidden sm:flex items-center gap-2 h-11 px-6 rounded-xl text-[14px] font-semibold text-white cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-[0_4px_15px_-3px_rgba(16,185,129,0.3)] hover:shadow-[0_6px_20px_-3px_rgba(16,185,129,0.4)] bg-emerald-500 active:scale-95"
                 >
-                  <Check size={15} strokeWidth={2.5} />
+                  <Check size={18} strokeWidth={2.5} />
                   {submitting ? "সংরক্ষণ হচ্ছে..." : "অর্ডার সংরক্ষণ"}
                 </button>
               </div>
 
               {/* Scrollable content */}
-              <div className="flex-1 overflow-y-auto">
-                <form onSubmit={handleSubmit} className="max-w-3xl mx-auto p-4 lg:p-6 space-y-5">
+              <div className="flex-1 overflow-y-auto custom-scrollbar bg-slate-50/30">
+                <form onSubmit={handleSubmit} className="max-w-4xl mx-auto p-4 lg:p-8 space-y-6 pb-24 sm:pb-8">
                   {/* Customer Section */}
                   <motion.div
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.05, duration: 0.3 }}
-                    className="rounded-2xl p-5"
-                    style={{ background: "#ffffff", border: "1px solid #e5e7eb" }}
+                    className="rounded-[24px] p-6 sm:p-8 bg-white shadow-[0_2px_10px_-4px_rgba(0,0,0,0.04)] border border-slate-200/60"
                   >
-                    <div className="flex items-center gap-2 mb-4">
-                      <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: "rgba(102,168,15,0.1)" }}>
-                        <User size={15} strokeWidth={2.2} style={{ color: "#66a80f" }} />
+                    <div className="flex items-center gap-3 mb-6 pb-4 border-b border-slate-100">
+                      <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-indigo-50 border border-indigo-100">
+                        <User size={18} strokeWidth={2.2} className="text-indigo-600" />
                       </div>
-                      <h3 className="text-[14px] font-semibold" style={{ color: "#111827" }}>কাস্টমার</h3>
+                      <h3 className="text-[16px] font-bold text-slate-900">কাস্টমার তথ্য</h3>
                       {selectedCustomer && (
-                        <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full ml-auto" style={{ background: "#f0fdf4", color: "#16a34a" }}>
+                        <span className="text-[11px] font-bold px-3 py-1 rounded-full ml-auto bg-emerald-50 text-emerald-600 border border-emerald-100">
                           সেভড কাস্টমার
                         </span>
                       )}
                       {!selectedCustomer && customerName && (
-                        <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full ml-auto" style={{ background: "#fffbeb", color: "#d97706" }}>
+                        <span className="text-[11px] font-bold px-3 py-1 rounded-full ml-auto bg-amber-50 text-amber-600 border border-amber-100">
                           ইনস্ট্যান্ট
                         </span>
                       )}
                     </div>
 
                     {/* Customer search input */}
-                    <div className="relative mb-3">
-                      <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: "#9ca3af" }} />
+                    <div className="relative mb-5">
+                      <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
                       <input
                         type="text"
                         value={customerSearch}
                         onChange={(e) => { setCustomerSearch(e.target.value); setShowCustomerPicker(true); }}
                         onFocus={() => setShowCustomerPicker(true)}
                         placeholder="কাস্টমার খুঁজুন (নাম অথবা ফোন)"
-                        className="w-full h-10 pl-9 pr-3 rounded-lg text-[13px] font-medium outline-none"
-                        style={{ background: "#fafafa", color: "#111827", border: "1px solid #e5e7eb" }}
+                        className="w-full h-12 pl-11 pr-4 rounded-[14px] text-[14px] font-medium outline-none bg-slate-50 text-slate-900 border border-slate-200 focus:border-indigo-300 focus:ring-4 focus:ring-indigo-500/10 transition-all"
                       />
                       {selectedCustomer && (
                         <button
                           type="button"
                           onClick={() => { setSelectedCustomer(""); setCustomerName(""); setCustomerSearch(""); }}
-                          className="absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-lg flex items-center justify-center cursor-pointer hover:bg-gray-100"
+                          className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 rounded-lg flex items-center justify-center cursor-pointer hover:bg-slate-200 text-slate-500 transition-colors"
                         >
-                          <X size={13} style={{ color: "#6b7280" }} />
+                          <X size={16} />
                         </button>
                       )}
 
@@ -1558,8 +1573,7 @@ export default function OrdersPage() {
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: -6 }}
                             transition={{ duration: 0.15 }}
-                            className="absolute left-0 right-0 top-full mt-1.5 rounded-xl overflow-hidden z-20 max-h-72 overflow-y-auto"
-                            style={{ background: "#ffffff", border: "1px solid #e5e7eb", boxShadow: "0 8px 24px rgba(0,0,0,0.08)" }}
+                            className="absolute left-0 right-0 top-full mt-2 rounded-[16px] overflow-hidden z-20 max-h-72 overflow-y-auto bg-white border border-slate-200 shadow-[0_10px_40px_-10px_rgba(0,0,0,0.1)] custom-scrollbar"
                           >
                             {(() => {
                               const filtered = customers.filter((c) =>
@@ -1580,20 +1594,20 @@ export default function OrdersPage() {
                                       setShowCustomerPicker(false);
                                       setSaveAsNewCustomer(false);
                                     }}
-                                    className="w-full flex items-center gap-3 px-4 py-2.5 cursor-pointer transition-colors hover:bg-gray-50 text-left"
+                                    className="w-full flex items-center gap-4 px-5 py-3.5 cursor-pointer transition-colors hover:bg-slate-50 text-left border-b border-slate-50 last:border-0"
                                   >
-                                    <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 text-[12px] font-semibold" style={{ background: "#f3f4f6", color: "#111827" }}>
+                                    <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0 text-[14px] font-bold bg-slate-100 text-slate-700">
                                       {c.name[0]?.toUpperCase()}
                                     </div>
                                     <div className="flex-1 min-w-0">
-                                      <p className="text-[13px] font-semibold truncate" style={{ color: "#111827" }}>{c.name}</p>
-                                      <p className="text-[11px] font-medium" style={{ color: "#6b7280" }}>{c.phone}</p>
+                                      <p className="text-[14px] font-bold truncate text-slate-900">{c.name}</p>
+                                      <p className="text-[12px] font-medium text-slate-500 mt-0.5">{c.phone}</p>
                                     </div>
                                   </button>
                                 ))
                               ) : (
-                                <div className="p-4">
-                                  <div className="text-[12px] font-medium mb-3" style={{ color: "#6b7280" }}>
+                                <div className="p-5">
+                                  <div className="text-[13px] font-medium mb-4 text-slate-500 text-center">
                                     &ldquo;{customerSearch}&rdquo; খুঁজে পাওয়া যায়নি
                                   </div>
                                   <button
@@ -1606,11 +1620,10 @@ export default function OrdersPage() {
                                       setSaveAsNewCustomer(true);
                                       setShowCustomerPicker(false);
                                     }}
-                                    className="w-full h-10 rounded-lg text-[12px] font-semibold text-white cursor-pointer flex items-center justify-center gap-2 transition-all hover:shadow-sm"
-                                    style={{ background: "#66a80f" }}
+                                    className="w-full h-11 rounded-[12px] text-[13px] font-bold text-white cursor-pointer flex items-center justify-center gap-2 transition-all hover:shadow-md bg-indigo-500 hover:bg-indigo-600"
                                   >
-                                    <UserPlus size={14} strokeWidth={2.2} />
-                                    ইনস্ট্যান্ট কাস্টমার হিসেবে যোগ করুন
+                                    <UserPlus size={16} strokeWidth={2.2} />
+                                    নতুন কাস্টমার তৈরি করুন
                                   </button>
                                 </div>
                               );
@@ -1621,20 +1634,19 @@ export default function OrdersPage() {
                     </div>
 
                     {/* Customer name - always editable */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-[11px] font-semibold uppercase tracking-wider mb-1.5" style={{ color: "#6b7280" }}>নাম *</label>
+                        <label className="block text-[12px] font-bold text-slate-600 uppercase tracking-wider mb-2">নাম <span className="text-rose-500">*</span></label>
                         <input
                           value={customerName}
                           onChange={(e) => setCustomerName(e.target.value)}
                           placeholder="কাস্টমার নাম"
-                          className="w-full h-10 px-3 rounded-lg text-[13px] outline-none"
-                          style={{ background: "#fafafa", color: "#111827", border: "1px solid #e5e7eb" }}
+                          className="w-full h-11 px-4 rounded-[12px] text-[14px] outline-none bg-slate-50 text-slate-900 border border-slate-200 focus:border-indigo-300 focus:ring-4 focus:ring-indigo-500/10 transition-all"
                         />
                       </div>
                       <div>
-                        <label className="block text-[11px] font-semibold uppercase tracking-wider mb-1.5" style={{ color: "#6b7280" }}>
-                          মোবাইল {saveAsNewCustomer && "*"}
+                        <label className="block text-[12px] font-bold text-slate-600 uppercase tracking-wider mb-2">
+                          মোবাইল {saveAsNewCustomer && <span className="text-rose-500">*</span>}
                         </label>
                         <input
                           type="tel"
@@ -1642,38 +1654,39 @@ export default function OrdersPage() {
                           onChange={(e) => setCustomerPhone(e.target.value)}
                           placeholder="01XXXXXXXXX"
                           disabled={!!selectedCustomer}
-                          className="w-full h-10 px-3 rounded-lg text-[13px] outline-none disabled:opacity-60"
-                          style={{ background: "#fafafa", color: "#111827", border: "1px solid #e5e7eb" }}
+                          className="w-full h-11 px-4 rounded-[12px] text-[14px] outline-none bg-slate-50 text-slate-900 border border-slate-200 focus:border-indigo-300 focus:ring-4 focus:ring-indigo-500/10 transition-all disabled:opacity-50 disabled:bg-slate-100"
                         />
                       </div>
                     </div>
-                    <div className="mt-3">
-                      <label className="block text-[11px] font-semibold uppercase tracking-wider mb-1.5" style={{ color: "#6b7280" }}>ঠিকানা (ঐচ্ছিক)</label>
+                    <div className="mt-4">
+                      <label className="block text-[12px] font-bold text-slate-600 uppercase tracking-wider mb-2">ঠিকানা (ঐচ্ছিক)</label>
                       <input
                         value={customerAddressInput}
                         onChange={(e) => setCustomerAddressInput(e.target.value)}
                         placeholder="ঠিকানা"
                         disabled={!!selectedCustomer}
-                        className="w-full h-10 px-3 rounded-lg text-[13px] outline-none disabled:opacity-60"
-                        style={{ background: "#fafafa", color: "#111827", border: "1px solid #e5e7eb" }}
+                        className="w-full h-11 px-4 rounded-[12px] text-[14px] outline-none bg-slate-50 text-slate-900 border border-slate-200 focus:border-indigo-300 focus:ring-4 focus:ring-indigo-500/10 transition-all disabled:opacity-50 disabled:bg-slate-100"
                       />
                     </div>
 
                     {/* Instant customer save toggle */}
                     {!selectedCustomer && customerName && (
-                      <label className="flex items-start gap-2.5 mt-3 p-3 rounded-lg cursor-pointer transition-colors hover:bg-amber-50" style={{ background: "#fffbeb", border: "1px solid #fef3c7" }}>
-                        <input
-                          type="checkbox"
-                          checked={saveAsNewCustomer}
-                          onChange={(e) => setSaveAsNewCustomer(e.target.checked)}
-                          className="mt-0.5 w-4 h-4 cursor-pointer accent-amber-600"
-                        />
+                      <label className="flex items-start gap-3 mt-5 p-4 rounded-[14px] cursor-pointer transition-colors bg-indigo-50 hover:bg-indigo-100/50 border border-indigo-100">
+                        <div className="relative flex items-center justify-center w-5 h-5 mt-0.5">
+                          <input
+                            type="checkbox"
+                            checked={saveAsNewCustomer}
+                            onChange={(e) => setSaveAsNewCustomer(e.target.checked)}
+                            className="peer relative appearance-none w-5 h-5 border border-indigo-300 rounded-md bg-white checked:bg-indigo-500 checked:border-indigo-500 cursor-pointer transition-all"
+                          />
+                          <Check size={14} strokeWidth={3} className="text-white absolute pointer-events-none opacity-0 peer-checked:opacity-100 transition-opacity" />
+                        </div>
                         <div className="flex-1">
-                          <p className="text-[12px] font-semibold flex items-center gap-1.5" style={{ color: "#92400e" }}>
-                            <Sparkles size={12} strokeWidth={2.2} /> কাস্টমার লিস্টে সেভ করুন
+                          <p className="text-[14px] font-bold text-indigo-900 flex items-center gap-1.5">
+                            <Sparkles size={14} strokeWidth={2.2} className="text-indigo-600" /> কাস্টমার লিস্টে সেভ করুন
                           </p>
-                          <p className="text-[11px] font-medium mt-0.5" style={{ color: "#a16207" }}>
-                            পরবর্তী অর্ডারে সহজে খুঁজে পাবেন (মোবাইল লাগবে)
+                          <p className="text-[12px] font-medium text-indigo-700/80 mt-1">
+                            পরবর্তী অর্ডারে সহজে খুঁজে পাবেন (মোবাইল নম্বর দেওয়া বাধ্যতামূলক)
                           </p>
                         </div>
                       </label>
@@ -1685,78 +1698,73 @@ export default function OrdersPage() {
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.1, duration: 0.3 }}
-                    className="rounded-2xl p-5"
-                    style={{ background: "#ffffff", border: "1px solid #e5e7eb" }}
+                    className="rounded-[24px] p-6 sm:p-8 bg-white shadow-[0_2px_10px_-4px_rgba(0,0,0,0.04)] border border-slate-200/60"
                   >
-                    <div className="flex items-center gap-2 mb-4">
-                      <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: "rgba(102,168,15,0.1)" }}>
-                        <ShoppingBag size={15} strokeWidth={2.2} style={{ color: "#66a80f" }} />
+                    <div className="flex items-center gap-3 mb-6 pb-4 border-b border-slate-100">
+                      <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-emerald-50 border border-emerald-100">
+                        <ShoppingBag size={18} strokeWidth={2.2} className="text-emerald-600" />
                       </div>
-                      <h3 className="text-[14px] font-semibold" style={{ color: "#111827" }}>পণ্য</h3>
+                      <h3 className="text-[16px] font-bold text-slate-900">পণ্য তালিকা</h3>
                       {items.length > 0 && (
-                        <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full ml-auto" style={{ background: "#f0fdf4", color: "#16a34a" }}>
+                        <span className="text-[12px] font-bold px-3 py-1 rounded-full ml-auto bg-slate-900 text-white shadow-sm">
                           {items.length} টি · ৳{totalAmount.toLocaleString("en-US")}
                         </span>
                       )}
                     </div>
 
                     {/* Product action buttons */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-5">
                       <button
                         type="button"
                         onClick={() => { setCatalogTarget("new"); setShowCatalog(true); }}
-                        className="h-12 rounded-xl flex items-center justify-center gap-2 cursor-pointer transition-all hover:shadow-sm text-[13px] font-semibold"
-                        style={{ background: "#66a80f", color: "#ffffff" }}
+                        className="h-12 rounded-[14px] flex items-center justify-center gap-2 cursor-pointer transition-all hover:shadow-md text-[14px] font-bold bg-slate-900 text-white hover:bg-slate-800"
                       >
-                        <ShoppingBag size={15} strokeWidth={2.2} />
+                        <ShoppingBag size={16} strokeWidth={2.2} />
                         ক্যাটালগ থেকে বাছাই
                       </button>
                       <button
                         type="button"
                         onClick={() => { setCatalogTarget("new"); setShowManualProduct(true); }}
-                        className="h-12 rounded-xl flex items-center justify-center gap-2 cursor-pointer transition-all hover:shadow-sm text-[13px] font-semibold"
-                        style={{ background: "#ffffff", color: "#374151", border: "1px dashed #d1d5db" }}
+                        className="h-12 rounded-[14px] flex items-center justify-center gap-2 cursor-pointer transition-all text-[14px] font-bold bg-white text-slate-700 border-2 border-dashed border-slate-300 hover:border-slate-400 hover:bg-slate-50"
                       >
-                        <Edit3 size={14} strokeWidth={2.2} />
+                        <Edit3 size={16} strokeWidth={2.2} />
                         ম্যানুয়ালি পণ্য যোগ
                       </button>
                     </div>
 
                     {/* Selected items list */}
                     {items.length > 0 && (
-                      <div className="rounded-xl overflow-hidden mt-3" style={{ background: "#fafafa", border: "1px solid #e5e7eb" }}>
+                      <div className="rounded-[16px] overflow-hidden mt-4 border border-slate-200/60 bg-slate-50/50">
                         {items.map((item, idx) => (
                           <motion.div
                             key={idx}
                             initial={{ opacity: 0, x: -10 }}
                             animate={{ opacity: 1, x: 0 }}
-                            className="flex items-center gap-3 px-3.5 py-3"
-                            style={{ borderTop: idx > 0 ? "1px solid #f3f4f6" : "none" }}
+                            className="flex items-center gap-4 px-4 py-3.5 bg-white border-b border-slate-100 last:border-0 hover:bg-slate-50/80 transition-colors"
                           >
-                            <div className="w-10 h-10 rounded-lg overflow-hidden shrink-0 flex items-center justify-center" style={{ background: "#ffffff", border: "1px solid #e5e7eb" }}>
+                            <div className="w-12 h-12 rounded-xl overflow-hidden shrink-0 flex items-center justify-center bg-slate-50 border border-slate-100">
                               {item.image ? (
-                                <Image src={item.image} alt={item.productName} width={40} height={40} className="w-full h-full" style={{ objectFit: "contain" }} unoptimized />
+                                <Image src={item.image} alt={item.productName} width={48} height={48} className="w-full h-full object-contain p-1" unoptimized />
                               ) : (
-                                <Package size={16} style={{ color: "#9ca3af" }} strokeWidth={1.5} />
+                                <Package size={20} className="text-slate-300" strokeWidth={1.5} />
                               )}
                             </div>
                             <div className="flex-1 min-w-0">
-                              <p className="text-[13px] font-semibold truncate" style={{ color: "#111827" }}>{item.productName}</p>
-                              <p className="text-[11px] font-medium" style={{ color: "#6b7280" }}>
+                              <p className="text-[14px] font-bold text-slate-900 truncate">{item.productName}</p>
+                              <p className="text-[12px] font-medium text-slate-500 mt-0.5">
                                 {item.quantity} × ৳{item.unitPrice.toLocaleString("en-US")}
-                                {item.remark && <span className="ml-1">· {item.remark}</span>}
+                                {item.remark && <span className="ml-1.5 px-2 py-0.5 rounded-md bg-slate-100 text-slate-600 text-[10px]">· {item.remark}</span>}
                               </p>
                             </div>
-                            <p className="text-[14px] font-bold shrink-0" style={{ color: "#111827", fontVariantNumeric: "tabular-nums" }}>
+                            <p className="text-[15px] font-black text-slate-900 tabular-nums shrink-0">
                               ৳{item.total.toLocaleString("en-US")}
                             </p>
                             <button
                               type="button"
                               onClick={() => removeItem(idx)}
-                              className="w-7 h-7 rounded-lg flex items-center justify-center cursor-pointer shrink-0 transition-colors hover:bg-red-100"
-                              style={{ background: "#fef2f2", color: "#dc2626", border: "1px solid #fecaca" }}
+                              className="w-8 h-8 rounded-lg flex items-center justify-center cursor-pointer shrink-0 transition-colors bg-rose-50 hover:bg-rose-100 text-rose-500 border border-rose-100/50 ml-2"
                             >
-                              <X size={12} strokeWidth={2.2} />
+                              <X size={14} strokeWidth={2.5} />
                             </button>
                           </motion.div>
                         ))}
@@ -1769,67 +1777,68 @@ export default function OrdersPage() {
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.15, duration: 0.3 }}
-                    className="rounded-2xl p-5"
-                    style={{ background: "#ffffff", border: "1px solid #e5e7eb" }}
+                    className="rounded-[24px] p-6 sm:p-8 bg-white shadow-[0_2px_10px_-4px_rgba(0,0,0,0.04)] border border-slate-200/60"
                   >
-                    <div className="flex items-center gap-2 mb-4">
-                      <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: "rgba(102,168,15,0.1)" }}>
-                        <CreditCard size={15} strokeWidth={2.2} style={{ color: "#66a80f" }} />
+                    <div className="flex items-center gap-3 mb-6 pb-4 border-b border-slate-100">
+                      <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-blue-50 border border-blue-100">
+                        <CreditCard size={18} strokeWidth={2.2} className="text-blue-600" />
                       </div>
-                      <h3 className="text-[14px] font-semibold" style={{ color: "#111827" }}>পেমেন্ট</h3>
+                      <h3 className="text-[16px] font-bold text-slate-900">পেমেন্ট</h3>
                     </div>
 
-                    <div className="grid grid-cols-3 gap-3 mb-4">
-                      <div>
-                        <label className="block text-[10px] font-semibold uppercase tracking-wider mb-1.5" style={{ color: "#9ca3af" }}>মোট</label>
-                        <div className="h-11 px-3 flex items-center rounded-lg text-[14px] font-bold" style={{ background: "#fafafa", color: "#111827", border: "1px solid #e5e7eb", fontVariantNumeric: "tabular-nums" }}>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-5">
+                      <div className="bg-slate-50 p-4 rounded-[16px] border border-slate-100">
+                        <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2">মোট বিল</label>
+                        <div className="text-[20px] font-black text-slate-900 tabular-nums">
                           ৳{totalAmount.toLocaleString("en-US")}
                         </div>
                       </div>
-                      <div>
-                        <label className="block text-[10px] font-semibold uppercase tracking-wider mb-1.5" style={{ color: "#9ca3af" }}>পরিশোধ</label>
-                        <input
-                          type="number"
-                          value={paidAmount}
-                          onChange={(e) => setPaidAmount(Number(e.target.value) || 0)}
-                          onFocus={(e) => e.target.select()}
-                          className="w-full h-11 px-3 rounded-lg text-[14px] font-bold outline-none"
-                          min={0}
-                          style={{ background: "#fafafa", color: "#16a34a", border: "1px solid #e5e7eb", fontVariantNumeric: "tabular-nums" }}
-                        />
+                      <div className="relative">
+                        <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2">পরিশোধ <span className="text-emerald-500">*</span></label>
+                        <div className="relative">
+                          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold">৳</span>
+                          <input
+                            type="number"
+                            value={paidAmount}
+                            onChange={(e) => setPaidAmount(Number(e.target.value) || 0)}
+                            onFocus={(e) => e.target.select()}
+                            className="w-full h-14 pl-8 pr-4 rounded-[16px] text-[18px] font-black outline-none bg-emerald-50/50 text-emerald-700 border border-emerald-200 focus:border-emerald-400 focus:ring-4 focus:ring-emerald-500/10 transition-all tabular-nums"
+                            min={0}
+                          />
+                        </div>
                       </div>
-                      <div>
-                        <label className="block text-[10px] font-semibold uppercase tracking-wider mb-1.5" style={{ color: "#9ca3af" }}>বাকি</label>
-                        <div className="h-11 px-3 flex items-center rounded-lg text-[14px] font-bold"
-                          style={{ background: dueAmount > 0 ? "#fef2f2" : "#fafafa", color: dueAmount > 0 ? "#dc2626" : "#111827", border: "1px solid " + (dueAmount > 0 ? "#fecaca" : "#e5e7eb"), fontVariantNumeric: "tabular-nums" }}>
+                      <div className={`p-4 rounded-[16px] border ${dueAmount > 0 ? "bg-rose-50 border-rose-200" : "bg-slate-50 border-slate-100"}`}>
+                        <label className={`block text-[11px] font-bold uppercase tracking-wider mb-2 ${dueAmount > 0 ? "text-rose-500" : "text-slate-500"}`}>বাকি</label>
+                        <div className={`text-[20px] font-black tabular-nums ${dueAmount > 0 ? "text-rose-600" : "text-slate-900"}`}>
                           ৳{dueAmount.toLocaleString("en-US")}
                         </div>
                       </div>
                     </div>
 
                     <div>
-                      <label className="block text-[11px] font-semibold uppercase tracking-wider mb-1.5" style={{ color: "#6b7280" }}>নোট (ঐচ্ছিক)</label>
+                      <label className="block text-[12px] font-bold text-slate-600 uppercase tracking-wider mb-2">অতিরিক্ত নোট (ঐচ্ছিক)</label>
                       <input
                         value={note}
                         onChange={(e) => setNote(e.target.value)}
-                        placeholder="অতিরিক্ত তথ্য"
-                        className="w-full h-10 px-3 rounded-lg text-[13px] outline-none"
-                        style={{ background: "#fafafa", color: "#111827", border: "1px solid #e5e7eb" }}
+                        placeholder="অর্ডারের বিবরণ বা কোনো নোট"
+                        className="w-full h-11 px-4 rounded-[12px] text-[14px] outline-none bg-slate-50 text-slate-900 border border-slate-200 focus:border-indigo-300 focus:ring-4 focus:ring-indigo-500/10 transition-all"
                       />
                     </div>
                   </motion.div>
-
-                  {/* Mobile submit button */}
-                  <button
-                    type="submit"
-                    disabled={submitting || items.length === 0 || !customerName.trim()}
-                    className="sm:hidden w-full h-12 rounded-xl text-[14px] font-semibold text-white cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed transition-all hover:shadow-sm flex items-center justify-center gap-2"
-                    style={{ background: "#66a80f" }}
-                  >
-                    <Check size={16} strokeWidth={2.5} />
-                    {submitting ? "সংরক্ষণ হচ্ছে..." : "অর্ডার সংরক্ষণ"}
-                  </button>
                 </form>
+              </div>
+              
+              {/* Mobile fixed bottom bar for submit */}
+              <div className="sm:hidden fixed bottom-0 left-0 right-0 p-4 bg-white/90 backdrop-blur-md border-t border-slate-200/60 z-20 pb-safe">
+                <button
+                  type="button"
+                  onClick={handleSubmit}
+                  disabled={submitting || items.length === 0 || !customerName.trim()}
+                  className="w-full h-14 rounded-full text-[15px] font-bold text-white cursor-pointer disabled:opacity-50 disabled:scale-100 transition-all hover:shadow-lg flex items-center justify-center gap-2 bg-emerald-500 active:scale-[0.98]"
+                >
+                  <Check size={20} strokeWidth={2.5} />
+                  {submitting ? "সংরক্ষণ হচ্ছে..." : "অর্ডার নিশ্চিত করুন"}
+                </button>
               </div>
             </motion.div>
           </motion.div>
