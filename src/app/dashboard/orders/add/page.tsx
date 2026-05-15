@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
-import { Plus, Package, Tag, X, ShoppingBag, ArrowLeft, Check, User, Search, Edit3, Sparkles, UserPlus, CreditCard } from "lucide-react";
+import { Plus, Package, Tag, X, ShoppingBag, ArrowLeft, Check, User, Search, Edit3, Sparkles, UserPlus, CreditCard, ShoppingCart } from "lucide-react";
 import Image from "next/image";
 import toast from "react-hot-toast";
 import { motion, AnimatePresence } from "framer-motion";
