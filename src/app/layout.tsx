@@ -18,6 +18,19 @@ const banglaFont = localFont({
   fallback: ["system-ui", "arial"],
 });
 
+const englishFont = localFont({
+  src: "../fonts/BL_Shahid.ttf",
+  variable: "--font-english",
+  display: "swap",
+  preload: true,
+  declarations: [
+    {
+      prop: "unicode-range",
+      value: "U+0000-007F, U+0080-00FF, U+0100-017F, U+0180-024F, U+0259, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF",
+    },
+  ],
+});
+
 export const metadata: Metadata = {
   title: {
     default: "ভ্যারাইটিজ কসমেটিক্স",
@@ -49,7 +62,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="bn" className={`${banglaFont.variable} ${inter.variable}`}>
+    <html lang="bn" className={`${englishFont.variable} ${banglaFont.variable} ${inter.variable}`}>
       <body className="antialiased">
         <Toaster
           position="top-center"

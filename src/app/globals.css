@@ -2,7 +2,7 @@
 @source "../../src";
 
 @theme {
-  --font-sans: var(--font-bangla), var(--font-inter), system-ui, sans-serif;
+  --font-sans: var(--font-english), var(--font-bangla), var(--font-inter), system-ui, sans-serif;
 }
 
 :root {
@@ -34,7 +34,7 @@
   html,
   body {
     height: 100%;
-    font-family: var(--font-bangla), var(--font-inter), system-ui, sans-serif;
+    font-family: var(--font-english), var(--font-bangla), var(--font-inter), system-ui, sans-serif;
     background: var(--bg-primary);
     color: var(--text-primary);
     -webkit-font-smoothing: antialiased;
