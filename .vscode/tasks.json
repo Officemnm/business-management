@@ -30,6 +30,16 @@
 			"label": "fix-dues",
 			"type": "shell",
 			"command": "node fix-dues.cjs; rm fix-dues.cjs"
+		},
+		{
+			"label": "fix-products",
+			"type": "shell",
+			"command": "node fix-products-page.cjs"
+		},
+		{
+			"label": "fix orders js",
+			"type": "shell",
+			"command": "node fix-orders.cjs"
 		}
 	]
 }
