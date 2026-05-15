@@ -1968,6 +1968,4 @@ export default function OrdersPage() {
       </AnimatedModal>
     </div>
   );
-}git add .
-git commit -m "Fix: add missing ShoppingCart import"
-git push
+}
