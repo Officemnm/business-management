@@ -100,76 +100,65 @@ export default function AddProductPage() {
     }
   };
 
-  const inputStyle = "w-full h-10 px-3 rounded-lg text-[13px] outline-none transition-colors";
   const isProcessing = submitting || uploading;
-  const labelStyle = "block text-[11px] font-semibold uppercase tracking-wider mb-1.5";
-  const inputStyleObj = { background: "#fafafa", color: "#111827", border: "1px solid #e5e7eb" };
 
   return (
-    <div className="pb-8 space-y-5 max-w-3xl">
+    <div className="pb-10 space-y-6 max-w-4xl mx-auto">
       {/* Page Header */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-3 mb-2">
         <Link
           href="/dashboard/products"
-          className="w-10 h-10 rounded-lg flex items-center justify-center cursor-pointer transition-colors hover:bg-gray-50"
-          style={{ background: "#ffffff", color: "#374151", border: "1px solid #e5e7eb" }}
+          className="w-11 h-11 rounded-[14px] bg-white border border-slate-200 flex items-center justify-center text-slate-500 hover:bg-slate-50 hover:text-slate-900 hover:border-slate-300 transition-all shadow-sm active:scale-95"
         >
-          <ArrowLeft size={16} strokeWidth={2} />
+          <ArrowLeft size={20} strokeWidth={2} />
         </Link>
         <div>
-          <h1 className="text-[24px] sm:text-[26px] font-bold tracking-tight" style={{ color: "#111827", letterSpacing: "-0.02em" }}>নতুন প্রডাক্ট</h1>
-          <p className="text-[12px] font-medium mt-0.5" style={{ color: "#6b7280" }}>নতুন প্রডাক্ট যোগ করুন</p>
+          <h1 className="text-[26px] font-bold text-slate-900 tracking-tight leading-tight">নতুন প্রডাক্ট</h1>
+          <p className="text-[13.5px] font-medium text-slate-500">আপনার শপে নতুন প্রডাক্ট যোগ করুন</p>
         </div>
       </div>
 
       {/* Form Card */}
-      <div className="rounded-2xl p-5 sm:p-6" style={{ background: "#ffffff", border: "1px solid #e5e7eb" }}>
-        <form onSubmit={handleSubmit} className="space-y-5">
+      <div className="bg-white rounded-[20px] p-6 sm:p-8 shadow-sm border border-slate-200/60 relative overflow-hidden">
+        <form onSubmit={handleSubmit} className="space-y-6">
           {/* Image upload */}
           <div>
-            <label className={labelStyle} style={{ color: "#6b7280" }}>প্রডাক্ট ছবি</label>
+            <label className="block text-[12px] font-bold text-slate-600 uppercase tracking-wider mb-3">প্রডাক্ট ছবি</label>
             {imagePreview ? (
-              <div className="relative inline-block">
-                <div
-                  className="rounded-xl overflow-hidden"
-                  style={{ border: "1px solid #e5e7eb", maxWidth: "220px" }}
-                >
+              <div className="relative inline-block group">
+                <div className="rounded-[16px] overflow-hidden border-2 border-indigo-100 shadow-sm transition-all" style={{ maxWidth: "240px" }}>
                   <Image
                     src={imagePreview}
                     alt="প্রিভিউ"
-                    width={220}
-                    height={220}
-                    className="w-full h-auto"
-                    style={{ objectFit: "contain" }}
+                    width={240}
+                    height={240}
+                    className="w-full h-auto aspect-square object-contain bg-slate-50 group-hover:scale-105 transition-transform duration-300"
                   />
                 </div>
                 <button
                   type="button"
                   onClick={removeImage}
-                  className="absolute -top-2 -right-2 w-7 h-7 rounded-full flex items-center justify-center cursor-pointer shadow-sm"
-                  style={{ background: "#dc2626", color: "#fff" }}
+                  className="absolute -top-3 -right-3 w-8 h-8 rounded-full flex items-center justify-center bg-white border border-rose-100 text-rose-500 hover:bg-rose-500 hover:text-white hover:border-rose-500 cursor-pointer shadow-md transition-colors z-10"
                 >
-                  <X size={13} strokeWidth={2.5} />
+                  <X size={15} strokeWidth={2.5} />
                 </button>
               </div>
             ) : (
               <div
                 onClick={() => fileRef.current?.click()}
-                className="flex flex-col items-center justify-center gap-2 py-10 rounded-xl cursor-pointer transition-colors hover:bg-gray-50"
-                style={{
-                  background: "#fafafa",
-                  border: "2px dashed #e5e7eb",
-                }}
+                className="flex flex-col items-center justify-center gap-3 py-10 rounded-[16px] cursor-pointer transition-colors bg-slate-50/50 hover:bg-indigo-50/50 border-2 border-dashed border-slate-200 hover:border-indigo-300 group"
               >
-                <div className="w-12 h-12 rounded-full flex items-center justify-center" style={{ background: "#ffffff", border: "1px solid #e5e7eb" }}>
-                  <ImageIcon size={20} style={{ color: "#6b7280" }} strokeWidth={1.8} />
+                <div className="w-14 h-14 rounded-2xl flex items-center justify-center bg-white border border-slate-200 shadow-sm group-hover:border-indigo-200 group-hover:text-indigo-600 transition-colors">
+                  <ImageIcon size={24} className="text-slate-400 group-hover:text-indigo-500 transition-colors" strokeWidth={1.8} />
                 </div>
-                <p className="text-[13px] font-semibold" style={{ color: "#374151" }}>
-                  ছবি আপলোড করতে ক্লিক করুন
-                </p>
-                <p className="text-[11px] font-medium" style={{ color: "#9ca3af" }}>
-                  JPG, PNG, WEBP সাপোর্টেড
-                </p>
+                <div className="text-center">
+                  <p className="text-[14px] font-bold text-slate-700 group-hover:text-indigo-700 mb-0.5 transition-colors">
+                    ছবি আপলোড করতে ক্লিক করুন
+                  </p>
+                  <p className="text-[12px] font-medium text-slate-400">
+                    JPG, PNG, WEBP সাপোর্টেড
+                  </p>
+                </div>
               </div>
             )}
             <input
@@ -183,108 +172,108 @@ export default function AddProductPage() {
 
           {/* Name */}
           <div>
-            <label className={labelStyle} style={{ color: "#6b7280" }}>প্রডাক্ট নাম *</label>
+            <label className="block text-[12px] font-bold text-slate-600 uppercase tracking-wider mb-2">প্রডাক্ট নাম <span className="text-rose-500">*</span></label>
             <input
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="প্রডাক্ট নাম"
-              className={inputStyle}
-              style={inputStyleObj}
+              placeholder="প্রডাক্টের নাম লিখুন"
+              className="w-full h-11 px-4 rounded-[12px] bg-slate-50 border border-slate-200 text-[14.5px] text-slate-900 outline-none focus:bg-white focus:border-indigo-400 focus:ring-4 focus:ring-indigo-50 transition-all placeholder:text-slate-400"
             />
           </div>
 
           {/* Category & Unit */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             <div>
-              <label className={labelStyle} style={{ color: "#6b7280" }}>ক্যাটেগরি</label>
+              <label className="block text-[12px] font-bold text-slate-600 uppercase tracking-wider mb-2">ক্যাটেগরি</label>
               <input
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
-                placeholder="ক্যাটেগরি"
-                className={inputStyle}
-                style={inputStyleObj}
+                placeholder="ক্যাটেগরি লিখুন"
+                className="w-full h-11 px-4 rounded-[12px] bg-slate-50 border border-slate-200 text-[14.5px] text-slate-900 outline-none focus:bg-white focus:border-indigo-400 focus:ring-4 focus:ring-indigo-50 transition-all placeholder:text-slate-400"
               />
             </div>
             <div>
-              <label className={labelStyle} style={{ color: "#6b7280" }}>একক</label>
-              <AnimatedDropdown
-                options={[
-                  { value: "পিস", label: "পিস" },
-                  { value: "কেজি", label: "কেজি" },
-                  { value: "লিটার", label: "লিটার" },
-                  { value: "প্যাকেট", label: "প্যাকেট" },
-                  { value: "বক্স", label: "বক্স" },
-                ]}
-                value={unit}
-                onChange={setUnit}
-                className="h-10"
-              />
+              <label className="block text-[12px] font-bold text-slate-600 uppercase tracking-wider mb-2">একক</label>
+              <div className="relative">
+                <AnimatedDropdown
+                  options={[
+                    { value: "পিস", label: "পিস" },
+                    { value: "কেজি", label: "কেজি" },
+                    { value: "লিটার", label: "লিটার" },
+                    { value: "প্যাকেট", label: "প্যাকেট" },
+                    { value: "বক্স", label: "বক্স" },
+                  ]}
+                  value={unit}
+                  onChange={setUnit}
+                  className="h-11 border-slate-200"
+                />
+              </div>
             </div>
           </div>
 
           {/* Prices & Stock */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
             <div>
-              <label className={labelStyle} style={{ color: "#6b7280" }}>ক্রয় মূল্য</label>
-              <input
-                type="number"
-                value={buyPrice}
-                onChange={(e) => setBuyPrice(e.target.value)}
-                placeholder="০"
-                className={inputStyle}
-                style={inputStyleObj}
-              />
+              <label className="block text-[12px] font-bold text-slate-600 uppercase tracking-wider mb-2">ক্রয় মূল্য</label>
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-bold">৳</span>
+                <input
+                  type="number"
+                  value={buyPrice}
+                  onChange={(e) => setBuyPrice(e.target.value)}
+                  placeholder="০"
+                  className="w-full h-11 pl-8 pr-4 rounded-[12px] bg-slate-50 border border-slate-200 text-[14.5px] text-slate-900 outline-none focus:bg-white focus:border-indigo-400 focus:ring-4 focus:ring-indigo-50 transition-all placeholder:text-slate-400"
+                />
+              </div>
             </div>
             <div>
-              <label className={labelStyle} style={{ color: "#6b7280" }}>বিক্রয় মূল্য *</label>
-              <input
-                type="number"
-                value={sellPrice}
-                onChange={(e) => setSellPrice(e.target.value)}
-                placeholder="০"
-                className={inputStyle}
-                style={inputStyleObj}
-              />
+              <label className="block text-[12px] font-bold text-slate-600 uppercase tracking-wider mb-2">বিক্রয় মূল্য <span className="text-rose-500">*</span></label>
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-bold">৳</span>
+                <input
+                  type="number"
+                  value={sellPrice}
+                  onChange={(e) => setSellPrice(e.target.value)}
+                  placeholder="০"
+                  className="w-full h-11 pl-8 pr-4 rounded-[12px] bg-slate-50 border border-slate-200 text-[14.5px] font-bold text-slate-900 outline-none focus:bg-white focus:border-indigo-400 focus:ring-4 focus:ring-indigo-50 transition-all placeholder:text-slate-400/70 focus:text-indigo-700"
+                />
+              </div>
             </div>
             <div>
-              <label className={labelStyle} style={{ color: "#6b7280" }}>স্টক</label>
+              <label className="block text-[12px] font-bold text-slate-600 uppercase tracking-wider mb-2">স্টক</label>
               <input
                 type="number"
                 value={stock}
                 onChange={(e) => setStock(e.target.value)}
-                placeholder="০"
-                className={inputStyle}
-                style={inputStyleObj}
+                placeholder="পরিমাণ লিখুন"
+                className="w-full h-11 px-4 rounded-[12px] bg-slate-50 border border-slate-200 text-[14.5px] text-slate-900 outline-none focus:bg-white focus:border-indigo-400 focus:ring-4 focus:ring-indigo-50 transition-all placeholder:text-slate-400"
               />
             </div>
           </div>
 
           {/* Description */}
           <div>
-            <label className={labelStyle} style={{ color: "#6b7280" }}>বিবরণ</label>
+            <label className="block text-[12px] font-bold text-slate-600 uppercase tracking-wider mb-2">বিবরণ (ঐচ্ছিক)</label>
             <input
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              placeholder="বিবরণ (ঐচ্ছিক)"
-              className={inputStyle}
-              style={inputStyleObj}
+              placeholder="পণ্য সম্পর্কে বিস্তারিত"
+              className="w-full h-11 px-4 rounded-[12px] bg-slate-50 border border-slate-200 text-[14.5px] text-slate-900 outline-none focus:bg-white focus:border-indigo-400 focus:ring-4 focus:ring-indigo-50 transition-all placeholder:text-slate-400"
             />
           </div>
 
           {/* Actions */}
-          <div className="flex gap-2 pt-2" style={{ borderTop: "1px solid #f3f4f6" }}>
+          <div className="flex justify-end gap-3 pt-6 mt-6 border-t border-slate-100">
             <Link
               href="/dashboard/products"
-              className="h-10 px-5 rounded-lg text-[13px] font-semibold flex items-center cursor-pointer transition-colors hover:bg-gray-50"
-              style={{ background: "#ffffff", color: "#374151", border: "1px solid #e5e7eb", marginTop: "1rem" }}
+              className="h-11 px-6 rounded-[12px] text-[13.5px] font-bold text-slate-600 bg-white border border-slate-200 hover:bg-slate-50 transition-colors flex items-center"
             >
               বাতিল
             </Link>
             <button
               type="submit"
               disabled={isProcessing}
-              className="h-10 px-6 rounded-lg text-[13px] font-semibold text-white cursor-pointer disabled:opacity-50 flex items-center gap-2 transition-all hover:shadow-sm"
-              style={{ background: "#66a80f", marginTop: "1rem" }}
+              className="h-11 px-8 rounded-[12px] text-[13.5px] font-bold text-white bg-indigo-600 hover:bg-indigo-700 shadow-sm shadow-indigo-200 disabled:opacity-50 disabled:hover:bg-indigo-600 transition-all active:scale-[0.98] flex items-center gap-2"
             >
               {isProcessing ? (
                 <>
@@ -293,8 +282,8 @@ export default function AddProductPage() {
                 </>
               ) : (
                 <>
-                  <Upload size={16} />
-                  প্রডাক্ট সংরক্ষণ
+                  <Upload size={16} strokeWidth={2.5} />
+                  প্রডাক্ট সংরক্ষণ করুন
                 </>
               )}
             </button>
