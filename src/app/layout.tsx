@@ -11,7 +11,7 @@ const inter = Inter({
 });
 
 const banglaFont = localFont({
-  src: "../fonts/BL_Shahid.ttf",
+  src: "../fonts/kalpurush.ttf",
   variable: "--font-bangla",
   display: "swap",
   preload: true,
