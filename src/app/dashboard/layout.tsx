@@ -225,7 +225,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
         {/* Scrollable Content */}
         <div className="flex-1 overflow-y-auto custom-scrollbar relative bg-slate-50/50">
-           <div className="p-5 sm:p-8 lg:p-10 max-w-[1600px] mx-auto relative z-10 min-h-full">
+           <div className="p-5 sm:p-8 lg:p-10 max-w-[1600px] mx-auto min-h-full">
              <AnimatePresence mode="wait">
                <motion.div
                  key={pathname}
