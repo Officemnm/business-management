@@ -64,6 +64,7 @@ export default function OrdersPage() {
   const [saving, setSaving] = useState(false);
   const [showSummary, setShowSummary] = useState(false);
   const [summarySelection, setSummarySelection] = useState<string[]>([]);
+  const [deleteConfirmation, setDeleteConfirmation] = useState<string | null>(null);
 
   // Delivery action state
   const [deliveryAction, setDeliveryAction] = useState<"none" | "complete" | "not_delivered">("none");
@@ -137,14 +138,15 @@ export default function OrdersPage() {
 
   useEffect(() => { loadData(); }, []);
 
-  const deleteOrder = async (id: string) => {
-    if (!confirm("এই অর্ডারটি স্থায়ীভাবে মুছে ফেলতে চান?")) return;
+  const confirmDeleteOrder = async () => {
+    if (!deleteConfirmation) return;
     try {
-      const res = await fetch(`/api/dashboard/orders/${id}`, { method: "DELETE" });
+      const res = await fetch(`/api/dashboard/orders/${deleteConfirmation}`, { method: "DELETE" });
       if (!res.ok) throw new Error();
       toast.success("অর্ডার মুছে ফেলা হয়েছে");
       fetchOrders(filterDate);
     } catch { toast.error("মুছতে ব্যর্থ হয়েছে"); }
+    finally { setDeleteConfirmation(null); }
   };
 
   const saveEdit = async () => {
@@ -1461,17 +1463,17 @@ export default function OrdersPage() {
                  </div>
                  
                  <div className="flex items-center gap-2">
-                    <button onClick={() => setInvoiceOrder(order)} className="w-9 h-9 rounded-xl bg-slate-50 border border-slate-100 text-slate-600 flex items-center justify-center hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-100 transition-all shadow-sm" title="ইনভয়েস">
-                      <Printer size={16} />
+                    <button onClick={() => setInvoiceOrder(order)} className="w-10 h-10 rounded-[14px] bg-white border border-slate-200/80 text-slate-500 flex items-center justify-center hover:bg-slate-50 hover:text-indigo-600 hover:border-indigo-200 hover:shadow-[0_4px_12px_-4px_rgba(99,102,241,0.2)] transition-all shadow-sm group" title="ইনভয়েস">
+                      <Printer size={16} className="group-hover:scale-110 transition-transform" />
                     </button>
-                    <button onClick={() => setViewOrder(order)} className="w-9 h-9 rounded-xl bg-slate-50 border border-slate-100 text-slate-600 flex items-center justify-center hover:bg-blue-50 hover:text-blue-600 hover:border-blue-100 transition-all shadow-sm" title="বিস্তারিত">
-                      <Eye size={16} />
+                    <button onClick={() => setViewOrder(order)} className="w-10 h-10 rounded-[14px] bg-white border border-slate-200/80 text-slate-500 flex items-center justify-center hover:bg-slate-50 hover:text-blue-600 hover:border-blue-200 hover:shadow-[0_4px_12px_-4px_rgba(59,130,246,0.2)] transition-all shadow-sm group" title="বিস্তারিত">
+                      <Eye size={16} className="group-hover:scale-110 transition-transform" />
                     </button>
-                    <button onClick={() => setEditOrder(JSON.parse(JSON.stringify(order)))} className="w-9 h-9 rounded-xl bg-slate-50 border border-slate-100 text-slate-600 flex items-center justify-center hover:bg-emerald-50 hover:text-emerald-600 hover:border-emerald-100 transition-all shadow-sm" title="এডিট">
-                      <Pencil size={15} />
+                    <button onClick={() => setEditOrder(JSON.parse(JSON.stringify(order)))} className="w-10 h-10 rounded-[14px] bg-white border border-slate-200/80 text-slate-500 flex items-center justify-center hover:bg-slate-50 hover:text-emerald-600 hover:border-emerald-200 hover:shadow-[0_4px_12px_-4px_rgba(16,185,129,0.2)] transition-all shadow-sm group" title="এডিট">
+                      <Pencil size={15} className="group-hover:scale-110 transition-transform" />
                     </button>
-                    <button onClick={() => deleteOrder(order._id)} className="w-9 h-9 rounded-xl bg-slate-50 border border-slate-100 text-slate-600 flex items-center justify-center hover:bg-rose-50 hover:text-rose-600 hover:border-rose-100 transition-all shadow-sm" title="ডিলিট">
-                      <Trash2 size={15} />
+                    <button onClick={() => setDeleteConfirmation(order._id)} className="w-10 h-10 rounded-[14px] bg-white border border-slate-200/80 text-slate-500 flex items-center justify-center hover:bg-slate-50 hover:text-rose-600 hover:border-rose-200 hover:shadow-[0_4px_12px_-4px_rgba(244,63,94,0.2)] transition-all shadow-sm group" title="ডিলিট">
+                      <Trash2 size={15} className="group-hover:scale-110 transition-transform" />
                     </button>
                  </div>
               </div>
@@ -1485,6 +1487,38 @@ export default function OrdersPage() {
       {renderEditModal()}
       {renderSummaryModal()}
       {renderInvoiceModal()}
+
+      {/* ===================== DELETE CONFIRMATION MODAL ===================== */}
+      <AnimatedModal
+        open={!!deleteConfirmation}
+        onClose={() => setDeleteConfirmation(null)}
+        title=""
+        maxWidth="max-w-sm"
+      >
+        <div className="flex flex-col items-center justify-center pt-4 pb-2 px-2 text-center">
+          <div className="w-16 h-16 rounded-full bg-rose-50 border-4 border-rose-100 flex items-center justify-center mb-5 shrink-0">
+            <Trash2 size={24} className="text-rose-500" strokeWidth={2} />
+          </div>
+          <h3 className="text-[18px] font-black text-slate-900 mb-2">অর্ডার ডিলিট</h3>
+          <p className="text-[14px] font-medium text-slate-500 mb-8 leading-relaxed max-w-[260px]">
+            আপনি কি নিশ্চিত যে এই অর্ডারটি রিমুভ করতে চান? এটি একবার ডিলিট করলে আর ফিরে পাওয়া যাবে না।
+          </p>
+          <div className="flex w-full gap-3">
+            <button
+              onClick={() => setDeleteConfirmation(null)}
+              className="flex-1 h-12 rounded-[14px] text-[14px] font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors shadow-sm"
+            >
+              বাতিল
+            </button>
+            <button
+              onClick={confirmDeleteOrder}
+              className="flex-1 h-12 rounded-[14px] text-[14px] font-bold text-white bg-rose-500 hover:bg-rose-600 shadow-[0_4px_15px_-3px_rgba(244,63,94,0.3)] hover:shadow-[0_6px_20px_-3px_rgba(244,63,94,0.4)] transition-all active:scale-95 flex items-center justify-center gap-2"
+            >
+              ডিলিট করুন
+            </button>
+          </div>
+        </div>
+      </AnimatedModal>
 
       {/* ===================== NEW ORDER FULL-SCREEN ANIMATED PANEL ===================== */}
       <AnimatePresence>
