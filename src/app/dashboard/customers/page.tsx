@@ -287,16 +287,16 @@ export default function CustomersPage() {
                 {/* Actions */}
                 <div className="flex items-center gap-2 shrink-0">
                   <Link href={`/dashboard/customers/${c._id}`}
-                    className="w-9 h-9 sm:w-10 sm:h-10 rounded-[10px] sm:rounded-[12px] bg-slate-50 border border-slate-200 text-slate-500 flex items-center justify-center hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200 transition-all shadow-sm group" title="বিস্তারিত">
-                    <Eye size={14} className="sm:w-5 sm:h-5 group-hover:scale-110 transition-transform" />
+                    className="w-10 h-10 rounded-[12px] bg-slate-50 border border-slate-200 text-slate-500 flex items-center justify-center hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200 transition-all shadow-sm group" title="বিস্তারিত">
+                    <Eye size={18} className="group-hover:scale-110 transition-transform" />
                   </Link>
                   <button onClick={() => openEdit(c)}
-                    className="w-9 h-9 sm:w-10 sm:h-10 rounded-[10px] sm:rounded-[12px] bg-slate-50 border border-slate-200 text-slate-500 flex items-center justify-center hover:bg-emerald-50 hover:text-emerald-600 hover:border-emerald-200 transition-all shadow-sm group" title="সম্পাদনা">
-                    <Pencil size={14} className="sm:w-5 sm:h-5 group-hover:scale-110 transition-transform" />
+                    className="w-10 h-10 rounded-[12px] bg-slate-50 border border-slate-200 text-slate-500 flex items-center justify-center hover:bg-emerald-50 hover:text-emerald-600 hover:border-emerald-200 transition-all shadow-sm group" title="সম্পাদনা">
+                    <Pencil size={16} className="group-hover:scale-110 transition-transform" />
                   </button>
                   <button onClick={() => setDeleteConfirmation(c._id)}
-                    className="w-9 h-9 sm:w-10 sm:h-10 rounded-[10px] sm:rounded-[12px] bg-slate-50 border border-slate-200 text-slate-500 flex items-center justify-center hover:bg-rose-50 hover:text-rose-600 hover:border-rose-200 transition-all shadow-sm group" title="মুছে ফেলুন">
-                    <Trash2 size={14} className="sm:w-5 sm:h-5 group-hover:scale-110 transition-transform" />
+                    className="w-10 h-10 rounded-[12px] bg-slate-50 border border-slate-200 text-slate-500 flex items-center justify-center hover:bg-rose-50 hover:text-rose-600 hover:border-rose-200 transition-all shadow-sm group" title="মুছে ফেলুন">
+                    <Trash2 size={16} className="group-hover:scale-110 transition-transform" />
                   </button>
                 </div>
               </div>
