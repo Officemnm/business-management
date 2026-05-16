@@ -121,9 +121,14 @@ export default function DuesPage() {
   const totalCollected = payments.reduce((s, p) => s + p.amount, 0);
 
   if (loading) {
-    return <div className="flex items-center justify-center h-64">
-      <div className="animate-spin w-8 h-8 border-2 border-t-transparent rounded-full" style={{ borderColor: "#66a80f", borderTopColor: "transparent" }} />
-    </div>;
+    return (
+      <div className="flex items-center justify-center min-h-[70vh]">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-8 h-8 rounded-full border-[3px] border-slate-200 border-t-indigo-600 animate-spin"></div>
+          <p className="text-[13px] font-medium text-slate-500 tracking-wide">লোড হচ্ছে...</p>
+        </div>
+      </div>
+    );
   }
 
   const avgDue = customers.length > 0 ? Math.round(totalDue / customers.length) : 0;
@@ -132,10 +137,12 @@ export default function DuesPage() {
   return (
     <div className="pb-8 space-y-5">
       {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3">
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-2">
         <div>
-          <h1 className="text-[26px] sm:text-[28px] font-bold tracking-tight" style={{ color: "#111827", letterSpacing: "-0.02em" }}>বাকি তালিকা</h1>
-          <p className="text-[13px] font-medium mt-1" style={{ color: "#6b7280" }}>{customers.length} জন কাস্টমারের বকেয়া রয়েছে</p>
+          <h1 className="text-[28px] font-bold text-slate-900 tracking-tight">বাকি তালিকা</h1>
+          <p className="text-[14px] font-medium text-slate-500 mt-1">
+            মোট <span className="font-bold text-slate-700">{customers.length}</span> জন কাস্টমারের বকেয়া রয়েছে
+          </p>
         </div>
 
         {/* Target User Filter for Admin */}
@@ -154,96 +161,94 @@ export default function DuesPage() {
                 setTargetUser(u);
                 loadCustomers(u);
               }}
-              className="w-full h-10 shadow-sm"
+              className="w-full h-11 shadow-sm rounded-[12px] font-bold text-[13px] bg-white border-slate-200 text-slate-800"
             />
           </div>
         )}
       </div>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
-        <div className="rounded-2xl p-5" style={{ background: "#ffffff", border: "1px solid #e5e7eb" }}>
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="bg-white rounded-[16px] p-5 shadow-sm border border-slate-200/60">
           <div className="flex items-center justify-between mb-3">
-            <p className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "#6b7280" }}>মোট বাকি</p>
-            <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "#fef2f2" }}>
-              <Banknote size={14} strokeWidth={2.2} style={{ color: "#dc2626" }} />
+            <p className="text-[12px] font-bold text-slate-500 uppercase tracking-wider">মোট বাকি</p>
+            <div className="w-9 h-9 rounded-xl flex items-center justify-center bg-rose-50 border border-rose-100">
+              <Banknote size={16} strokeWidth={2.2} className="text-rose-600" />
             </div>
           </div>
-          <p className="text-[26px] font-bold leading-none" style={{ color: "#dc2626", letterSpacing: "-0.025em", fontVariantNumeric: "tabular-nums" }}>
+          <p className="text-[28px] font-black text-rose-600 leading-none tabular-nums tracking-tight">
             ৳{totalDue.toLocaleString("en-US")}
           </p>
           <div className="flex items-center gap-1.5 mt-3">
-            <span className="text-[11px] font-semibold" style={{ color: "#6b7280" }}>{customers.length}</span>
-            <span className="text-[11px] font-medium" style={{ color: "#9ca3af" }}>জন কাস্টমার</span>
+            <span className="text-[12px] font-bold text-slate-700">{customers.length}</span>
+            <span className="text-[12px] font-medium text-slate-500">জন কাস্টমার</span>
           </div>
         </div>
 
-        <div className="rounded-2xl p-5" style={{ background: "#ffffff", border: "1px solid #e5e7eb" }}>
+        <div className="bg-white rounded-[16px] p-5 shadow-sm border border-slate-200/60">
           <div className="flex items-center justify-between mb-3">
-            <p className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "#6b7280" }}>গড় বাকি</p>
-            <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "#fffbeb" }}>
-              <Banknote size={14} strokeWidth={2.2} style={{ color: "#d97706" }} />
+            <p className="text-[12px] font-bold text-slate-500 uppercase tracking-wider">গড় বাকি</p>
+            <div className="w-9 h-9 rounded-xl flex items-center justify-center bg-amber-50 border border-amber-100">
+              <Banknote size={16} strokeWidth={2.2} className="text-amber-600" />
             </div>
           </div>
-          <p className="text-[26px] font-bold leading-none" style={{ color: "#111827", letterSpacing: "-0.025em", fontVariantNumeric: "tabular-nums" }}>
+          <p className="text-[28px] font-black text-slate-900 leading-none tabular-nums tracking-tight">
             ৳{avgDue.toLocaleString("en-US")}
           </p>
         </div>
 
-        <div className="rounded-2xl p-5 col-span-2 lg:col-span-1" style={{ background: "#ffffff", border: "1px solid #e5e7eb" }}>
+        <div className="bg-white rounded-[16px] p-5 shadow-sm border border-slate-200/60 col-span-2 lg:col-span-1">
           <div className="flex items-center justify-between mb-3">
-            <p className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "#6b7280" }}>সর্বোচ্চ বাকি</p>
-            <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "#f3f4f6" }}>
-              <Banknote size={14} strokeWidth={2.2} style={{ color: "#374151" }} />
+            <p className="text-[12px] font-bold text-slate-500 uppercase tracking-wider">সর্বোচ্চ বাকি</p>
+            <div className="w-9 h-9 rounded-xl flex items-center justify-center bg-slate-100 border border-slate-200">
+              <Banknote size={16} strokeWidth={2.2} className="text-slate-600" />
             </div>
           </div>
-          <p className="text-[26px] font-bold leading-none" style={{ color: "#111827", letterSpacing: "-0.025em", fontVariantNumeric: "tabular-nums" }}>
+          <p className="text-[28px] font-black text-slate-900 leading-none tabular-nums tracking-tight">
             ৳{maxDue.toLocaleString("en-US")}
           </p>
         </div>
       </div>
 
       {/* Customer Table */}
-      <div className="rounded-2xl overflow-hidden" style={{ background: "#ffffff", border: "1px solid #e5e7eb" }}>
-        <div className="px-5 py-3.5 flex items-center justify-between" style={{ borderBottom: "1px solid #e5e7eb" }}>
-          <h3 className="text-[13px] font-semibold" style={{ color: "#111827" }}>বকেয়া কাস্টমার তালিকা</h3>
-          <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full" style={{ background: "#fef2f2", color: "#dc2626" }}>{customers.length}</span>
+      <div className="bg-white rounded-[20px] shadow-sm border border-slate-200/60 overflow-hidden">
+        <div className="px-6 py-4 flex items-center justify-between border-b border-slate-200/60 bg-slate-50/50">
+          <h3 className="text-[16px] font-bold text-slate-800">বকেয়া কাস্টমার তালিকা</h3>
+          <span className="text-[12px] font-bold px-3 py-1 rounded-[8px] bg-rose-50 text-rose-600 border border-rose-100">বাকি: {customers.length} জন</span>
         </div>
         {customers.length === 0 ? (
-          <div className="py-16 text-center">
-            <div className="w-12 h-12 rounded-full mx-auto mb-3 flex items-center justify-center" style={{ background: "#f0fdf4" }}>
-              <CheckCircle2 size={20} strokeWidth={2} style={{ color: "#16a34a" }} />
+          <div className="py-20 flex flex-col items-center justify-center text-center">
+            <div className="w-16 h-16 rounded-full bg-emerald-50 flex items-center justify-center mb-4 border border-emerald-100">
+              <CheckCircle2 size={28} strokeWidth={2} className="text-emerald-500" />
             </div>
-            <p className="text-[14px] font-semibold mb-1" style={{ color: "#111827" }}>সব বকেয়া পরিশোধিত</p>
-            <p className="text-[12px] font-medium" style={{ color: "#6b7280" }}>কোনো কাস্টমারের বাকি নেই</p>
+            <p className="text-[15px] font-bold text-slate-900 mb-1">সব বকেয়া পরিশোধিত</p>
+            <p className="text-[13px] font-medium text-slate-500">কোনো কাস্টমারের বাকি নেই</p>
           </div>
         ) : (
           <div className="flex flex-col">
             {customers.map((c, idx) => (
-              <div key={c._id} className="flex items-center gap-3 px-5 py-3.5 transition-colors hover:bg-gray-50" style={{ borderTop: idx > 0 ? "1px solid #f3f4f6" : "none" }}>
-                <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0 text-[13px] font-semibold" style={{ background: "#fef2f2", color: "#dc2626" }}>
+              <div key={c._id} className="flex items-center gap-4 px-6 py-4 transition-colors hover:bg-slate-50 border-b border-slate-100 last:border-0">
+                <div className="w-12 h-12 rounded-[14px] flex items-center justify-center shrink-0 text-[15px] font-bold bg-rose-50 text-rose-600 border border-rose-100/50">
                   {c.name[0]?.toUpperCase() || "?"}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-[14px] font-semibold truncate" style={{ color: "#111827" }}>{c.name}</p>
-                  <span className="flex items-center gap-1 text-[11px] font-medium mt-0.5" style={{ color: "#6b7280" }}>
-                    <Phone size={10} /> {c.phone}
+                  <p className="text-[15px] font-bold text-slate-900 truncate">{c.name}</p>
+                  <span className="flex items-center gap-1.5 text-[12px] font-medium mt-1 text-slate-500 bg-slate-100/60 px-2 py-0.5 rounded-md inline-flex w-max">
+                    <Phone size={12} className="text-slate-400" /> {c.phone}
                   </span>
                 </div>
-                <div className="text-right shrink-0 mr-2">
-                  <p className="text-[10px] font-semibold uppercase tracking-wider" style={{ color: "#9ca3af" }}>বকেয়া</p>
-                  <p className="text-[15px] font-bold" style={{ color: "#dc2626", fontVariantNumeric: "tabular-nums" }}>৳{c.totalDue.toLocaleString("en-US")}</p>
+                <div className="text-right shrink-0 mx-2 md:mx-6 min-w-[90px]">
+                  <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-0.5">বকেয়া</p>
+                  <p className="text-[16px] font-black text-rose-600 tabular-nums">৳{c.totalDue.toLocaleString("en-US")}</p>
                 </div>
-                <div className="flex items-center gap-1.5 shrink-0">
+                <div className="flex items-center gap-2 shrink-0">
                   <button onClick={() => { setHistoryCustomer(c); setPayments([]); }}
-                    className="w-9 h-9 rounded-lg flex items-center justify-center cursor-pointer transition-colors hover:bg-blue-100"
-                    style={{ background: "#eff6ff", color: "#2563eb", border: "1px solid #bfdbfe" }} title="পেমেন্ট হিস্ট্রি">
-                    <History size={14} strokeWidth={2} />
+                    className="w-10 h-10 rounded-[12px] bg-white border border-slate-200 text-slate-500 flex items-center justify-center hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-200 transition-all shadow-sm group" title="পেমেন্ট হিস্ট্রি">
+                    <History size={16} strokeWidth={2} className="group-hover:rotate-12 transition-transform" />
                   </button>
                   <button onClick={() => { setCollectCustomer(c); setCollectAmount(""); }}
-                    className="h-9 px-3 rounded-lg text-[12px] font-semibold cursor-pointer transition-all hover:shadow-sm flex items-center gap-1.5"
-                    style={{ background: "#66a80f", color: "#ffffff" }} title="টাকা কালেক্ট">
-                    <Banknote size={13} strokeWidth={2} /> কালেক্ট
+                    className="h-10 px-4 rounded-[12px] text-[13px] font-bold text-white bg-indigo-600 hover:bg-indigo-700 shadow-md transition-all active:scale-95 flex items-center gap-2" title="টাকা কালেক্ট">
+                    <Banknote size={16} strokeWidth={2.5} /> কালেক্ট
                   </button>
                 </div>
               </div>
@@ -254,71 +259,79 @@ export default function DuesPage() {
 
       {/* Payment History Modal */}
       {historyCustomer && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center" style={{ background: "rgba(0,0,0,0.5)" }}>
-          <div className="w-[95%] max-w-lg rounded-2xl max-h-[85vh] overflow-y-auto" style={{ background: "var(--bg-card)" }}>
-            <div className="flex items-center justify-between px-5 py-4 sticky top-0 z-10" style={{ borderBottom: "1px solid var(--border-color)", background: "var(--bg-card)" }}>
-              <div className="flex items-center gap-2">
-                <History size={16} style={{ color: "#2563eb" }} />
-                <h3 className="text-[14px] font-bold" style={{ color: "var(--text-primary)" }}>{historyCustomer.name} — পেমেন্ট হিস্ট্রি</h3>
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4">
+          <div className="w-full max-w-lg bg-white rounded-[24px] max-h-[85vh] overflow-y-auto shadow-2xl">
+            <div className="flex items-center justify-between px-6 py-5 sticky top-0 z-10 bg-white/90 backdrop-blur-md border-b border-slate-200/60">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-[12px] bg-indigo-50 border border-indigo-100 flex items-center justify-center">
+                  <History size={18} className="text-indigo-600" />
+                </div>
+                <div>
+                  <h3 className="text-[16px] font-bold text-slate-900 leading-tight">{historyCustomer.name}</h3>
+                  <p className="text-[12px] font-medium text-slate-500 mt-0.5">পেমেন্ট হিস্ট্রি</p>
+                </div>
               </div>
-              <button onClick={() => setHistoryCustomer(null)} className="cursor-pointer" style={{ color: "var(--text-muted)" }}><X size={18} /></button>
+              <button onClick={() => setHistoryCustomer(null)} className="w-9 h-9 flex items-center justify-center rounded-[10px] text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition-colors"><X size={20} strokeWidth={2} /></button>
             </div>
 
-            <div className="p-4">
+            <div className="p-6">
               {/* Summary */}
-              <div className="grid grid-cols-2 gap-3 mb-4">
-                <div className="rounded-xl p-3 text-center" style={{ background: "#fef2f2", border: "1px solid #fecaca" }}>
-                  <p className="text-[10px] font-medium" style={{ color: "var(--text-muted)" }}>বর্তমান বাকি</p>
-                  <p className="text-[18px] font-extrabold" style={{ color: "#dc2626" }}>৳{historyCustomer.totalDue}</p>
+              <div className="grid grid-cols-2 gap-4 mb-6">
+                <div className="rounded-[16px] p-4 text-center bg-rose-50 border border-rose-100 shadow-sm">
+                  <p className="text-[11px] font-bold text-rose-500 uppercase tracking-wider mb-1.5">বর্তমান বাকি</p>
+                  <p className="text-[20px] font-black text-rose-600 tabular-nums">৳{historyCustomer.totalDue.toLocaleString("en-US")}</p>
                 </div>
-                <div className="rounded-xl p-3 text-center" style={{ background: "#f0fdf4", border: "1px solid #bbf7d0" }}>
-                  <p className="text-[10px] font-medium" style={{ color: "var(--text-muted)" }}>মোট কালেক্ট</p>
-                  <p className="text-[18px] font-extrabold" style={{ color: "#16a34a" }}>৳{totalCollected}</p>
+                <div className="rounded-[16px] p-4 text-center bg-emerald-50 border border-emerald-100 shadow-sm">
+                  <p className="text-[11px] font-bold text-emerald-600 uppercase tracking-wider mb-1.5">মোট কালেক্ট</p>
+                  <p className="text-[20px] font-black text-emerald-600 tabular-nums">৳{totalCollected.toLocaleString("en-US")}</p>
                 </div>
               </div>
 
               {historyLoading ? (
-                <div className="flex items-center justify-center h-24">
-                  <div className="animate-spin w-6 h-6 border-2 border-t-transparent rounded-full" style={{ borderColor: "#66a80f", borderTopColor: "transparent" }} />
+                <div className="flex items-center justify-center h-32">
+                  <div className="animate-spin w-8 h-8 border-[3px] border-slate-200 border-t-indigo-600 rounded-full" />
                 </div>
               ) : payments.length === 0 ? (
-                <div className="rounded-xl py-12 text-center" style={{ background: "var(--bg-input)" }}>
-                  <Banknote size={28} className="mx-auto mb-2" style={{ color: "var(--text-muted)" }} strokeWidth={1} />
-                  <p className="text-[12px]" style={{ color: "var(--text-muted)" }}>এখনো কোনো পেমেন্ট রেকর্ড নেই</p>
+                <div className="rounded-[16px] py-14 text-center bg-slate-50 border border-slate-100">
+                  <div className="w-14 h-14 bg-white border border-slate-200 rounded-full flex items-center justify-center mx-auto mb-3 shadow-sm">
+                    <Banknote size={24} className="text-slate-400 stroke-[1.5px]" />
+                  </div>
+                  <p className="text-[14px] font-bold text-slate-600 mb-1">কোনো রেকর্ড নেই</p>
+                  <p className="text-[13px] text-slate-400">এখনো কোনো পেমেন্ট রেকর্ড যোগ করা হয়নি</p>
                 </div>
               ) : (
-                <div className="flex flex-col gap-3">
+                <div className="flex flex-col gap-4">
                   {paymentDateList.map(([dateLabel, dayPayments]) => {
                     const dayTotal = dayPayments.reduce((s, p) => s + p.amount, 0);
                     return (
-                      <div key={dateLabel} className="rounded-lg overflow-hidden" style={{ border: "1px solid var(--border-color)" }}>
+                      <div key={dateLabel} className="rounded-[16px] overflow-hidden border border-slate-200 shadow-sm">
                         {/* Date header */}
-                        <div className="flex items-center justify-between px-3 py-2" style={{ background: "var(--bg-input)" }}>
+                        <div className="flex items-center justify-between px-4 py-3 bg-slate-50 border-b border-slate-200/60">
                           <div className="flex items-center gap-2">
-                            <Calendar size={12} style={{ color: "var(--text-muted)" }} />
-                            <span className="text-[11px] font-bold" style={{ color: "var(--text-primary)" }}>{dateLabel}</span>
+                            <Calendar size={14} className="text-slate-500" />
+                            <span className="text-[13px] font-bold text-slate-800">{dateLabel}</span>
                           </div>
-                          <span className="text-[11px] font-bold" style={{ color: dayTotal >= 0 ? "#16a34a" : "#dc2626" }}>
-                            {dayTotal >= 0 ? `৳${dayTotal}` : `- ৳${Math.abs(dayTotal)}`}
+                          <span className={`text-[12px] font-bold px-2 py-0.5 rounded-md ${dayTotal >= 0 ? "bg-emerald-100/50 text-emerald-700" : "bg-rose-100/50 text-rose-700"}`}>
+                            {dayTotal >= 0 ? `৳${dayTotal.toLocaleString("en-US")}` : `- ৳${Math.abs(dayTotal).toLocaleString("en-US")}`}
                           </span>
                         </div>
                         {/* Payment entries */}
                         {dayPayments.map((p, i) => {
                           const isDebit = p.amount < 0;
                           return (
-                          <div key={p._id} className="flex items-center justify-between px-3 py-2.5" style={{ borderTop: "1px solid var(--border-color)" }}>
+                          <div key={p._id} className="flex items-center justify-between px-4 py-3.5 bg-white border-b border-slate-100 last:border-0 hover:bg-slate-50/50 transition-colors">
                             <div>
-                              <p className="text-[12px] font-semibold" style={{ color: isDebit ? "#dc2626" : "#16a34a" }}>
-                                {isDebit ? `৳${Math.abs(p.amount)} বকেয়া যোগ` : `৳${p.amount} কালেক্ট`}
+                              <p className={`text-[14px] font-bold ${isDebit ? "text-rose-600" : "text-emerald-600"}`}>
+                                {isDebit ? `৳${Math.abs(p.amount).toLocaleString("en-US")} বকেয়া যোগ` : `৳${p.amount.toLocaleString("en-US")} কালেক্ট`}
                               </p>
-                              <p className="text-[10px]" style={{ color: "var(--text-muted)" }}>
+                              <p className="text-[12px] font-medium text-slate-500 mt-0.5">
                                 {new Date(p.createdAt).toLocaleTimeString("bn-BD", { hour: "2-digit", minute: "2-digit" })}
-                                {p.note && ` · ${p.note}`}
-                                {p.collectedBy && p.collectedBy !== "unknown" && ` · ${p.collectedBy}`}
+                                {p.note && <span className="text-slate-400"> · {p.note}</span>}
+                                {p.collectedBy && p.collectedBy !== "unknown" && <span className="text-slate-400"> · {p.collectedBy}</span>}
                               </p>
                             </div>
-                            <div className="w-7 h-7 rounded-full flex items-center justify-center" style={{ background: isDebit ? "#fef2f2" : "#f0fdf4" }}>
-                              {isDebit ? <Banknote size={14} style={{ color: "#dc2626" }} /> : <CheckCircle2 size={14} style={{ color: "#16a34a" }} />}
+                            <div className={`w-9 h-9 rounded-full flex items-center justify-center shadow-sm shrink-0 ${isDebit ? "bg-rose-50 border border-rose-100" : "bg-emerald-50 border border-emerald-100"}`}>
+                              {isDebit ? <Banknote size={16} className="text-rose-500" strokeWidth={2.5}/> : <CheckCircle2 size={16} className="text-emerald-500" strokeWidth={2.5}/>}
                             </div>
                           </div>
                           );
@@ -335,62 +348,69 @@ export default function DuesPage() {
 
       {/* Collection Modal */}
       {collectCustomer && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center" style={{ background: "rgba(0,0,0,0.5)" }}>
-          <div className="w-[90%] max-w-md rounded-2xl overflow-hidden" style={{ background: "var(--bg-card)" }}>
-            <div className="flex items-center justify-between px-5 py-4" style={{ borderBottom: "1px solid var(--border-color)" }}>
-              <h3 className="text-[15px] font-bold" style={{ color: "var(--text-primary)" }}>বাকি কালেক্ট</h3>
-              <button onClick={() => setCollectCustomer(null)} className="cursor-pointer" style={{ color: "var(--text-muted)" }}><X size={18} /></button>
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4">
+          <div className="w-full max-w-md bg-white rounded-[24px] overflow-hidden shadow-2xl">
+            <div className="flex items-center justify-between px-6 py-5 border-b border-slate-100">
+              <h3 className="text-[18px] font-bold text-slate-900">বাকি কালেক্ট</h3>
+              <button onClick={() => setCollectCustomer(null)} className="w-9 h-9 flex items-center justify-center rounded-[10px] text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition-colors"><X size={20} strokeWidth={2} /></button>
             </div>
-            <div className="p-5">
-              <div className="flex items-center gap-3 mb-4 p-3 rounded-xl" style={{ background: "var(--bg-input)" }}>
-                <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ background: "#fef2f2" }}>
-                  <User size={18} style={{ color: "#dc2626" }} />
+            <div className="p-6">
+              <div className="flex items-center gap-4 mb-5 p-4 rounded-[16px] bg-rose-50 border border-rose-100/50 shadow-sm">
+                <div className="w-12 h-12 rounded-[14px] bg-white border border-rose-100 flex items-center justify-center shadow-sm">
+                  <User size={20} className="text-rose-500" />
                 </div>
                 <div>
-                  <p className="text-[14px] font-bold" style={{ color: "var(--text-primary)" }}>{collectCustomer.name}</p>
-                  <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>{collectCustomer.phone}</p>
+                  <p className="text-[16px] font-bold text-slate-900 leading-tight">{collectCustomer.name}</p>
+                  <p className="text-[13px] font-medium text-slate-500 mt-0.5">{collectCustomer.phone}</p>
                 </div>
                 <div className="ml-auto text-right">
-                  <p className="text-[16px] font-extrabold" style={{ color: "#dc2626" }}>৳{collectCustomer.totalDue}</p>
-                  <p className="text-[10px]" style={{ color: "var(--text-muted)" }}>মোট বাকি</p>
+                  <p className="text-[20px] font-black text-rose-600 tabular-nums">৳{collectCustomer.totalDue.toLocaleString("en-US")}</p>
+                  <p className="text-[11px] font-bold uppercase tracking-wider text-rose-400 mt-0.5">মোট বাকি</p>
                 </div>
               </div>
 
-              <div className="mb-4">
-                <label className="block text-[11px] font-medium mb-1.5" style={{ color: "var(--text-secondary)" }}>কত টাকা কালেক্ট করছেন?</label>
-                <input type="number" value={collectAmount}
-                  onChange={(e) => setCollectAmount(e.target.value === "" ? "" : Number(e.target.value))}
-                  onFocus={(e) => e.target.select()}
-                  placeholder="টাকার পরিমাণ লিখুন"
-                  min={0} max={collectCustomer.totalDue}
-                  className="w-full h-11 px-4 rounded-xl text-[15px] font-bold outline-none"
-                  style={{ background: "var(--bg-input)", color: "var(--text-primary)", border: "1px solid var(--border-color)" }} />
+              <div className="mb-5">
+                <label className="block text-[12px] font-bold text-slate-600 uppercase tracking-wider mb-2">কত টাকা কালেক্ট করছেন?</label>
+                <div className="relative">
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold">৳</span>
+                  <input type="number" value={collectAmount}
+                    onChange={(e) => setCollectAmount(e.target.value === "" ? "" : Number(e.target.value))}
+                    onFocus={(e) => e.target.select()}
+                    placeholder="টাকার পরিমাণ লিখুন"
+                    min={0} max={collectCustomer.totalDue}
+                    className="w-full h-12 pl-9 pr-4 rounded-[14px] text-[16px] font-black outline-none bg-slate-50 border border-slate-200 focus:bg-white focus:border-indigo-400 focus:ring-4 focus:ring-indigo-50 transition-all text-slate-900 placeholder:text-slate-300 placeholder:font-normal tabular-nums shadow-sm" />
+                </div>
               </div>
 
               {Number(collectAmount) > 0 && (
-                <div className="mb-4 p-3 rounded-xl" style={{ background: "#f0fdf4", border: "1px solid #bbf7d0" }}>
-                  <div className="flex justify-between text-[12px] mb-1">
-                    <span style={{ color: "var(--text-secondary)" }}>বর্তমান বাকি</span>
-                    <span className="font-bold" style={{ color: "#dc2626" }}>৳{collectCustomer.totalDue}</span>
+                <div className="mb-6 p-4 rounded-[16px] bg-emerald-50 border border-emerald-100 shadow-sm">
+                  <div className="flex justify-between text-[13px] mb-2">
+                    <span className="font-semibold text-slate-600">বর্তমান বাকি</span>
+                    <span className="font-bold text-rose-600 tabular-nums">৳{collectCustomer.totalDue.toLocaleString("en-US")}</span>
                   </div>
-                  <div className="flex justify-between text-[12px] mb-1">
-                    <span style={{ color: "var(--text-secondary)" }}>কালেক্ট</span>
-                    <span className="font-bold" style={{ color: "#16a34a" }}>- ৳{Number(collectAmount)}</span>
+                  <div className="flex justify-between text-[13px] mb-3">
+                    <span className="font-semibold text-slate-600">কালেক্ট</span>
+                    <span className="font-bold text-emerald-600 tabular-nums">- ৳{Number(collectAmount).toLocaleString("en-US")}</span>
                   </div>
-                  <div className="flex justify-between text-[13px] pt-1" style={{ borderTop: "1px dashed var(--border-color)" }}>
-                    <span className="font-bold" style={{ color: "var(--text-primary)" }}>অবশিষ্ট বাকি</span>
-                    <span className="font-extrabold" style={{ color: collectCustomer.totalDue - Number(collectAmount) > 0 ? "#dc2626" : "#16a34a" }}>
-                      ৳{collectCustomer.totalDue - Number(collectAmount)}
+                  <div className="flex justify-between text-[14px] pt-3 border-t border-emerald-200/60">
+                    <span className="font-bold text-slate-800">অবশিষ্ট বাকি</span>
+                    <span className={`font-black tabular-nums ${collectCustomer.totalDue - Number(collectAmount) > 0 ? "text-rose-600" : "text-emerald-600"}`}>
+                      ৳{(collectCustomer.totalDue - Number(collectAmount)).toLocaleString("en-US")}
                     </span>
                   </div>
                 </div>
               )}
 
               <button onClick={handleCollect} disabled={collecting}
-                className="w-full h-11 rounded-xl text-[13px] font-semibold text-white cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2"
-                style={{ background: "#66a80f" }}>
-                <Banknote size={16} />
-                {collecting ? "সংরক্ষণ হচ্ছে..." : "কালেক্ট কনফার্ম"}
+                className="w-full h-12 rounded-[14px] text-[15px] font-bold text-white shadow-[0_4px_20px_-4px_rgba(16,185,129,0.4)] disabled:opacity-50 transition-all active:scale-[0.98] flex items-center justify-center gap-2 bg-emerald-500 hover:bg-emerald-600 cursor-pointer">
+                {collecting ? (
+                   "সংরক্ষণ হচ্ছে..."
+                ) : (
+                  <>
+                    <CheckCircle2 size={18} strokeWidth={2.5} />
+                    কালেক্ট কনফার্ম
+                  </>
+                )}
               </button>
             </div>
           </div>

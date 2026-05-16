@@ -126,12 +126,17 @@ export default function UsersPage() {
     loadData();
   };
 
-  const inputStyle = "w-full h-10 px-3 rounded-lg text-[13px] outline-none transition-colors";
+  const inputStyle = "w-full h-11 px-4 rounded-[12px] text-[13px] bg-slate-50 border border-slate-200 outline-none transition-all focus:bg-white focus:border-indigo-400 focus:ring-4 focus:ring-indigo-50 text-slate-800 placeholder:text-slate-400 font-semibold";
 
   if (loading) {
-    return <div className="flex items-center justify-center h-64">
-      <div className="animate-spin w-8 h-8 border-2 border-t-transparent rounded-full" style={{ borderColor: "#66a80f", borderTopColor: "transparent" }} />
-    </div>;
+    return (
+      <div className="flex items-center justify-center min-h-[70vh]">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-8 h-8 rounded-full border-[3px] border-slate-200 border-t-indigo-600 animate-spin"></div>
+          <p className="text-[13px] font-medium text-slate-500 tracking-wide">লোড হচ্ছে...</p>
+        </div>
+      </div>
+    );
   }
 
   // Stats
@@ -145,62 +150,61 @@ export default function UsersPage() {
       {/* Page Header */}
       <div className="flex items-end justify-between flex-wrap gap-3">
         <div>
-          <h1 className="text-[26px] sm:text-[28px] font-bold tracking-tight" style={{ color: "#111827", letterSpacing: "-0.02em" }}>ইউজার ম্যানেজমেন্ট</h1>
-          <p className="text-[13px] font-medium mt-1" style={{ color: "#6b7280" }}>মোট {totalUsers} জন ইউজার · {activeUsers} জন সক্রিয়</p>
+          <h1 className="text-[28px] font-bold text-slate-900 tracking-tight">ইউজার ম্যানেজমেন্ট</h1>
+          <p className="text-[14px] font-medium text-slate-500 mt-1">মোট {totalUsers} জন ইউজার · {activeUsers} জন সক্রিয়</p>
         </div>
         <button onClick={() => setShowForm(!showForm)}
-          className="flex items-center gap-2 h-10 px-4 rounded-lg text-[13px] font-semibold text-white cursor-pointer transition-all hover:shadow-sm"
-          style={{ background: "#66a80f" }}>
-          <Plus size={16} /> নতুন ইউজার
+          className="flex items-center gap-2 h-11 px-5 rounded-[12px] text-[14px] font-bold text-white cursor-pointer bg-indigo-600 hover:bg-indigo-700 transition-all shadow-sm active:scale-95">
+          <Plus size={18} strokeWidth={2.5} /> নতুন ইউজার
         </button>
       </div>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <div className="rounded-2xl p-5" style={{ background: "#ffffff", border: "1px solid #e5e7eb" }}>
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="bg-white rounded-[16px] p-5 shadow-sm border border-slate-200/60">
           <div className="flex items-center justify-between mb-3">
-            <p className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "#6b7280" }}>মোট ইউজার</p>
-            <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "rgba(102,168,15,0.1)" }}>
-              <User size={14} strokeWidth={2.2} style={{ color: "#66a80f" }} />
+            <p className="text-[12px] font-bold text-slate-500 uppercase tracking-wider">মোট ইউজার</p>
+            <div className="w-9 h-9 rounded-xl flex items-center justify-center bg-indigo-50 border border-indigo-100">
+              <User size={16} strokeWidth={2.2} className="text-indigo-600" />
             </div>
           </div>
-          <p className="text-[26px] font-bold leading-none" style={{ color: "#111827", letterSpacing: "-0.025em", fontVariantNumeric: "tabular-nums" }}>
+          <p className="text-[28px] font-black text-slate-900 leading-none tabular-nums tracking-tight">
             {totalUsers.toLocaleString("en-US")}
           </p>
         </div>
 
-        <div className="rounded-2xl p-5" style={{ background: "#ffffff", border: "1px solid #e5e7eb" }}>
+        <div className="bg-white rounded-[16px] p-5 shadow-sm border border-slate-200/60">
           <div className="flex items-center justify-between mb-3">
-            <p className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "#6b7280" }}>সক্রিয়</p>
-            <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "#f0fdf4" }}>
-              <ShieldCheck size={14} strokeWidth={2.2} style={{ color: "#16a34a" }} />
+            <p className="text-[12px] font-bold text-slate-500 uppercase tracking-wider">সক্রিয়</p>
+            <div className="w-9 h-9 rounded-xl flex items-center justify-center bg-emerald-50 border border-emerald-100">
+              <ShieldCheck size={16} strokeWidth={2.2} className="text-emerald-600" />
             </div>
           </div>
-          <p className="text-[26px] font-bold leading-none" style={{ color: "#111827", letterSpacing: "-0.025em", fontVariantNumeric: "tabular-nums" }}>
+          <p className="text-[28px] font-black text-slate-900 leading-none tabular-nums tracking-tight">
             {activeUsers.toLocaleString("en-US")}
           </p>
         </div>
 
-        <div className="rounded-2xl p-5" style={{ background: "#ffffff", border: "1px solid #e5e7eb" }}>
+        <div className="bg-white rounded-[16px] p-5 shadow-sm border border-slate-200/60">
           <div className="flex items-center justify-between mb-3">
-            <p className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "#6b7280" }}>এডমিন</p>
-            <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "#fef2f2" }}>
-              <Shield size={14} strokeWidth={2.2} style={{ color: "#dc2626" }} />
+            <p className="text-[12px] font-bold text-slate-500 uppercase tracking-wider">এডমিন</p>
+            <div className="w-9 h-9 rounded-xl flex items-center justify-center bg-rose-50 border border-rose-100">
+              <Shield size={16} strokeWidth={2.2} className="text-rose-600" />
             </div>
           </div>
-          <p className="text-[26px] font-bold leading-none" style={{ color: "#111827", letterSpacing: "-0.025em", fontVariantNumeric: "tabular-nums" }}>
+          <p className="text-[28px] font-black text-slate-900 leading-none tabular-nums tracking-tight">
             {adminCount.toLocaleString("en-US")}
           </p>
         </div>
 
-        <div className="rounded-2xl p-5" style={{ background: "#ffffff", border: "1px solid #e5e7eb" }}>
+        <div className="bg-white rounded-[16px] p-5 shadow-sm border border-slate-200/60">
           <div className="flex items-center justify-between mb-3">
-            <p className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: "#6b7280" }}>ম্যানেজার</p>
-            <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: "#eff6ff" }}>
-              <Shield size={14} strokeWidth={2.2} style={{ color: "#2563eb" }} />
+            <p className="text-[12px] font-bold text-slate-500 uppercase tracking-wider">ম্যানেজার</p>
+            <div className="w-9 h-9 rounded-xl flex items-center justify-center bg-blue-50 border border-blue-100">
+              <Shield size={16} strokeWidth={2.2} className="text-blue-600" />
             </div>
           </div>
-          <p className="text-[26px] font-bold leading-none" style={{ color: "#111827", letterSpacing: "-0.025em", fontVariantNumeric: "tabular-nums" }}>
+          <p className="text-[28px] font-black text-slate-900 leading-none tabular-nums tracking-tight">
             {managerCount.toLocaleString("en-US")}
           </p>
         </div>
@@ -208,41 +212,43 @@ export default function UsersPage() {
 
       {/* Add User Form */}
       {showForm && (
-        <div className="rounded-2xl p-5" style={{ background: "#ffffff", border: "1px solid #e5e7eb" }}>
-          <div className="flex items-center gap-2 mb-4">
-            <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: "rgba(102,168,15,0.1)" }}>
-              <Plus size={15} strokeWidth={2.2} style={{ color: "#66a80f" }} />
+        <div className="bg-white rounded-[16px] p-6 shadow-sm border border-slate-200/60 mb-6 relative overflow-hidden">
+          <div className="absolute top-0 left-0 w-1 h-full bg-indigo-500"></div>
+          <div className="flex items-center justify-between mb-5">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-indigo-50 border border-indigo-100">
+                <User size={18} strokeWidth={2.2} className="text-indigo-600" />
+              </div>
+              <h3 className="text-[16px] font-bold text-slate-900">নতুন ইউজার তৈরি করুন</h3>
             </div>
-            <h3 className="text-[14px] font-semibold" style={{ color: "#111827" }}>নতুন ইউজার তৈরি করুন</h3>
+            <button onClick={() => setShowForm(false)} className="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-700 transition-colors">
+              <Plus size={20} className="rotate-45" />
+            </button>
           </div>
-          <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-5">
             <div>
-              <label className="block text-[11px] font-semibold uppercase tracking-wider mb-1.5" style={{ color: "#6b7280" }}>ইউজারনেম</label>
-              <input value={username} onChange={(e) => setUsername(e.target.value)} placeholder="ইউজারনেম" className={inputStyle}
-                style={{ background: "#fafafa", color: "#111827", border: "1px solid #e5e7eb" }} />
+              <label className="block text-[12px] font-bold text-slate-600 uppercase tracking-wider mb-2">ইউজারনেম</label>
+              <input value={username} onChange={(e) => setUsername(e.target.value)} placeholder="ইউজারনেম" className={inputStyle} />
             </div>
             <div>
-              <label className="block text-[11px] font-semibold uppercase tracking-wider mb-1.5" style={{ color: "#6b7280" }}>পাসওয়ার্ড</label>
-              <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="পাসওয়ার্ড" className={inputStyle}
-                style={{ background: "#fafafa", color: "#111827", border: "1px solid #e5e7eb" }} />
+              <label className="block text-[12px] font-bold text-slate-600 uppercase tracking-wider mb-2">পাসওয়ার্ড</label>
+              <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="পাসওয়ার্ড" className={inputStyle} />
             </div>
             <div>
-              <label className="block text-[11px] font-semibold uppercase tracking-wider mb-1.5" style={{ color: "#6b7280" }}>প্রদর্শন নাম</label>
-              <input value={displayName} onChange={(e) => setDisplayName(e.target.value)} placeholder="পুরো নাম" className={inputStyle}
-                style={{ background: "#fafafa", color: "#111827", border: "1px solid #e5e7eb" }} />
+              <label className="block text-[12px] font-bold text-slate-600 uppercase tracking-wider mb-2">প্রদর্শন নাম</label>
+              <input value={displayName} onChange={(e) => setDisplayName(e.target.value)} placeholder="পুরো নাম" className={inputStyle} />
             </div>
             <div>
-              <label className="block text-[11px] font-semibold uppercase tracking-wider mb-1.5" style={{ color: "#6b7280" }}>পদবি</label>
-              <AnimatedDropdown options={roles} value={role} onChange={setRole} className="h-10" />
+              <label className="block text-[12px] font-bold text-slate-600 uppercase tracking-wider mb-2">পদবি</label>
+              <AnimatedDropdown options={roles} value={role} onChange={setRole} className="h-11 rounded-[12px] bg-slate-50 border-slate-200" />
             </div>
-            <div className="md:col-span-2 flex gap-2">
+            <div className="md:col-span-2 flex justify-end gap-3 mt-2 pt-5 border-t border-slate-100">
               <button type="button" onClick={() => setShowForm(false)}
-                className="h-10 px-5 rounded-lg text-[13px] font-semibold cursor-pointer transition-colors"
-                style={{ background: "#fafafa", color: "#374151", border: "1px solid #e5e7eb" }}>
+                className="h-11 px-6 rounded-[10px] text-[14px] font-bold text-slate-600 bg-white border border-slate-200 hover:bg-slate-50 transition-colors">
                 বাতিল
               </button>
               <button type="submit" disabled={submitting}
-                className="h-10 px-6 rounded-lg text-[13px] font-semibold text-white cursor-pointer disabled:opacity-50 transition-all hover:shadow-sm" style={{ background: "#66a80f" }}>
+                className="h-11 px-8 rounded-[10px] text-[14px] font-bold text-white bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:hover:bg-indigo-600 transition-colors shadow-sm">
                 {submitting ? "তৈরি হচ্ছে..." : "ইউজার তৈরি"}
               </button>
             </div>
@@ -251,68 +257,61 @@ export default function UsersPage() {
       )}
 
       {/* User Table */}
-      <div className="rounded-2xl overflow-hidden" style={{ background: "#ffffff", border: "1px solid #e5e7eb" }}>
-        <div className="px-5 py-3.5 flex items-center justify-between" style={{ borderBottom: "1px solid #e5e7eb" }}>
-          <h3 className="text-[13px] font-semibold" style={{ color: "#111827" }}>ইউজার তালিকা</h3>
-          <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full" style={{ background: "#f3f4f6", color: "#374151" }}>{totalUsers}</span>
+      <div className="bg-white rounded-[20px] shadow-sm border border-slate-200/60 overflow-hidden">
+        <div className="px-6 py-4 flex items-center justify-between border-b border-slate-200/60 bg-slate-50/50">
+          <h3 className="text-[16px] font-bold text-slate-800">ইউজার তালিকা</h3>
+          <span className="text-[12px] font-bold px-3 py-1 rounded-[8px] bg-indigo-50 text-indigo-600 border border-indigo-100">মোট: {totalUsers}</span>
         </div>
         {users.length === 0 ? (
-          <div className="py-16 text-center">
-            <div className="w-12 h-12 rounded-full mx-auto mb-3 flex items-center justify-center" style={{ background: "#f3f4f6" }}>
-              <User size={20} strokeWidth={1.5} style={{ color: "#9ca3af" }} />
+          <div className="py-20 flex flex-col items-center justify-center text-center">
+            <div className="w-16 h-16 rounded-full bg-slate-50 flex items-center justify-center mb-4 border border-slate-100">
+              <User size={28} strokeWidth={1.5} className="text-slate-400" />
             </div>
-            <p className="text-[13px] font-medium" style={{ color: "#6b7280" }}>কোনো ইউজার নেই</p>
+            <p className="text-[15px] font-semibold text-slate-600 mb-1">কোনো ইউজার নেই</p>
           </div>
         ) : (
           <div className="flex flex-col">
             {users.map((u, idx) => (
-              <div key={u._id} className="flex items-center gap-3 px-5 py-3.5 transition-colors hover:bg-gray-50" style={{ borderTop: idx > 0 ? "1px solid #f3f4f6" : "none" }}>
-                <div className="w-10 h-10 rounded-full flex items-center justify-center shrink-0 text-[13px] font-semibold text-white"
-                  style={{ background: u.active ? "#66a80f" : "#9ca3af" }}>
+              <div key={u._id} className="flex items-center gap-4 px-6 py-4 transition-colors hover:bg-slate-50 border-b border-slate-100 last:border-0">
+                <div className={`w-12 h-12 rounded-[14px] flex items-center justify-center shrink-0 text-[15px] font-bold border ${u.active ? "bg-indigo-50 text-indigo-600 border-indigo-100/50" : "bg-slate-100 text-slate-500 border-slate-200"}`}>
                   {u.displayName[0]?.toUpperCase() || "?"}
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <p className="text-[14px] font-semibold truncate" style={{ color: "#111827" }}>{u.displayName}</p>
-                    <span className="text-[10px] px-2 py-0.5 rounded-full font-semibold shrink-0"
-                      style={{
-                        background: u.role === "admin" ? "#fef2f2" : u.role === "manager" ? "#eff6ff" : u.role === "asr" ? "#fffbeb" : "#f0fdf4",
-                        color: u.role === "admin" ? "#dc2626" : u.role === "manager" ? "#2563eb" : u.role === "asr" ? "#d97706" : "#16a34a",
-                      }}>
+                    <p className="text-[15px] font-bold text-slate-900 truncate">{u.displayName}</p>
+                    <span className={`text-[11px] px-2 py-0.5 rounded-[6px] font-bold shrink-0 ${
+                        u.role === "admin" ? "bg-rose-50 text-rose-600 border border-rose-100" : 
+                        u.role === "manager" ? "bg-blue-50 text-blue-600 border border-blue-100" : 
+                        u.role === "asr" ? "bg-amber-50 text-amber-600 border border-amber-100" : 
+                        "bg-emerald-50 text-emerald-600 border border-emerald-100"}`}>
                       {roles.find((r) => r.value === u.role)?.label || u.role}
                     </span>
                     {!u.active && (
-                      <span className="text-[10px] px-2 py-0.5 rounded-full font-semibold shrink-0"
-                        style={{ background: "#fef2f2", color: "#dc2626" }}>নিষ্ক্রিয়</span>
+                      <span className="text-[11px] px-2 py-0.5 rounded-[6px] font-bold shrink-0 bg-rose-50 text-rose-600 border border-rose-100">নিষ্ক্রিয়</span>
                     )}
                     {(u.role === "user" || u.role === "asr") && u.permissions && (!u.permissions.canEdit || !u.permissions.canDelete) && (
-                      <span className="text-[10px] px-2 py-0.5 rounded-full font-semibold shrink-0 flex items-center gap-1"
-                        style={{ background: "#fef2f2", color: "#dc2626" }}><Eye size={10} /> অনলি ভিউ</span>
+                      <span className="text-[11px] px-2 py-0.5 rounded-[6px] font-bold shrink-0 flex items-center gap-1 bg-rose-50 text-rose-600 border border-rose-100"><Eye size={10} strokeWidth={2.5} /> অনলি ভিউ</span>
                     )}
                     {u.role === "user" && u.assignedASR && (
-                      <span className="text-[10px] px-2 py-0.5 rounded-full font-semibold shrink-0"
-                        style={{ background: "#f3f4f6", color: "#4b5563" }}>ASR: {u.assignedASR}</span>
+                      <span className="text-[11px] px-2 py-0.5 rounded-[6px] font-bold shrink-0 bg-slate-100 text-slate-600 border border-slate-200">ASR: {u.assignedASR}</span>
                     )}
                   </div>
-                  <p className="text-[11px] mt-0.5 flex items-center gap-1 font-medium" style={{ color: "#6b7280" }}>
-                    <User size={10} /> {u.username}
+                  <p className="text-[12px] mt-1.5 flex items-center gap-1 font-medium text-slate-500">
+                    <User size={12} className="text-slate-400" /> {u.username}
                   </p>
                 </div>
-                <div className="flex items-center gap-1.5 shrink-0">
+                <div className="flex items-center gap-2 shrink-0">
                   <button onClick={() => handleToggleActive(u._id, u.active)}
-                    className="w-8 h-8 rounded-lg flex items-center justify-center cursor-pointer transition-colors hover:bg-gray-100"
-                    style={{ background: "#ffffff", border: "1px solid #e5e7eb" }} title={u.active ? "নিষ্ক্রিয় করুন" : "সক্রিয় করুন"}>
-                    {u.active ? <ShieldCheck size={14} style={{ color: "#16a34a" }} /> : <Shield size={14} style={{ color: "#dc2626" }} />}
+                    className="w-9 h-9 md:w-10 md:h-10 rounded-[12px] bg-white border border-slate-200 flex items-center justify-center transition-all shadow-sm group" title={u.active ? "নিষ্ক্রিয় করুন" : "সক্রিয় করুন"}>
+                    {u.active ? <ShieldCheck size={16} className="text-emerald-500 group-hover:scale-110 transition-transform" /> : <Shield size={16} className="text-rose-500 group-hover:scale-110 transition-transform" />}
                   </button>
                   <button onClick={() => openEdit(u)}
-                    className="w-8 h-8 rounded-lg flex items-center justify-center cursor-pointer transition-colors hover:bg-gray-100"
-                    style={{ background: "#ffffff", color: "#6b7280", border: "1px solid #e5e7eb" }} title="সম্পাদনা">
-                    <Pencil size={13} />
+                    className="w-9 h-9 md:w-10 md:h-10 rounded-[12px] bg-white border border-slate-200 text-slate-500 flex items-center justify-center hover:bg-emerald-50 hover:text-emerald-600 hover:border-emerald-200 transition-all shadow-sm group" title="সম্পাদনা">
+                    <Pencil size={16} className="group-hover:scale-110 transition-transform" />
                   </button>
                   <button onClick={() => handleDelete(u._id)}
-                    className="w-8 h-8 rounded-lg flex items-center justify-center cursor-pointer transition-colors hover:bg-red-100"
-                    style={{ background: "#fef2f2", color: "#dc2626", border: "1px solid #fecaca" }} title="মুছুন">
-                    <Trash2 size={13} />
+                    className="w-9 h-9 md:w-10 md:h-10 rounded-[12px] bg-white border border-slate-200 text-slate-500 flex items-center justify-center hover:bg-rose-50 hover:text-rose-600 hover:border-rose-200 transition-all shadow-sm group" title="মুছুন">
+                    <Trash2 size={16} className="group-hover:scale-110 transition-transform" />
                   </button>
                 </div>
               </div>
@@ -323,60 +322,60 @@ export default function UsersPage() {
 
       {/* Edit User Modal */}
       <AnimatedModal open={!!editUser} onClose={() => setEditUser(null)} title="ইউজার সম্পাদনা" maxWidth="max-w-md">
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-5 p-1">
           <div>
-            <label className="block text-[11px] font-medium mb-1" style={{ color: "var(--text-secondary)" }}>প্রদর্শন নাম</label>
-            <input value={editDisplayName} onChange={(e) => setEditDisplayName(e.target.value)} className={inputStyle}
-              style={{ background: "var(--bg-input)", color: "var(--text-primary)", border: "1px solid var(--border-color)" }} />
+            <label className="block text-[12px] font-bold text-slate-600 uppercase tracking-wider mb-2">প্রদর্শন নাম</label>
+            <input value={editDisplayName} onChange={(e) => setEditDisplayName(e.target.value)} className={inputStyle} />
           </div>
           <div>
-            <label className="block text-[11px] font-medium mb-1" style={{ color: "var(--text-secondary)" }}>ইউজারনেম</label>
-            <div className="h-10 px-3 flex items-center rounded-lg text-sm" style={{ background: "var(--bg-input)", color: "var(--text-muted)", border: "1px solid var(--border-color)" }}>
+            <label className="block text-[12px] font-bold text-slate-600 uppercase tracking-wider mb-2">ইউজারনেম</label>
+            <div className="h-11 px-4 flex items-center rounded-[12px] text-[14px] bg-slate-100 text-slate-500 border border-slate-200 cursor-not-allowed">
               {editUsername}
             </div>
           </div>
           <div>
-            <label className="block text-[11px] font-medium mb-1" style={{ color: "var(--text-secondary)" }}>পদবি</label>
-            <AnimatedDropdown options={roles} value={editRole} onChange={setEditRole} className="h-10" />
+            <label className="block text-[12px] font-bold text-slate-600 uppercase tracking-wider mb-2">পদবি</label>
+            <AnimatedDropdown options={roles} value={editRole} onChange={setEditRole} className="h-11 rounded-[12px] bg-slate-50 border-slate-200" />
           </div>
 
           {(editRole === "user" || editRole === "asr") && (
-            <div className="rounded-xl p-3 flex flex-col gap-3" style={{ background: "var(--bg-input)", border: "1px solid var(--border-color)" }}>
+            <div className="rounded-[16px] p-4 flex flex-col gap-4 bg-slate-50 border border-slate-200 shadow-sm">
               <div className="flex items-center gap-2">
-                <Lock size={14} style={{ color: "var(--text-primary)" }} />
-                <span className="text-[12px] font-semibold" style={{ color: "var(--text-primary)" }}>অনুমতি (Permissions)</span>
+                <Lock size={16} className="text-slate-700" />
+                <span className="text-[13px] font-bold text-slate-800">অনুমতি (Permissions)</span>
               </div>
-              <div className="flex bg-white rounded-lg border overflow-hidden p-1 gap-1" style={{ borderColor: "var(--border-color)" }}>
-                <button type="button" onClick={() => setEditPermissions({ canEdit: false, canDelete: false })} className={`flex-1 py-1.5 text-[11px] font-semibold rounded-md transition-colors ${!editPermissions.canEdit && !editPermissions.canDelete ? "bg-red-50 text-red-600" : "text-gray-500 hover:bg-gray-50"}`}>
-                  <Eye size={12} className="inline mr-1" /> অনলি ভিউ
+              <div className="flex bg-white rounded-[12px] border border-slate-200 overflow-hidden p-1 gap-1 shadow-sm">
+                <button type="button" onClick={() => setEditPermissions({ canEdit: false, canDelete: false })} className={`flex-1 py-2 text-[12px] font-bold rounded-[8px] transition-colors ${!editPermissions.canEdit && !editPermissions.canDelete ? "bg-rose-50 text-rose-600" : "text-slate-500 hover:bg-slate-50"}`}>
+                  <Eye size={14} className="inline mr-1.5" /> অনলি ভিউ
                 </button>
-                <button type="button" onClick={() => setEditPermissions({ canEdit: true, canDelete: true })} className={`flex-1 py-1.5 text-[11px] font-semibold rounded-md transition-colors ${editPermissions.canEdit || editPermissions.canDelete ? "bg-green-50 text-green-600" : "text-gray-500 hover:bg-gray-50"}`}>
+                <button type="button" onClick={() => setEditPermissions({ canEdit: true, canDelete: true })} className={`flex-1 py-2 text-[12px] font-bold rounded-[8px] transition-colors ${editPermissions.canEdit || editPermissions.canDelete ? "bg-emerald-50 text-emerald-600" : "text-slate-500 hover:bg-slate-50"}`}>
                   পূর্ণ অনুমতি
                 </button>
               </div>
               {editRole === "user" && (
-                <div className="mt-1">
-                  <label className="block text-[11px] font-medium mb-1" style={{ color: "var(--text-secondary)" }}>নির্দিষ্ট এএসআর বরাদ্দ</label>
-                  <AnimatedDropdown options={asrOptions} value={editAssignedASR} onChange={setEditAssignedASR} className="h-9 text-xs" />
+                <div className="mt-2">
+                  <label className="block text-[12px] font-bold text-slate-600 mb-2">নির্দিষ্ট এএসআর বরাদ্দ</label>
+                  <AnimatedDropdown options={asrOptions} value={editAssignedASR} onChange={setEditAssignedASR} className="h-11 rounded-[12px] bg-white border-slate-200" />
                 </div>
               )}
             </div>
           )}
 
-          <div className="rounded-xl p-3" style={{ background: "var(--bg-input)", border: "1px solid var(--border-color)" }}>
-            <div className="flex items-center gap-2 mb-2">
-              <KeyRound size={12} style={{ color: "var(--text-muted)" }} />
-              <span className="text-[11px] font-medium" style={{ color: "var(--text-muted)" }}>নতুন পাসওয়ার্ড (অপশনাল)</span>
+          <div className="rounded-[16px] p-4 bg-indigo-50/50 border border-indigo-100 shadow-sm mt-2">
+            <div className="flex items-center gap-2 mb-3">
+              <KeyRound size={16} className="text-indigo-600" />
+              <span className="text-[13px] font-bold text-indigo-900">নতুন পাসওয়ার্ড (অপশনাল)</span>
             </div>
             <input type="password" value={editPassword} onChange={(e) => setEditPassword(e.target.value)}
-              placeholder="খালি রাখলে পাসওয়ার্ড পরিবর্তন হবে না" className={inputStyle}
-              style={{ background: "var(--bg-card)", color: "var(--text-primary)", border: "1px solid var(--border-color)" }} />
+              placeholder="খালি রাখলে পাসওয়ার্ড পরিবর্তন হবে না" className={inputStyle} />
           </div>
-          <button onClick={handleEditSave} disabled={editSaving}
-            className="w-full h-11 rounded-xl text-[13px] font-semibold text-white cursor-pointer disabled:opacity-50"
-            style={{ background: "#66a80f" }}>
-            {editSaving ? "সংরক্ষণ হচ্ছে..." : "আপডেট করুন"}
-          </button>
+
+          <div className="mt-2 pt-4 border-t border-slate-100 mb-1">
+            <button onClick={handleEditSave} disabled={editSaving}
+              className="w-full h-12 rounded-[14px] text-[14.5px] font-bold text-white bg-indigo-600 hover:bg-indigo-700 shadow-sm shadow-indigo-200 disabled:opacity-50 disabled:hover:bg-indigo-600 transition-all active:scale-[0.98] flex items-center justify-center gap-2">
+              {editSaving ? "সংরক্ষণ হচ্ছে..." : "আপডেট করুন"}
+            </button>
+          </div>
         </div>
       </AnimatedModal>
     </div>
