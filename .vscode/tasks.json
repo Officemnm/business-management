@@ -40,6 +40,16 @@
 			"label": "fix orders js",
 			"type": "shell",
 			"command": "node fix-orders.cjs"
+		},
+		{
+			"label": "git-push",
+			"type": "shell",
+			"command": "git add . ; git commit -m \"Transform customer detail page to full chronological ledger\" ; git push"
+		},
+		{
+			"label": "run-bat",
+			"type": "shell",
+			"command": ".\\push.bat"
 		}
 	]
 }

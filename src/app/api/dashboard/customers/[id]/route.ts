@@ -4,6 +4,7 @@ import dbConnect from "@/lib/db";
 import Customer from "@/models/Customer";
 import User from "@/models/User";
 import Order from "@/models/Order";
+import Payment from "@/models/Payment";
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -19,10 +20,12 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     const customer = await Customer.findById(id);
     if (!customer) return NextResponse.json({ error: "Customer not found" }, { status: 404 });
 
-    // Get customer's orders
-    const orders = await Order.find({ customer: id }).sort({ createdAt: -1 });
+    // Get customer's orders and payments
+    const orders = await Order.find({ customer: id }).sort({ createdAt: 1 });
+    const payments = await Payment.find({ customer: id }).sort({ createdAt: 1 });
 
-    return NextResponse.json({ customer, orders });
+    // We can also sort them together if we want on the client side, but returning both
+    return NextResponse.json({ customer, orders, payments });
   } catch (error) {
     console.error("Fetch customer detail error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
