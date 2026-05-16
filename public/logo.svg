@@ -1,4 +1,7 @@
 <svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <!-- Solid White Background -->
+  <rect width="512" height="512" fill="#ffffff" />
+
   <defs>
     <!-- Premium Indigo Gradient for the V -->
     <linearGradient id="indigoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -19,8 +22,6 @@
     </filter>
   </defs>
 
-  <!-- No Background (Completely Transparent) -->
-  
   <g filter="url(#shadow)">
     <!-- The V Shape (Sharp & Minimalist) -->
     <path d="M 125 100 L 256 360 L 387 100 L 315 100 L 256 220 L 197 100 Z" fill="url(#indigoGrad)" />

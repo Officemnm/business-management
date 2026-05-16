@@ -39,8 +39,8 @@ export const metadata: Metadata = {
   },
   description: "পেশাদার ব্যবসা ব্যবস্থাপনা প্ল্যাটফর্ম",
   icons: {
-    icon: "/favicon.png",
-    apple: "/favicon.png",
+    icon: "/favicon.svg",
+    apple: "/favicon.svg",
   },
   applicationName: "ভ্যারাইটিজ কসমেটিক্স",
   formatDetection: {

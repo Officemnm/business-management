@@ -1,0 +1,29 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <!-- Solid White Background -->
+  <rect width="512" height="512" fill="#ffffff" />
+  <defs>
+    <linearGradient id="indigoGradFavicon" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#818cf8" />
+      <stop offset="50%" stop-color="#4f46e5" />
+      <stop offset="100%" stop-color="#312e81" />
+    </linearGradient>
+
+    <linearGradient id="slateGradFavicon" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#64748b" />
+      <stop offset="100%" stop-color="#334155" />
+    </linearGradient>
+    
+    <filter id="shadowFavicon" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#4f46e5" flood-opacity="0.25" />
+    </filter>
+  </defs>
+
+  <!-- Scaled up and centered just the icon part for a clear Favicon -->
+  <g filter="url(#shadowFavicon)" transform="translate(48, 50) scale(1.3)">
+    <!-- The V Shape -->
+    <path d="M 125 70 L 256 330 L 387 70 L 315 70 L 256 190 L 197 70 Z" fill="url(#indigoGradFavicon)" />
+    
+    <!-- The C Shape -->
+    <path d="M 370 250 C 330 350 180 360 100 270 C 20 180 100 60 200 30 L 180 70 C 110 100 60 180 120 240 C 170 290 275 300 325 225 Z" fill="url(#slateGradFavicon)" />
+  </g>
+</svg>
