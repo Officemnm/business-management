@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { ArrowLeft, FileText, Phone, MapPin, CheckCircle2, AlertCircle } from "lucide-react";
+import Link from "next/link";
+import { ArrowLeft, FileText, Phone, MapPin, CheckCircle2, AlertCircle, Eye } from "lucide-react";
 import toast from "react-hot-toast";
 
 interface Order {
@@ -128,9 +129,12 @@ export default function CustomerDetailsPage() {
               <div key={order._id} className="bg-white rounded-[16px] border border-slate-200/60 shadow-sm p-4 sm:p-5 hover:border-indigo-300 transition-all">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-3 pb-3 border-b border-slate-100">
                   <div className="flex items-center gap-2">
-                    <span className="bg-indigo-50 text-indigo-700 text-[12px] font-bold px-2.5 py-1 rounded-[6px]">
+                    <span className="bg-indigo-50 text-indigo-700 text-[12px] font-bold px-2.5 py-1 rounded-[6px] hover:bg-indigo-100 transition-colors cursor-default">
                       #{order.orderNumber || order._id.slice(-6).toUpperCase()}
                     </span>
+                    <Link href={`/dashboard/orders?invoiceId=${order._id}`} className="w-7 h-7 rounded-[6px] bg-slate-50 border border-slate-200 text-slate-500 flex items-center justify-center hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200 transition-all shadow-sm group" title="ইনভয়েস দেখুন">
+                      <Eye size={13} className="group-hover:scale-110 transition-transform" />
+                    </Link>
                     <span className="text-[12px] font-medium text-slate-500 border border-slate-200 px-2 py-1 rounded-[6px] bg-slate-50">
                       {new Date(order.createdAt).toLocaleDateString("bn-BD", { day: "numeric", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit" })}
                     </span>

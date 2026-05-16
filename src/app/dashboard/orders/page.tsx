@@ -138,6 +138,20 @@ export default function OrdersPage() {
 
   useEffect(() => { loadData(); }, []);
 
+  useEffect(() => {
+    if (orders.length > 0 && typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const invoiceId = params.get("invoiceId");
+      if (invoiceId) {
+        const orderToView = orders.find(o => o._id === invoiceId);
+        if (orderToView) {
+          setInvoiceOrder(orderToView);
+          window.history.replaceState({}, '', '/dashboard/orders');
+        }
+      }
+    }
+  }, [orders]);
+
   const confirmDeleteOrder = async () => {
     if (!deleteConfirmation) return;
     try {
