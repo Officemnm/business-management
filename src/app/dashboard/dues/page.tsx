@@ -210,53 +210,57 @@ export default function DuesPage() {
         </div>
       </div>
 
-      {/* Customer Table */}
-      <div className="bg-white rounded-[20px] shadow-sm border border-slate-200/60 overflow-hidden">
-        <div className="px-6 py-4 flex items-center justify-between border-b border-slate-200/60 bg-slate-50/50">
-          <h3 className="text-[16px] font-bold text-slate-800">বকেয়া কাস্টমার তালিকা</h3>
-          <span className="text-[12px] font-bold px-3 py-1 rounded-[8px] bg-rose-50 text-rose-600 border border-rose-100">বাকি: {customers.length} জন</span>
-        </div>
-        {customers.length === 0 ? (
-          <div className="py-20 flex flex-col items-center justify-center text-center">
-            <div className="w-16 h-16 rounded-full bg-emerald-50 flex items-center justify-center mb-4 border border-emerald-100">
-              <CheckCircle2 size={28} strokeWidth={2} className="text-emerald-500" />
-            </div>
-            <p className="text-[15px] font-bold text-slate-900 mb-1">সব বকেয়া পরিশোধিত</p>
-            <p className="text-[13px] font-medium text-slate-500">কোনো কাস্টমারের বাকি নেই</p>
+      {/* Customer List - Card Format */}
+      <div className="flex items-center justify-between mb-4 px-1">
+        <h3 className="text-[16px] font-bold text-slate-800">বকেয়া কাস্টমার তালিকা</h3>
+        <span className="text-[12px] font-bold px-3 py-1 rounded-[8px] bg-rose-50 text-rose-600 border border-rose-100">বাকি: {customers.length} জন</span>
+      </div>
+
+      {customers.length === 0 ? (
+        <div className="bg-white rounded-[20px] py-20 flex flex-col items-center justify-center text-center shadow-sm border border-slate-200/60">
+          <div className="w-16 h-16 rounded-full bg-emerald-50 flex items-center justify-center mb-4 border border-emerald-100">
+            <CheckCircle2 size={28} strokeWidth={2} className="text-emerald-500" />
           </div>
-        ) : (
-          <div className="flex flex-col">
-            {customers.map((c, idx) => (
-              <div key={c._id} className="flex items-center gap-2 sm:gap-4 px-3 sm:px-6 py-3 sm:py-4 transition-colors hover:bg-slate-50 border-b border-slate-100 last:border-0">
-                <div className="hidden sm:flex w-12 h-12 rounded-[14px] items-center justify-center shrink-0 text-[15px] font-bold bg-rose-50 text-rose-600 border border-rose-100/50">
-                  {c.name[0]?.toUpperCase() || "?"}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-[14px] sm:text-[15px] font-bold text-slate-900 truncate">{c.name}</p>
-                  <span className="flex items-center gap-1 sm:gap-1.5 text-[10px] sm:text-[12px] font-medium mt-1 text-slate-500 bg-slate-100/60 px-1.5 sm:px-2 py-0.5 rounded-md inline-flex max-w-[90px] sm:max-w-[200px] truncate w-[max-content]">
-                    <Phone size={10} className="text-slate-400 shrink-0 sm:w-3 sm:h-3" /> <span className="truncate">{c.phone}</span>
+          <p className="text-[15px] font-bold text-slate-900 mb-1">সব বকেয়া পরিশোধিত</p>
+          <p className="text-[13px] font-medium text-slate-500">কোনো কাস্টমারের বাকি নেই</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 gap-3">
+          {customers.map((c, idx) => (
+            <div key={c._id} className="bg-white rounded-[16px] border border-slate-200/60 shadow-sm p-4 flex items-center gap-3 transition-all hover:border-slate-300 hover:shadow-md">
+              <div className="hidden sm:flex w-12 h-12 rounded-[14px] items-center justify-center shrink-0 text-[15px] font-bold bg-rose-50 text-rose-600 border border-rose-100/50">
+                {c.name[0]?.toUpperCase() || "?"}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-[15px] font-bold text-slate-900 truncate">{c.name}</p>
+                <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+                  <span className="flex items-center gap-1 text-[11px] sm:text-[12px] font-medium text-slate-500 bg-slate-100/60 px-2 py-0.5 rounded-md truncate">
+                    <Phone size={10} className="text-slate-400 shrink-0" /> <span className="truncate">{c.phone}</span>
                   </span>
                 </div>
-                <div className="text-right shrink-0 mx-1 sm:mx-2 md:mx-6 min-w-[65px] sm:min-w-[90px]">
-                  <p className="text-[9px] sm:text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-0.5">বকেয়া</p>
-                  <p className="text-[13px] sm:text-[16px] font-black text-rose-600 tabular-nums">৳{c.totalDue.toLocaleString("en-US")}</p>
-                </div>
-                <div className="flex flex-col sm:flex-row items-center gap-1.5 sm:gap-2 shrink-0">
-                  <button onClick={() => { setHistoryCustomer(c); setPayments([]); }}
-                    className="w-7 h-7 sm:w-10 sm:h-10 rounded-[8px] sm:rounded-[12px] bg-white border border-slate-200 text-slate-500 flex items-center justify-center hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-200 transition-all shadow-sm group" title="পেমেন্ট হিস্ট্রি">
-                    <History size={12} strokeWidth={2} className="sm:w-4 sm:h-4 group-hover:rotate-12 transition-transform" />
-                  </button>
-                  <button onClick={() => { setCollectCustomer(c); setCollectAmount(""); }}
-                    className="w-7 h-7 sm:w-auto sm:h-10 sm:px-4 rounded-[8px] sm:rounded-[12px] sm:text-[13px] sm:font-bold text-white bg-indigo-600 hover:bg-indigo-700 shadow-md transition-all active:scale-95 flex items-center justify-center gap-0 sm:gap-2" title="টাকা কালেক্ট">
-                    <Banknote size={12} strokeWidth={2.5} className="sm:w-4 sm:h-4" />
-                    <span className="hidden sm:inline">কালেক্ট</span>
-                  </button>
-                </div>
               </div>
-            ))}
-          </div>
-        )}
-      </div>
+              
+              <div className="text-right shrink-0 mx-1 sm:mx-2 md:mx-4 min-w-[65px] sm:min-w-[90px]">
+                <p className="text-[9px] sm:text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-0.5">বকেয়া</p>
+                <p className="text-[13px] sm:text-[16px] font-black text-rose-600 tabular-nums">৳{c.totalDue.toLocaleString("en-US")}</p>
+              </div>
+
+              {/* Actions */}
+              <div className="flex items-center gap-2 shrink-0">
+                <button onClick={() => { setHistoryCustomer(c); setPayments([]); }}
+                  className="w-10 h-10 rounded-[12px] bg-white border border-slate-200 text-slate-500 flex items-center justify-center hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-200 transition-all shadow-sm group" title="পেমেন্ট হিস্ট্রি">
+                  <History size={16} className="group-hover:rotate-12 transition-transform" />
+                </button>
+                <button onClick={() => { setCollectCustomer(c); setCollectAmount(""); }}
+                  className="w-auto h-10 px-4 rounded-[12px] text-[13px] font-bold text-white bg-indigo-600 hover:bg-indigo-700 shadow-sm transition-all active:scale-95 flex items-center justify-center gap-2" title="টাকা কালেক্ট">
+                  <Banknote size={16} />
+                  <span className="hidden sm:inline">কালেক্ট</span>
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* Payment History Modal */}
       {historyCustomer && (

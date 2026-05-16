@@ -50,6 +50,11 @@
 			"label": "run-bat",
 			"type": "shell",
 			"command": ".\\push.bat"
+		},
+		{
+			"label": "run-bat-dues",
+			"type": "shell",
+			"command": ".\\push-dues.bat"
 		}
 	]
 }
