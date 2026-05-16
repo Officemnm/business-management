@@ -303,7 +303,6 @@ export default function CustomersPage() {
             ))}
         </div>
       )}
-      </div>
 
       {/* ===================== DELETE CONFIRMATION MODAL ===================== */}
       <AnimatedModal
