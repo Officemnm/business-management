@@ -3,6 +3,31 @@ import { verifyToken } from "@/lib/jwt";
 import dbConnect from "@/lib/db";
 import Customer from "@/models/Customer";
 import User from "@/models/User";
+import Order from "@/models/Order";
+
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  try {
+    const token = req.cookies.get("token")?.value;
+    if (!token) return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+    const payload = verifyToken(token);
+    if (!payload || !payload.userId) return NextResponse.json({ error: "Invalid token" }, { status: 401 });
+
+    await dbConnect();
+    const { id } = await params;
+    
+    // Get the customer
+    const customer = await Customer.findById(id);
+    if (!customer) return NextResponse.json({ error: "Customer not found" }, { status: 404 });
+
+    // Get customer's orders
+    const orders = await Order.find({ customer: id }).sort({ createdAt: -1 });
+
+    return NextResponse.json({ customer, orders });
+  } catch (error) {
+    console.error("Fetch customer detail error:", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  }
+}
 
 export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
