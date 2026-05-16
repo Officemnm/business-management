@@ -64,14 +64,14 @@ export default function LoginPage() {
             initial={{ scale: 0.8, opacity: 0 }} 
             animate={{ scale: 1, opacity: 1 }} 
             transition={{ duration: 0.5, delay: 0.1 }}
-            className="mb-5 p-3 rounded-[20px] bg-white shadow-sm border border-slate-200/60"
+            className="mb-5 flex items-center justify-center"
           >
             <Image
               src="/logo.svg"
               alt="ভ্যারাইটিজ কসমেটিক্স"
-              width={70}
-              height={70}
-              className="object-contain"
+              width={90}
+              height={90}
+              className="object-contain drop-shadow-sm"
               priority
             />
           </motion.div>
