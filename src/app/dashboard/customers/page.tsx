@@ -265,43 +265,43 @@ export default function CustomersPage() {
                 (c.address && c.address.toLowerCase().includes(searchQuery.toLowerCase()))
               )
               .map((c, idx) => (
-              <div key={c._id} className="flex items-center gap-4 px-6 py-4 transition-colors hover:bg-slate-50 border-b border-slate-100 last:border-0">
-                <div className="w-12 h-12 rounded-[14px] flex items-center justify-center shrink-0 text-[15px] font-bold bg-indigo-50 text-indigo-600 border border-indigo-100/50">
+              <div key={c._id} className="flex items-center gap-2 sm:gap-4 px-3 sm:px-6 py-3 sm:py-4 transition-colors hover:bg-slate-50 border-b border-slate-100 last:border-0">
+                <div className="hidden sm:flex w-12 h-12 rounded-[14px] items-center justify-center shrink-0 text-[15px] font-bold bg-indigo-50 text-indigo-600 border border-indigo-100/50">
                   {c.name[0]?.toUpperCase() || "?"}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-[15px] font-bold text-slate-900 truncate">{c.name}</p>
-                  <div className="flex items-center gap-3 mt-1.5 flex-wrap">
-                    <span className="flex items-center gap-1.5 text-[12px] font-medium text-slate-500 bg-slate-100/60 px-2 py-0.5 rounded-md">
-                      <Phone size={12} className="text-slate-400" /> {c.phone}
+                  <p className="text-[14px] sm:text-[15px] font-bold text-slate-900 truncate">{c.name}</p>
+                  <div className="flex items-center gap-1.5 sm:gap-3 mt-1 sm:mt-1.5 flex-wrap">
+                    <span className="flex items-center gap-1 sm:gap-1.5 text-[10px] sm:text-[12px] font-medium text-slate-500 bg-slate-100/60 px-1.5 sm:px-2 py-0.5 rounded-md truncate max-w-[80px] sm:max-w-none">
+                      <Phone size={10} className="text-slate-400 shrink-0 sm:w-3 sm:h-3" /> <span className="truncate">{c.phone}</span>
                     </span>
                     {c.address && (
-                      <span className="flex items-center gap-1.5 text-[12px] font-medium text-slate-500 bg-slate-100/60 px-2 py-0.5 rounded-md">
-                        <MapPin size={12} className="text-slate-400" /> {c.address}
+                      <span className="flex items-center gap-1 sm:gap-1.5 text-[10px] sm:text-[12px] font-medium text-slate-500 bg-slate-100/60 px-1.5 sm:px-2 py-0.5 rounded-md truncate max-w-[80px] sm:max-w-none">
+                        <MapPin size={10} className="text-slate-400 shrink-0 sm:w-3 sm:h-3" /> <span className="truncate">{c.address}</span>
                       </span>
                     )}
                   </div>
                 </div>
-                <div className="text-right shrink-0 mx-2 md:mx-6 min-w-[90px]">
+                <div className="text-right shrink-0 mx-1 sm:mx-2 md:mx-6 min-w-[65px] sm:min-w-[90px]">
                   {c.totalDue > 0 ? (
                     <div className="flex flex-col items-end">
-                      <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">বকেয়া</p>
-                      <p className="text-[16px] font-black text-rose-600 tabular-nums">৳{c.totalDue.toLocaleString("en-US")}</p>
+                      <p className="text-[9px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">বকেয়া</p>
+                      <p className="text-[13px] sm:text-[16px] font-black text-rose-600 tabular-nums">৳{c.totalDue.toLocaleString("en-US")}</p>
                     </div>
                   ) : (
-                    <span className="inline-flex items-center gap-1 text-[12px] font-bold px-3 py-1.5 rounded-[8px] bg-emerald-50 text-emerald-600 border border-emerald-100">
-                      <CheckCircle2 size={14} /> পরিশোধিত
+                    <span className="inline-flex items-center gap-1 text-[10px] sm:text-[12px] font-bold px-1.5 sm:px-3 py-1 sm:py-1.5 rounded-[8px] bg-emerald-50 text-emerald-600 border border-emerald-100">
+                      <CheckCircle2 size={12} className="sm:w-3.5 sm:h-3.5" /> <span className="hidden sm:inline">পরিশোধিত</span><span className="sm:hidden">পেইড</span>
                     </span>
                   )}
                 </div>
-                <div className="flex items-center gap-2 shrink-0">
+                <div className="flex flex-col sm:flex-row items-center gap-1.5 sm:gap-2 shrink-0">
                   <button onClick={() => openEdit(c)}
-                    className="w-9 h-9 md:w-10 md:h-10 rounded-[12px] bg-white border border-slate-200 text-slate-500 flex items-center justify-center hover:bg-emerald-50 hover:text-emerald-600 hover:border-emerald-200 transition-all shadow-sm group" title="সম্পাদনা">
-                    <Pencil size={16} className="group-hover:scale-110 transition-transform" />
+                    className="w-7 h-7 sm:w-9 sm:h-9 md:w-10 md:h-10 rounded-[8px] sm:rounded-[12px] bg-white border border-slate-200 text-slate-500 flex items-center justify-center hover:bg-emerald-50 hover:text-emerald-600 hover:border-emerald-200 transition-all shadow-sm group" title="সম্পাদনা">
+                    <Pencil size={12} className="sm:w-4 sm:h-4 group-hover:scale-110 transition-transform" />
                   </button>
                   <button onClick={() => setDeleteConfirmation(c._id)}
-                    className="w-9 h-9 md:w-10 md:h-10 rounded-[12px] bg-white border border-slate-200 text-slate-500 flex items-center justify-center hover:bg-rose-50 hover:text-rose-600 hover:border-rose-200 transition-all shadow-sm group" title="মুছুন">
-                    <Trash2 size={16} className="group-hover:scale-110 transition-transform" />
+                    className="w-7 h-7 sm:w-9 sm:h-9 md:w-10 md:h-10 rounded-[8px] sm:rounded-[12px] bg-white border border-slate-200 text-slate-500 flex items-center justify-center hover:bg-rose-50 hover:text-rose-600 hover:border-rose-200 transition-all shadow-sm group" title="মুছে ফেলুন">
+                    <Trash2 size={12} className="sm:w-4 sm:h-4 group-hover:scale-110 transition-transform" />
                   </button>
                 </div>
               </div>
