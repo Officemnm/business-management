@@ -67,7 +67,7 @@ export default function LoginPage() {
             className="mb-5 p-3 rounded-[20px] bg-white shadow-sm border border-slate-200/60"
           >
             <Image
-              src="/logo.png"
+              src="/logo.svg"
               alt="ভ্যারাইটিজ কসমেটিক্স"
               width={70}
               height={70}

@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 import { Inter } from "next/font/google";
 import { Toaster } from "react-hot-toast";
+import SplashScreen from "@/components/SplashScreen";
 import "./globals.css";
 
 const inter = Inter({
@@ -64,6 +65,7 @@ export default function RootLayout({
   return (
     <html lang="bn" className={`${englishFont.variable} ${banglaFont.variable} ${inter.variable}`}>
       <body className="antialiased">
+        <SplashScreen />
         <Toaster
           position="top-center"
           toastOptions={{

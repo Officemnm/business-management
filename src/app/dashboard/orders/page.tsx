@@ -1130,7 +1130,7 @@ export default function OrdersPage() {
           <div id="print-invoice" className="bg-white p-8 sm:p-12 w-full max-w-[210mm] shadow-2xl relative text-slate-900 rounded-[16px] sm:rounded-none" style={{ minHeight: "297mm" }}>
             <div className="flex justify-between items-start mb-8 pb-6 border-b-2 border-slate-100 -mt-6">
               <div className="flex flex-col items-start pt-2">
-                <img src="/logo.png" alt="লোগো" className="w-28 h-28 object-contain mb-3" />
+                <img src="/logo.svg" alt="লোগো" className="w-28 h-28 object-contain mb-3" />
                 <h2 className="text-[28px] font-black text-slate-900 tracking-tight mb-1">ভ্যারাইটিজ কসমেটিক্স</h2>
                 <p className="text-[13px] font-medium text-slate-600 max-w-[300px] leading-relaxed">৫১ নং ওয়ার্ড, সাতাইশ রোড, খরতৈল, সুখিনগর, গাজীপুরা, টঙ্গী, গাজীপুর</p>
                 <p className="text-[13px] text-slate-700 mt-1 font-bold">মোবাইল: +88016084-19251, +8801962-090245</p>

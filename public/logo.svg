@@ -1,0 +1,61 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Elegant gold gradient -->
+    <linearGradient id="gold" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFD700" />
+      <stop offset="50%" stop-color="#FDB931" />
+      <stop offset="100%" stop-color="#9A8114" />
+    </linearGradient>
+    
+    <!-- Rich emerald/jade gradient, matching the provided logo -->
+    <linearGradient id="emerald" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#064E3B" />
+      <stop offset="50%" stop-color="#047857" />
+      <stop offset="100%" stop-color="#10B981" />
+    </linearGradient>
+
+    <!-- Subtle shadow -->
+    <filter id="shadow" x="-5%" y="-5%" width="110%" height="110%">
+      <feDropShadow dx="2" dy="6" stdDeviation="8" flood-color="#064E3B" flood-opacity="0.25" />
+    </filter>
+    
+    <!-- Soft glow -->
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <g filter="url(#shadow)">
+    <!-- Base Background Circle (White with subtle border) -->
+    <circle cx="256" cy="256" r="240" fill="#ffffff" stroke="url(#gold)" stroke-width="4" />
+    
+    <!-- Inner Decorative Emerald Ring -->
+    <circle cx="256" cy="256" r="220" fill="none" stroke="url(#emerald)" stroke-width="6" stroke-dasharray="10 15" opacity="0.8"/>
+
+    <!-- Decorative Corner Filigree Left -->
+    <path d="M 120 180 Q 90 256 120 332 Q 150 256 120 180" fill="url(#gold)" opacity="0.6" />
+    
+    <!-- Decorative Corner Filigree Right -->
+    <path d="M 392 180 Q 422 256 392 332 Q 362 256 392 180" fill="url(#gold)" opacity="0.6" />
+
+    <!-- Main Emblem: Abstract stylized 'VC' blending into a cosmetic leaf/lotus -->
+    <!-- The V -->
+    <path d="M 180 160 L 256 320 L 280 270 L 230 160 Z" fill="url(#emerald)" />
+    <!-- The C / Leaf swirl overlapping the V -->
+    <path d="M 330 160 C 370 200 370 280 300 320 C 270 338 230 350 230 350 C 230 350 260 330 286 295 C 320 250 290 190 270 170 Z" fill="url(#gold)" filter="url(#glow)"/>
+
+    <!-- Sparkle Graphic -->
+    <path d="M 256 90 L 262 120 L 292 126 L 262 132 L 256 162 L 250 132 L 220 126 L 250 120 Z" fill="url(#gold)" filter="url(#glow)" />
+    
+    <!-- Botanical aesthetic element (small leaf at bottom) -->
+    <path d="M 256 360 C 266 380 286 390 256 410 C 226 390 246 380 256 360 Z" fill="url(#emerald)" />
+
+    <!-- Text styling -->
+    <!-- Because text fonts might not render if missing, using path for highly stylized VC -->
+    <text x="256" y="450" font-family="'Georgia', serif" font-size="32" font-weight="bold" fill="url(#emerald)" text-anchor="middle" letter-spacing="4">VARIETIES COSMETICS</text>
+  </g>
+</svg>

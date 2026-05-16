@@ -96,7 +96,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         {/* Logo Area */}
         <div className="flex items-center gap-4 px-7 h-[80px] shrink-0 border-b border-slate-100">
           <div className="w-10 h-10 rounded-[12px] overflow-hidden flex items-center justify-center shrink-0 bg-slate-900 shadow-md">
-            <Image src="/logo.png" alt="লোগো" width={28} height={28} className="object-contain" />
+            <Image src="/logo.svg" alt="লোগো" width={28} height={28} className="object-contain" />
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-[15px] font-bold tracking-tight text-slate-900 truncate">
