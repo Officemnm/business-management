@@ -50,6 +50,36 @@ export async function POST(req: NextRequest) {
 
     const body = await req.json();
     const createdBy = currentUser?.assignedASR || currentUser?.username || "unknown";
+
+    // Check for duplicate: same name + phone + address = duplicate customer
+    const name = (body.name || "").trim().toLowerCase();
+    const phone = (body.phone || "").trim();
+    const address = (body.address || "").trim().toLowerCase();
+
+    const duplicateFilter: Record<string, unknown> = {
+      active: true,
+      createdBy,
+    };
+
+    // Build case-insensitive name match
+    duplicateFilter.name = { $regex: new RegExp(`^${name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i') };
+
+    if (phone && phone !== "N/A") {
+      duplicateFilter.phone = phone;
+    }
+
+    if (address) {
+      duplicateFilter.address = { $regex: new RegExp(`^${address.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i') };
+    }
+
+    const existing = await Customer.findOne(duplicateFilter);
+    if (existing) {
+      return NextResponse.json(
+        { error: "এই কাস্টমার আগে থেকেই বিদ্যমান", existingCustomer: existing },
+        { status: 409 }
+      );
+    }
+
     const customer = await Customer.create({ ...body, createdBy });
     return NextResponse.json(customer, { status: 201 });
   } catch (error) {

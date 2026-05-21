@@ -49,6 +49,19 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
     const body = await req.json();
     const customer = await Customer.findByIdAndUpdate(id, body, { new: true });
     if (!customer) return NextResponse.json({ error: "Customer not found" }, { status: 404 });
+
+    // If name was updated, propagate to all related Orders and Payments
+    if (body.name) {
+      await Order.updateMany(
+        { customer: id },
+        { $set: { customerName: body.name } }
+      );
+      await Payment.updateMany(
+        { customer: id },
+        { $set: { customerName: body.name } }
+      );
+    }
+
     return NextResponse.json(customer);
   } catch (error) {
     console.error("Update customer error:", error);

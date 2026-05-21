@@ -297,7 +297,14 @@ export default function OrdersPage() {
             address: customerAddressInput.trim(),
           }),
         });
-        if (custRes.ok) {
+        if (custRes.status === 409) {
+          const data = await custRes.json();
+          toast.error("এই কাস্টমার আগে থেকেই বিদ্যমান");
+          if (data.existingCustomer) {
+            customerIdToUse = data.existingCustomer._id;
+            customerAddress = data.existingCustomer.address || "";
+          }
+        } else if (custRes.ok) {
           const newCust = await custRes.json();
           customerIdToUse = newCust._id;
           customerAddress = newCust.address || "";
@@ -737,8 +744,11 @@ export default function OrdersPage() {
         {/* Delivery Complete Form */}
         {ds === "pending" && deliveryAction === "complete" && (() => {
           const effectiveTotal = viewOrder.totalAmount - returnTotal;
+          const alreadyPaid = viewOrder.paidAmount || 0;
+          const remainingToPay = Math.max(0, effectiveTotal - alreadyPaid);
           const paid = Number(deliveryPaid) || 0;
-          const dueAfter = Math.max(0, effectiveTotal - paid);
+          const dueAfter = Math.max(0, remainingToPay - paid);
+          const isFullyPaid = remainingToPay <= 0;
           return (
           <div className="rounded-[16px] p-5 bg-emerald-50/50 border border-emerald-100 shadow-sm animate-in slide-in-from-top-2 duration-200">
             <div className="flex items-center gap-2.5 mb-4">
@@ -799,18 +809,38 @@ export default function OrdersPage() {
                     : `মোট: ৳${viewOrder.totalAmount}`}
                 </div>
               </div>
-              <div className="relative">
-                <label className="absolute left-3 -top-2.5 px-1.5 bg-emerald-50 text-[11px] font-bold text-emerald-600 uppercase tracking-wider">আদায় (৳)</label>
-                <input type="number" value={deliveryPaid}
-                  onChange={(e) => setDeliveryPaid(e.target.value === "" ? "" : Number(e.target.value))}
-                  onFocus={(e) => e.target.select()}
-                  placeholder="কত টাকা দেওয়া হয়েছে?"
-                  min={0} max={effectiveTotal}
-                  className="w-full h-12 px-4 rounded-[12px] text-[15px] font-bold tabular-nums outline-none bg-white border border-emerald-200 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 transition-all shadow-sm" />
-              </div>
+              {/* Show already paid info */}
+              {alreadyPaid > 0 && (
+                <div className="mb-3 p-3 rounded-[10px] bg-emerald-50 border border-emerald-100 flex items-center justify-between">
+                  <span className="text-[12px] font-bold text-emerald-600 uppercase tracking-wider">অর্ডারের সময় আদায়</span>
+                  <span className="text-[15px] font-black text-emerald-600 tabular-nums">৳{alreadyPaid.toLocaleString("en-US")}</span>
+                </div>
+              )}
+
+              {isFullyPaid ? (
+                <div className="p-4 rounded-[12px] bg-emerald-50 border border-emerald-200 flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-emerald-100 flex items-center justify-center">
+                    <CheckCircle2 size={20} className="text-emerald-600" strokeWidth={2.5} />
+                  </div>
+                  <div>
+                    <p className="text-[14px] font-bold text-emerald-700">সম্পূর্ণ পরিশোধিত</p>
+                    <p className="text-[12px] font-medium text-emerald-600 mt-0.5">এই অর্ডারের টাকা আগেই আদায় করা হয়েছে</p>
+                  </div>
+                </div>
+              ) : (
+                <div className="relative">
+                  <label className="absolute left-3 -top-2.5 px-1.5 bg-emerald-50 text-[11px] font-bold text-emerald-600 uppercase tracking-wider">আদায় (৳)</label>
+                  <input type="number" value={deliveryPaid}
+                    onChange={(e) => setDeliveryPaid(e.target.value === "" ? "" : Number(e.target.value))}
+                    onFocus={(e) => e.target.select()}
+                    placeholder={`বাকি ৳${remainingToPay.toLocaleString("en-US")} — কত দিচ্ছে?`}
+                    min={0} max={remainingToPay}
+                    className="w-full h-12 px-4 rounded-[12px] text-[15px] font-bold tabular-nums outline-none bg-white border border-emerald-200 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 transition-all shadow-sm" />
+                </div>
+              )}
             </div>
             
-            {dueAfter > 0 && (
+            {dueAfter > 0 && !isFullyPaid && (
               <div className="mb-5 p-3 rounded-[10px] bg-rose-50 border border-rose-100 flex items-center justify-between">
                 <span className="text-[12px] font-bold text-rose-600 uppercase tracking-wider">বাকি থাকবে</span>
                 <span className="text-[15px] font-black text-rose-600 tabular-nums">৳{dueAfter.toLocaleString("en-US")}</span>
@@ -922,8 +952,30 @@ export default function OrdersPage() {
             )}
             <div className="mb-4">
               <label className="block text-[12px] font-bold text-slate-600 uppercase tracking-wider mb-1.5">কাস্টমার নাম</label>
-              <input value={editOrder.customerName} onChange={(e) => setEditOrder({ ...editOrder, customerName: e.target.value })}
-                className="w-full h-11 px-3.5 rounded-[12px] text-[14px] font-bold outline-none bg-white text-slate-900 border border-slate-200 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 transition-all shadow-sm" />
+              <div className="relative">
+                <select
+                  value={editOrder.customer || ""}
+                  onChange={(e) => {
+                    const selectedId = e.target.value;
+                    if (selectedId) {
+                      const cust = customers.find((c) => c._id === selectedId);
+                      if (cust) {
+                        setEditOrder({ ...editOrder, customer: cust._id, customerName: cust.name });
+                      }
+                    }
+                  }}
+                  className="w-full h-11 px-3.5 rounded-[12px] text-[14px] font-bold outline-none bg-white text-slate-900 border border-slate-200 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 transition-all shadow-sm appearance-none cursor-pointer"
+                >
+                  <option value="" disabled>কাস্টমার নির্বাচন করুন</option>
+                  {customers.map((c) => (
+                    <option key={c._id} value={c._id}>{c.name} — {c.phone}</option>
+                  ))}
+                </select>
+                <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
+                  <Search size={16} />
+                </div>
+              </div>
+              <p className="text-[11px] font-medium text-slate-400 mt-1.5">কাস্টমার লিস্ট থেকে নির্বাচন করুন</p>
             </div>
 
             <div className="mb-5 bg-slate-50 p-3 rounded-[16px] border border-slate-100 shadow-inner">
@@ -1559,12 +1611,16 @@ export default function OrdersPage() {
                     <button onClick={() => setViewOrder(order)} className="w-10 h-10 rounded-[14px] bg-white border border-slate-200/80 text-slate-500 flex items-center justify-center hover:bg-slate-50 hover:text-blue-600 hover:border-blue-200 hover:shadow-[0_4px_12px_-4px_rgba(59,130,246,0.2)] transition-all shadow-sm group" title="বিস্তারিত">
                       <Eye size={16} className="group-hover:scale-110 transition-transform" />
                     </button>
+                    {!(order.deliveryStatus === "delivered" && currentUser?.role !== "admin") && (
+                    <>
                     <button onClick={() => setEditOrder(JSON.parse(JSON.stringify(order)))} className="w-10 h-10 rounded-[14px] bg-white border border-slate-200/80 text-slate-500 flex items-center justify-center hover:bg-slate-50 hover:text-emerald-600 hover:border-emerald-200 hover:shadow-[0_4px_12px_-4px_rgba(16,185,129,0.2)] transition-all shadow-sm group" title="এডিট">
                       <Pencil size={15} className="group-hover:scale-110 transition-transform" />
                     </button>
                     <button onClick={() => setDeleteConfirmation(order._id)} className="w-10 h-10 rounded-[14px] bg-white border border-slate-200/80 text-slate-500 flex items-center justify-center hover:bg-slate-50 hover:text-rose-600 hover:border-rose-200 hover:shadow-[0_4px_12px_-4px_rgba(244,63,94,0.2)] transition-all shadow-sm group" title="ডিলিট">
                       <Trash2 size={15} className="group-hover:scale-110 transition-transform" />
                     </button>
+                    </>
+                    )}
                  </div>
               </div>
             </motion.div>

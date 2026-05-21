@@ -48,8 +48,15 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
     }
 
     const { id } = await params;
-    const order = await Order.findByIdAndDelete(id);
+    const order = await Order.findById(id);
     if (!order) return NextResponse.json({ error: "Not found" }, { status: 404 });
+
+    // Only admin can delete delivered orders
+    if (order.deliveryStatus === "delivered" && payload.role !== "admin") {
+      return NextResponse.json({ error: "ডেলিভারি সম্পন্ন অর্ডার শুধুমাত্র এডমিন মুছতে পারবে" }, { status: 403 });
+    }
+
+    await Order.findByIdAndDelete(id);
     return NextResponse.json({ message: "Deleted" });
   } catch (error) {
     console.error("Delete order error:", error);
@@ -80,12 +87,14 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
     if (body.deliveryStatus === "delivered" && oldOrder.deliveryStatus !== "delivered") {
       const returnAmount = body.returnAmount || 0;
       const finalAmount = Math.max(0, oldOrder.totalAmount - returnAmount);
-      const newPaid = body.paidAmount ?? oldOrder.paidAmount;
-      const newDue = Math.max(0, finalAmount - newPaid);
+      // Total paid = amount paid at order creation + amount paid at delivery
+      const deliveryPaid = body.paidAmount ?? 0;
+      const totalPaid = oldOrder.paidAmount + deliveryPaid;
+      const newDue = Math.max(0, finalAmount - totalPaid);
 
       body.returnAmount = returnAmount;
       body.finalAmount = finalAmount;
-      body.paidAmount = newPaid;
+      body.paidAmount = totalPaid;
       body.dueAmount = newDue;
       body.status = "completed";
       body.deliveryDate = new Date(); // Record the exact date when it was delivered/collected

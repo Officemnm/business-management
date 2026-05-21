@@ -54,6 +54,11 @@ export default function CustomersPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name: name.trim(), phone: phone.trim(), address: address.trim() }),
       });
+      if (res.status === 409) {
+        toast.error("এই কাস্টমার আগে থেকেই বিদ্যমান");
+        setSubmitting(false);
+        return;
+      }
       if (!res.ok) throw new Error();
       toast.success("কাস্টমার যোগ হয়েছে");
       setShowForm(false); setName(""); setPhone(""); setAddress("");

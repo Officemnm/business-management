@@ -146,7 +146,14 @@ export default function AddOrderPage() {
             address: customerAddressInput.trim(),
           }),
         });
-        if (custRes.ok) {
+        if (custRes.status === 409) {
+          const data = await custRes.json();
+          toast.error("এই কাস্টমার আগে থেকেই বিদ্যমান");
+          if (data.existingCustomer) {
+            customerIdToUse = data.existingCustomer._id;
+            customerAddress = data.existingCustomer.address || "";
+          }
+        } else if (custRes.ok) {
           const newCust = await custRes.json();
           customerIdToUse = newCust._id;
           customerAddress = newCust.address || "";
