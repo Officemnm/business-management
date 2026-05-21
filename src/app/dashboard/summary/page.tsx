@@ -31,6 +31,7 @@ interface Summary {
   totalDue: number;
   totalDeliveredAmount: number;
   orderCount: number;
+  createdBy: string;
   createdAt: string;
 }
 
@@ -277,13 +278,17 @@ export default function SummaryPage() {
               <div key={summary._id} className="bg-white rounded-[20px] border border-slate-200/60 shadow-sm overflow-hidden">
                 {/* Header */}
                 <div className="flex items-center gap-4 p-5 sm:p-6">
-                  <button onClick={() => toggleExpand(summary._id)} className="flex items-center gap-4 flex-1 min-w-0 text-left cursor-pointer">
-                    <div className="w-12 h-12 rounded-[14px] bg-indigo-50 border border-indigo-100 flex items-center justify-center shrink-0">
-                      <Calendar size={20} className="text-indigo-600" strokeWidth={2} />
+                  <button onClick={() => toggleExpand(summary._id)} className="flex items-center gap-3 sm:gap-4 flex-1 min-w-0 text-left cursor-pointer">
+                    <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-[12px] sm:rounded-[14px] bg-indigo-50 border border-indigo-100 flex items-center justify-center shrink-0">
+                      <Calendar size={18} className="text-indigo-600 sm:hidden" strokeWidth={2} />
+                      <Calendar size={20} className="text-indigo-600 hidden sm:block" strokeWidth={2} />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-[16px] font-bold text-slate-900 truncate">{formatDate(summary.date)}</p>
-                      <p className="text-[12px] font-medium text-slate-500 mt-1">{summary.orderCount} টি অর্ডার</p>
+                      <p className="text-[14px] sm:text-[16px] font-bold text-slate-900 break-words">{formatDate(summary.date)}</p>
+                      <p className="text-[11px] sm:text-[12px] font-medium text-slate-500 mt-1">
+                        {summary.orderCount} টি অর্ডার
+                        {isAdmin && summary.createdBy && <span className="ml-2 text-indigo-500 font-semibold">· {summary.createdBy}</span>}
+                      </p>
                     </div>
                   </button>
                   <div className="flex items-center gap-3 shrink-0">
@@ -370,30 +375,33 @@ export default function SummaryPage() {
                         <h4 className="text-[12px] font-bold uppercase tracking-wider text-slate-600 mb-3 flex items-center gap-2">
                           <Package size={14} className="text-slate-400" /> পণ্য ভিত্তিক বিবরণ
                         </h4>
-                        <div className="rounded-[14px] overflow-hidden border border-slate-200/60 bg-white shadow-sm">
-                          <div className="grid grid-cols-12 px-4 py-2.5 text-[11px] font-bold uppercase tracking-wider bg-slate-50 text-slate-500 border-b border-slate-200/60">
-                            <span className="col-span-6">পণ্য</span>
+                        <div className="rounded-[14px] overflow-hidden border border-slate-200/60 bg-white shadow-sm overflow-x-auto">
+                          <div className="grid grid-cols-12 px-3 sm:px-4 py-2.5 text-[11px] font-bold uppercase tracking-wider bg-slate-50 text-slate-500 border-b border-slate-200/60 min-w-0">
+                            <span className="col-span-1 text-center">#</span>
+                            <span className="col-span-5">পণ্য</span>
                             <span className="col-span-3 text-center">পরিমাণ</span>
                             <span className="col-span-3 text-right">মোট</span>
                           </div>
                           <div className="max-h-[350px] overflow-y-auto custom-scrollbar">
                             {productList.map((p, idx) => (
-                              <div key={idx} className="grid grid-cols-12 px-4 py-3 items-center border-b border-slate-100 last:border-0 hover:bg-slate-50/50 transition-colors">
-                                <span className="col-span-6 text-[13px] font-bold text-slate-900 truncate pr-2">{p.name}</span>
+                              <div key={idx} className="grid grid-cols-12 px-3 sm:px-4 py-3 items-center border-b border-slate-100 last:border-0 hover:bg-slate-50/50 transition-colors min-w-0">
+                                <span className="col-span-1 text-center text-[11px] font-bold text-slate-400">{idx + 1}</span>
+                                <span className="col-span-5 text-[12px] sm:text-[13px] font-bold text-slate-900 break-words pr-1">{p.name}</span>
                                 <span className="col-span-3 text-center text-[13px] font-semibold text-slate-600">
                                   <span className="bg-slate-100 px-2 py-0.5 rounded-md">{p.qty}</span>
                                 </span>
-                                <span className="col-span-3 text-right text-[14px] font-black text-slate-900 tabular-nums">৳{p.total.toLocaleString("en-US")}</span>
+                                <span className="col-span-3 text-right text-[13px] sm:text-[14px] font-black text-slate-900 tabular-nums">৳{p.total.toLocaleString("en-US")}</span>
                               </div>
                             ))}
                           </div>
                           {productList.length > 0 && (
-                            <div className="grid grid-cols-12 px-4 py-3 items-center border-t-2 border-slate-100 bg-slate-50/80">
-                              <span className="col-span-6 text-[12px] font-bold uppercase tracking-wider text-slate-600">সর্বমোট</span>
+                            <div className="grid grid-cols-12 px-3 sm:px-4 py-3 items-center border-t-2 border-slate-100 bg-slate-50/80 min-w-0">
+                              <span className="col-span-1"></span>
+                              <span className="col-span-5 text-[11px] sm:text-[12px] font-bold uppercase tracking-wider text-slate-600">সর্বমোট</span>
                               <span className="col-span-3 text-center text-[13px] font-black text-indigo-700 bg-indigo-100 rounded-md py-0.5 mx-auto px-2">
                                 {productList.reduce((s, p) => s + p.qty, 0)}
                               </span>
-                              <span className="col-span-3 text-right text-[15px] font-black text-indigo-600 tabular-nums">
+                              <span className="col-span-3 text-right text-[14px] sm:text-[15px] font-black text-indigo-600 tabular-nums">
                                 ৳{summary.totalAmount.toLocaleString("en-US")}
                               </span>
                             </div>
@@ -406,24 +414,28 @@ export default function SummaryPage() {
                         </h4>
                         <div className="flex flex-col gap-2">
                           {summary.orders.map((o, idx) => (
-                            <div key={idx} className="flex items-center justify-between p-3 rounded-[12px] bg-slate-50 border border-slate-100 group">
+                            <div key={idx} className="flex items-center gap-3 p-3 rounded-[12px] bg-slate-50 border border-slate-100 group">
+                              {/* Serial Number */}
+                              <div className="w-7 h-7 rounded-full bg-slate-200/60 flex items-center justify-center shrink-0">
+                                <span className="text-[11px] font-black text-slate-600">{idx + 1}</span>
+                              </div>
                               <div className="flex-1 min-w-0">
-                                <p className="text-[13px] font-bold text-slate-900 truncate">{o.customerName}</p>
-                                <p className="text-[11px] font-medium text-slate-500 mt-0.5">
+                                <p className="text-[13px] font-bold text-slate-900 break-words">{o.customerName}</p>
+                                <p className="text-[11px] font-medium text-slate-500 mt-0.5 break-words">
                                   {o.orderNumber || "—"} · {o.items.length} পণ্য
                                 </p>
                               </div>
-                              <div className="flex items-center gap-2 shrink-0 ml-3">
+                              <div className="flex items-center gap-2 shrink-0">
                                 <div className="text-right">
-                                  <p className="text-[14px] font-black text-slate-900 tabular-nums">৳{o.totalAmount.toLocaleString("en-US")}</p>
+                                  <p className="text-[13px] sm:text-[14px] font-black text-slate-900 tabular-nums">৳{o.totalAmount.toLocaleString("en-US")}</p>
                                   {o.dueAmount > 0 && (
-                                    <p className="text-[11px] font-bold text-rose-500 mt-0.5">বাকি ৳{o.dueAmount.toLocaleString("en-US")}</p>
+                                    <p className="text-[10px] sm:text-[11px] font-bold text-rose-500 mt-0.5">বাকি ৳{o.dueAmount.toLocaleString("en-US")}</p>
                                   )}
                                 </div>
                                 {isAdmin && (
                                   <button
                                     onClick={() => setDeleteConfirm({ summaryId: summary._id, orderId: o.orderId, label: o.customerName })}
-                                    className="w-8 h-8 rounded-[8px] flex items-center justify-center text-slate-300 hover:text-rose-600 hover:bg-rose-50 transition-colors opacity-0 group-hover:opacity-100"
+                                    className="w-8 h-8 rounded-[8px] flex items-center justify-center text-slate-300 hover:text-rose-600 hover:bg-rose-50 transition-colors sm:opacity-0 sm:group-hover:opacity-100"
                                     title="সামারি থেকে সরান"
                                   >
                                     <Trash2 size={14} />
