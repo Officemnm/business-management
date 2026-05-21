@@ -146,3 +146,63 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
+
+// DELETE a summary or a specific order from a summary (admin only)
+export async function DELETE(req: NextRequest) {
+  try {
+    const token = req.cookies.get("token")?.value;
+    if (!token) return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+    const payload = verifyToken(token);
+    if (!payload || !payload.userId) return NextResponse.json({ error: "Invalid token" }, { status: 401 });
+
+    // Only admin can delete
+    if (payload.role !== "admin") {
+      return NextResponse.json({ error: "শুধুমাত্র এডমিন সামারি ডিলিট করতে পারবে" }, { status: 403 });
+    }
+
+    await dbConnect();
+
+    const { searchParams } = new URL(req.url);
+    const summaryId = searchParams.get("id");
+    const orderId = searchParams.get("orderId");
+
+    if (!summaryId) {
+      return NextResponse.json({ error: "Summary ID required" }, { status: 400 });
+    }
+
+    const summary = await Summary.findById(summaryId);
+    if (!summary) {
+      return NextResponse.json({ error: "সামারি পাওয়া যায়নি" }, { status: 404 });
+    }
+
+    // If orderId provided, remove only that order from the summary
+    if (orderId) {
+      const orderToRemove = summary.orders.find((o) => o.orderId === orderId);
+      if (!orderToRemove) {
+        return NextResponse.json({ error: "অর্ডার পাওয়া যায়নি" }, { status: 404 });
+      }
+
+      summary.orders = summary.orders.filter((o) => o.orderId !== orderId);
+      summary.totalAmount -= orderToRemove.totalAmount;
+      summary.totalPaid -= orderToRemove.paidAmount;
+      summary.totalDue -= orderToRemove.dueAmount;
+      summary.orderCount = summary.orders.length;
+
+      // If no orders left, delete the entire summary
+      if (summary.orders.length === 0) {
+        await Summary.findByIdAndDelete(summaryId);
+        return NextResponse.json({ message: "সামারি ডিলিট হয়েছে" });
+      }
+
+      await summary.save();
+      return NextResponse.json({ message: "অর্ডার সামারি থেকে সরানো হয়েছে" });
+    }
+
+    // Delete entire summary
+    await Summary.findByIdAndDelete(summaryId);
+    return NextResponse.json({ message: "সামারি ডিলিট হয়েছে" });
+  } catch (error) {
+    console.error("Delete summary error:", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  }
+}
