@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Calendar, Package, ChevronDown, Truck, Banknote, ShoppingBag, BarChart3, TrendingUp, TrendingDown, CreditCard, Trash2, X } from "lucide-react";
+import { Calendar, Package, ChevronDown, Truck, Banknote, ShoppingBag, BarChart3, TrendingUp, TrendingDown, CreditCard, Trash2, X, Pencil } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import toast from "react-hot-toast";
 
@@ -51,6 +51,8 @@ export default function SummaryPage() {
   });
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<{ summaryId: string; orderId?: string; label: string } | null>(null);
+  const [editProduct, setEditProduct] = useState<{ summaryId: string; productName: string; qty: number; avgPrice: number } | null>(null);
+  const [editQty, setEditQty] = useState<number | string>("");
 
   const loadData = (date?: string) => {
     const d = date || selectedDate;
@@ -96,6 +98,27 @@ export default function SummaryPage() {
       setDeleteConfirm(null);
       loadData(selectedDate);
     } catch { toast.error("ডিলিট ব্যর্থ"); }
+  };
+
+  const handleEditQuantity = async () => {
+    if (!editProduct) return;
+    const qty = Number(editQty) || 0;
+    if (qty < 1) { toast.error("পরিমাণ ১ এর কম হতে পারে না"); return; }
+    try {
+      const res = await fetch("/api/dashboard/summary", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          summaryId: editProduct.summaryId,
+          productName: editProduct.productName,
+          newQuantity: qty,
+        }),
+      });
+      if (!res.ok) throw new Error();
+      toast.success("পরিমাণ আপডেট হয়েছে");
+      setEditProduct(null);
+      loadData(selectedDate);
+    } catch { toast.error("আপডেট ব্যর্থ"); }
   };
 
   const toggleExpand = (id: string) => {
@@ -375,37 +398,46 @@ export default function SummaryPage() {
                         <h4 className="text-[12px] font-bold uppercase tracking-wider text-slate-600 mb-3 flex items-center gap-2">
                           <Package size={14} className="text-slate-400" /> পণ্য ভিত্তিক বিবরণ
                         </h4>
-                        <div className="rounded-[14px] overflow-hidden border border-slate-200/60 bg-white shadow-sm overflow-x-auto">
-                          <div className="grid grid-cols-12 px-3 sm:px-4 py-2.5 text-[11px] font-bold uppercase tracking-wider bg-slate-50 text-slate-500 border-b border-slate-200/60 min-w-0">
-                            <span className="col-span-1 text-center">#</span>
-                            <span className="col-span-5">পণ্য</span>
-                            <span className="col-span-3 text-center">পরিমাণ</span>
-                            <span className="col-span-3 text-right">মোট</span>
-                          </div>
-                          <div className="max-h-[350px] overflow-y-auto custom-scrollbar">
-                            {productList.map((p, idx) => (
-                              <div key={idx} className="grid grid-cols-12 px-3 sm:px-4 py-3 items-center border-b border-slate-100 last:border-0 hover:bg-slate-50/50 transition-colors min-w-0">
-                                <span className="col-span-1 text-center text-[11px] font-bold text-slate-400">{idx + 1}</span>
-                                <span className="col-span-5 text-[12px] sm:text-[13px] font-bold text-slate-900 break-words pr-1">{p.name}</span>
-                                <span className="col-span-3 text-center text-[13px] font-semibold text-slate-600">
-                                  <span className="bg-slate-100 px-2 py-0.5 rounded-md">{p.qty}</span>
-                                </span>
-                                <span className="col-span-3 text-right text-[13px] sm:text-[14px] font-black text-slate-900 tabular-nums">৳{p.total.toLocaleString("en-US")}</span>
+                        <div className="rounded-[14px] overflow-hidden border border-slate-200/60 bg-white shadow-sm">
+                          <div className="flex flex-col gap-2.5">
+                            {productList.map((p, idx) => {
+                              const avgPrice = p.qty > 0 ? Math.round(p.total / p.qty) : 0;
+                              return (
+                                <div
+                                  key={idx}
+                                  onClick={() => { setEditProduct({ summaryId: summary._id, productName: p.name, qty: p.qty, avgPrice }); setEditQty(p.qty); }}
+                                  className="flex items-center gap-3 p-4 rounded-[14px] bg-slate-50 border border-slate-100 hover:border-indigo-200 hover:bg-indigo-50/30 transition-all cursor-pointer active:scale-[0.98] group"
+                                >
+                                  <div className="w-8 h-8 rounded-full bg-white border border-slate-200 flex items-center justify-center shrink-0 shadow-sm">
+                                    <span className="text-[12px] font-black text-slate-600">{idx + 1}</span>
+                                  </div>
+                                  <div className="flex-1 min-w-0">
+                                    <p className="text-[14px] font-bold text-slate-900 break-words leading-snug">{p.name}</p>
+                                    <div className="flex items-center gap-3 mt-1.5 flex-wrap">
+                                      <span className="text-[12px] font-semibold text-slate-500">দর: ৳{avgPrice.toLocaleString("en-US")}</span>
+                                      <span className="text-slate-300">·</span>
+                                      <span className="text-[12px] font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-md">{p.qty} টি</span>
+                                    </div>
+                                  </div>
+                                  <div className="text-right shrink-0">
+                                    <p className="text-[16px] font-black text-slate-900 tabular-nums">৳{p.total.toLocaleString("en-US")}</p>
+                                    <Pencil size={12} className="text-slate-300 group-hover:text-indigo-500 transition-colors ml-auto mt-1" />
+                                  </div>
+                                </div>
+                              );
+                            })}
+                            {productList.length > 0 && (
+                              <div className="flex items-center justify-between p-4 rounded-[14px] bg-indigo-50 border border-indigo-100">
+                                <div className="flex items-center gap-2">
+                                  <span className="text-[13px] font-bold text-indigo-700 uppercase tracking-wider">সর্বমোট</span>
+                                  <span className="text-[13px] font-black text-indigo-600 bg-white px-2.5 py-0.5 rounded-md border border-indigo-100 shadow-sm">
+                                    {productList.reduce((s, p) => s + p.qty, 0)} টি
+                                  </span>
+                                </div>
+                                <span className="text-[18px] font-black text-indigo-700 tabular-nums">৳{summary.totalAmount.toLocaleString("en-US")}</span>
                               </div>
-                            ))}
+                            )}
                           </div>
-                          {productList.length > 0 && (
-                            <div className="grid grid-cols-12 px-3 sm:px-4 py-3 items-center border-t-2 border-slate-100 bg-slate-50/80 min-w-0">
-                              <span className="col-span-1"></span>
-                              <span className="col-span-5 text-[11px] sm:text-[12px] font-bold uppercase tracking-wider text-slate-600">সর্বমোট</span>
-                              <span className="col-span-3 text-center text-[13px] font-black text-indigo-700 bg-indigo-100 rounded-md py-0.5 mx-auto px-2">
-                                {productList.reduce((s, p) => s + p.qty, 0)}
-                              </span>
-                              <span className="col-span-3 text-right text-[14px] sm:text-[15px] font-black text-indigo-600 tabular-nums">
-                                ৳{summary.totalAmount.toLocaleString("en-US")}
-                              </span>
-                            </div>
-                          )}
                         </div>
 
                         {/* Order list with delete option */}
@@ -452,6 +484,65 @@ export default function SummaryPage() {
               </div>
             );
           })}
+        </div>
+      )}
+
+      {/* Edit Quantity Modal */}
+      {editProduct && (
+        <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center bg-slate-900/40 backdrop-blur-sm p-0 sm:p-4">
+          <div className="w-full sm:max-w-sm bg-white rounded-t-[28px] sm:rounded-[24px] overflow-hidden shadow-2xl">
+            <div className="w-full flex justify-center pt-3 pb-1 sm:hidden">
+              <div className="w-12 h-1.5 bg-slate-200 rounded-full"></div>
+            </div>
+            <div className="px-6 pt-5 sm:pt-8 pb-6">
+              <div className="flex items-center justify-between mb-5">
+                <div>
+                  <h3 className="text-[18px] font-bold text-slate-900">পরিমাণ এডিট</h3>
+                  <p className="text-[13px] font-medium text-slate-500 mt-1 break-words">{editProduct.productName}</p>
+                </div>
+                <button onClick={() => setEditProduct(null)} className="w-9 h-9 rounded-full flex items-center justify-center bg-slate-100 text-slate-500 hover:bg-slate-200 transition-colors">
+                  <X size={18} />
+                </button>
+              </div>
+
+              <div className="mb-5 p-4 rounded-[14px] bg-slate-50 border border-slate-100">
+                <div className="flex justify-between text-[13px] mb-2">
+                  <span className="font-medium text-slate-500">গড় দর</span>
+                  <span className="font-bold text-slate-800">৳{editProduct.avgPrice.toLocaleString("en-US")}</span>
+                </div>
+                <div className="flex justify-between text-[13px]">
+                  <span className="font-medium text-slate-500">বর্তমান পরিমাণ</span>
+                  <span className="font-bold text-slate-800">{editProduct.qty}</span>
+                </div>
+              </div>
+
+              <div className="mb-6">
+                <label className="block text-[12px] font-bold text-slate-600 uppercase tracking-wider mb-2">নতুন পরিমাণ</label>
+                <input
+                  type="number"
+                  value={editQty}
+                  onChange={(e) => setEditQty(e.target.value === "" ? "" : Number(e.target.value))}
+                  onFocus={(e) => e.target.select()}
+                  min={1}
+                  className="w-full h-14 px-5 rounded-[14px] text-[20px] font-black text-center outline-none bg-white border-2 border-indigo-200 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all tabular-nums shadow-sm"
+                />
+              </div>
+
+              {Number(editQty) > 0 && (
+                <div className="mb-5 p-3 rounded-[12px] bg-indigo-50 border border-indigo-100 flex items-center justify-between">
+                  <span className="text-[12px] font-bold text-indigo-600">নতুন মোট</span>
+                  <span className="text-[16px] font-black text-indigo-700 tabular-nums">৳{(Number(editQty) * editProduct.avgPrice).toLocaleString("en-US")}</span>
+                </div>
+              )}
+
+              <button
+                onClick={handleEditQuantity}
+                className="w-full h-13 py-3.5 rounded-[14px] text-[15px] font-bold text-white bg-indigo-600 hover:bg-indigo-700 transition-colors shadow-md active:scale-[0.98] flex items-center justify-center gap-2 cursor-pointer"
+              >
+                আপডেট করুন
+              </button>
+            </div>
+          </div>
         </div>
       )}
 

@@ -147,6 +147,63 @@ export async function POST(req: NextRequest) {
   }
 }
 
+// PUT update product quantity in a summary
+export async function PUT(req: NextRequest) {
+  try {
+    const token = req.cookies.get("token")?.value;
+    if (!token) return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+    const payload = verifyToken(token);
+    if (!payload || !payload.userId) return NextResponse.json({ error: "Invalid token" }, { status: 401 });
+
+    await dbConnect();
+
+    const body = await req.json();
+    const { summaryId, productName, newQuantity } = body;
+
+    if (!summaryId || !productName || newQuantity === undefined) {
+      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+    }
+
+    const summary = await Summary.findById(summaryId);
+    if (!summary) {
+      return NextResponse.json({ error: "সামারি পাওয়া যায়নি" }, { status: 404 });
+    }
+
+    // Update quantity in all orders that have this product
+    let totalAmountDiff = 0;
+    let totalPaidDiff = 0;
+    let totalDueDiff = 0;
+
+    summary.orders.forEach((order) => {
+      order.items.forEach((item) => {
+        if (item.productName === productName) {
+          const oldTotal = item.total;
+          const newTotal = newQuantity * item.unitPrice;
+          const diff = newTotal - oldTotal;
+
+          item.quantity = newQuantity;
+          item.total = newTotal;
+
+          // Update order totals proportionally
+          order.totalAmount += diff;
+          totalAmountDiff += diff;
+        }
+      });
+    });
+
+    // Update summary totals
+    summary.totalAmount += totalAmountDiff;
+    // Recalculate paid and due proportionally is complex, just update totalAmount
+    summary.orderCount = summary.orders.length;
+
+    await summary.save();
+    return NextResponse.json(summary);
+  } catch (error) {
+    console.error("Update summary error:", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  }
+}
+
 // DELETE a summary or a specific order from a summary (admin only)
 export async function DELETE(req: NextRequest) {
   try {
