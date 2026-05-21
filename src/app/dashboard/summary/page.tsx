@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Calendar, Package, ChevronDown, ChevronUp, Truck, Banknote, ShoppingBag, BarChart3 } from "lucide-react";
+import { Calendar, Package, ChevronDown, Truck, Banknote, ShoppingBag, BarChart3, TrendingUp, TrendingDown, CreditCard } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface SummaryItem {
@@ -33,18 +33,43 @@ interface Summary {
   createdAt: string;
 }
 
+interface TodayStats {
+  summaryAmount: number;
+  orderCollection: number;
+  dueCollection: number;
+}
+
 export default function SummaryPage() {
   const [summaries, setSummaries] = useState<Summary[]>([]);
   const [loading, setLoading] = useState(true);
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [todayStats, setTodayStats] = useState<TodayStats>({ summaryAmount: 0, orderCollection: 0, dueCollection: 0 });
 
   useEffect(() => {
-    fetch("/api/dashboard/summary")
-      .then((r) => r.json())
-      .then((data) => {
-        if (Array.isArray(data)) setSummaries(data);
-      })
-      .finally(() => setLoading(false));
+    // Get today's date in BD timezone
+    const now = new Date();
+    const bdDateStr = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Dhaka" }).format(now);
+
+    Promise.all([
+      fetch("/api/dashboard/summary").then((r) => r.json()),
+      fetch(`/api/dashboard/payments?date=${bdDateStr}`).then((r) => r.json()),
+    ]).then(([summaryData, paymentsData]) => {
+      if (Array.isArray(summaryData)) {
+        setSummaries(summaryData);
+
+        // Find today's summary
+        const todaySummary = summaryData.find((s: Summary) => s.date === bdDateStr);
+        const summaryAmount = todaySummary ? todaySummary.totalAmount : 0;
+        const orderCollection = todaySummary ? todaySummary.totalPaid : 0;
+
+        // Due collection from payments today
+        const dueCollection = Array.isArray(paymentsData)
+          ? paymentsData.reduce((s: number, p: { amount: number }) => s + (p.amount || 0), 0)
+          : 0;
+
+        setTodayStats({ summaryAmount, orderCollection, dueCollection });
+      }
+    }).finally(() => setLoading(false));
   }, []);
 
   const toggleExpand = (id: string) => {
@@ -61,6 +86,21 @@ export default function SummaryPage() {
       weekday: "long",
     });
   };
+
+  const todayDateLabel = (() => {
+    const now = new Date();
+    return now.toLocaleDateString("bn-BD", {
+      day: "2-digit",
+      month: "long",
+      year: "numeric",
+      weekday: "long",
+      timeZone: "Asia/Dhaka",
+    });
+  })();
+
+  // Calculated values
+  const totalCollection = todayStats.orderCollection + todayStats.dueCollection;
+  const difference = totalCollection - todayStats.summaryAmount;
 
   if (loading) {
     return (
@@ -87,6 +127,107 @@ export default function SummaryPage() {
             তারিখ ভিত্তিক অর্ডার সামারি
           </p>
         </div>
+      </div>
+
+      {/* Today's Date Header */}
+      <div className="flex items-center gap-3 px-1">
+        <div className="w-9 h-9 rounded-[10px] bg-indigo-50 border border-indigo-100 flex items-center justify-center">
+          <Calendar size={16} className="text-indigo-600" />
+        </div>
+        <p className="text-[15px] font-bold text-slate-800">{todayDateLabel}</p>
+      </div>
+
+      {/* Top 3 KPI Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        {/* Card 1: Today's Summary Amount */}
+        <div className="bg-white rounded-[18px] p-5 shadow-sm border border-slate-200/60">
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">আজকের সামারি</p>
+            <div className="w-9 h-9 rounded-xl flex items-center justify-center bg-indigo-50 border border-indigo-100">
+              <BarChart3 size={16} strokeWidth={2.2} className="text-indigo-600" />
+            </div>
+          </div>
+          <p className="text-[26px] font-black text-slate-900 leading-none tabular-nums tracking-tight">
+            ৳{todayStats.summaryAmount.toLocaleString("en-US")}
+          </p>
+          <p className="text-[11px] font-medium text-slate-400 mt-2">পেন্ডিং অর্ডারের মোট</p>
+        </div>
+
+        {/* Card 2: Order Collection (নগদ আদায়) */}
+        <div className="bg-white rounded-[18px] p-5 shadow-sm border border-slate-200/60">
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">অর্ডার থেকে আদায়</p>
+            <div className="w-9 h-9 rounded-xl flex items-center justify-center bg-emerald-50 border border-emerald-100">
+              <ShoppingBag size={16} strokeWidth={2.2} className="text-emerald-600" />
+            </div>
+          </div>
+          <p className="text-[26px] font-black text-emerald-600 leading-none tabular-nums tracking-tight">
+            ৳{todayStats.orderCollection.toLocaleString("en-US")}
+          </p>
+          <p className="text-[11px] font-medium text-slate-400 mt-2">অর্ডারে নগদ পরিশোধ</p>
+        </div>
+
+        {/* Card 3: Due Collection (বাকি থেকে আদায়) */}
+        <div className="bg-white rounded-[18px] p-5 shadow-sm border border-slate-200/60">
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">বাকি থেকে আদায়</p>
+            <div className="w-9 h-9 rounded-xl flex items-center justify-center bg-amber-50 border border-amber-100">
+              <CreditCard size={16} strokeWidth={2.2} className="text-amber-600" />
+            </div>
+          </div>
+          <p className="text-[26px] font-black text-amber-600 leading-none tabular-nums tracking-tight">
+            ৳{todayStats.dueCollection.toLocaleString("en-US")}
+          </p>
+          <p className="text-[11px] font-medium text-slate-400 mt-2">বকেয়া থেকে কালেক্ট</p>
+        </div>
+      </div>
+
+      {/* Bottom 2 Cards: Total Collection & Difference */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {/* Total Collection */}
+        <div className="bg-white rounded-[18px] p-5 shadow-sm border border-slate-200/60">
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">মোট আদায়</p>
+            <div className="w-9 h-9 rounded-xl flex items-center justify-center bg-emerald-50 border border-emerald-100">
+              <Banknote size={16} strokeWidth={2.2} className="text-emerald-600" />
+            </div>
+          </div>
+          <p className="text-[28px] font-black text-slate-900 leading-none tabular-nums tracking-tight">
+            ৳{totalCollection.toLocaleString("en-US")}
+          </p>
+          <div className="flex items-center gap-3 mt-3 text-[12px] font-medium text-slate-500">
+            <span>নগদ: ৳{todayStats.orderCollection.toLocaleString("en-US")}</span>
+            <span className="text-slate-300">+</span>
+            <span>বাকি: ৳{todayStats.dueCollection.toLocaleString("en-US")}</span>
+          </div>
+        </div>
+
+        {/* Difference from Summary */}
+        <div className={`bg-white rounded-[18px] p-5 shadow-sm border ${difference >= 0 ? "border-emerald-200/60" : "border-rose-200/60"}`}>
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">সামারি থেকে পার্থক্য</p>
+            <div className={`w-9 h-9 rounded-xl flex items-center justify-center border ${difference >= 0 ? "bg-emerald-50 border-emerald-100" : "bg-rose-50 border-rose-100"}`}>
+              {difference >= 0 ? (
+                <TrendingUp size={16} strokeWidth={2.2} className="text-emerald-600" />
+              ) : (
+                <TrendingDown size={16} strokeWidth={2.2} className="text-rose-600" />
+              )}
+            </div>
+          </div>
+          <p className={`text-[28px] font-black leading-none tabular-nums tracking-tight ${difference >= 0 ? "text-emerald-600" : "text-rose-600"}`}>
+            {difference >= 0 ? "+" : ""}৳{difference.toLocaleString("en-US")}
+          </p>
+          <p className={`text-[12px] font-medium mt-2 ${difference >= 0 ? "text-emerald-500" : "text-rose-500"}`}>
+            {difference > 0 ? "সামারির চেয়ে বেশি আদায় হয়েছে" : difference < 0 ? "সামারির চেয়ে কম আদায় হয়েছে" : "সামারি ও আদায় সমান"}
+          </p>
+        </div>
+      </div>
+
+      {/* Divider */}
+      <div className="flex items-center gap-3 pt-2">
+        <div className="h-px flex-1 bg-slate-200/60"></div>
+        <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">তারিখ ভিত্তিক সামারি</span>
+        <div className="h-px flex-1 bg-slate-200/60"></div>
       </div>
 
       {/* Summary List */}
