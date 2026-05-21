@@ -17,6 +17,7 @@ import {
   Menu,
   X,
   UserCheck,
+  BarChart3,
 } from "lucide-react";
 import toast from "react-hot-toast";
 
@@ -27,6 +28,7 @@ interface UserInfo {
 
 const navItems = [
   { href: "/dashboard", label: "ড্যাশবোর্ড", icon: LayoutDashboard, color: "text-blue-500", bg: "bg-blue-50 group-hover:bg-blue-100" },
+  { href: "/dashboard/summary", label: "সামারি", icon: BarChart3, color: "text-cyan-500", bg: "bg-cyan-50 group-hover:bg-cyan-100" },
   { href: "/dashboard/orders", label: "অর্ডার", icon: ShoppingCart, color: "text-emerald-500", bg: "bg-emerald-50 group-hover:bg-emerald-100" },
   { href: "/dashboard/customers", label: "কাস্টমার", icon: Users, color: "text-indigo-500", bg: "bg-indigo-50 group-hover:bg-indigo-100" },
   { href: "/dashboard/products/add", label: "প্রডাক্ট এড", icon: PackagePlus, color: "text-amber-500", bg: "bg-amber-50 group-hover:bg-amber-100" },

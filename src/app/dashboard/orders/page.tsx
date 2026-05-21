@@ -1448,13 +1448,39 @@ export default function OrdersPage() {
         {deliveryTab === "pending" && (
            <div className="flex items-center justify-between px-4 py-3 mt-1 bg-slate-50/80 rounded-[14px] border border-slate-200/60">
               <span className="text-[12px] font-semibold text-slate-500">ব্যাচ একশন</span>
-              <button onClick={() => {
-                const pending = orders.filter((o) => (o.deliveryStatus || "pending") === "pending");
-                setSummarySelection(summarySelection.length === pending.length ? [] : pending.map(o => o._id));
-              }}
-                className="text-[12px] font-bold text-emerald-600 hover:text-emerald-700 transition-colors">
-                {summarySelection.length === pendingOrders.length ? "সব ডি-সিলেক্ট" : "সব সিলেক্ট"}
-              </button>
+              <div className="flex items-center gap-3">
+                {summarySelection.length > 0 && (
+                  <button
+                    onClick={async () => {
+                      try {
+                        const res = await fetch("/api/dashboard/summary", {
+                          method: "POST",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({ orderIds: summarySelection }),
+                        });
+                        if (res.status === 409) {
+                          toast.error("এই অর্ডারগুলো আগেই সামারিতে আছে");
+                          return;
+                        }
+                        if (!res.ok) throw new Error();
+                        toast.success(`${summarySelection.length} টি অর্ডার সামারিতে পাঠানো হয়েছে`);
+                        setSummarySelection([]);
+                      } catch { toast.error("সামারি তৈরিতে সমস্যা হয়েছে"); }
+                    }}
+                    className="px-4 py-2 rounded-[10px] text-[12px] font-bold text-white bg-indigo-600 hover:bg-indigo-700 transition-colors shadow-sm active:scale-95 flex items-center gap-1.5"
+                  >
+                    <BarChart3 size={14} />
+                    সামারিতে পাঠান ({summarySelection.length})
+                  </button>
+                )}
+                <button onClick={() => {
+                  const pending = orders.filter((o) => (o.deliveryStatus || "pending") === "pending");
+                  setSummarySelection(summarySelection.length === pending.length ? [] : pending.map(o => o._id));
+                }}
+                  className="text-[12px] font-bold text-emerald-600 hover:text-emerald-700 transition-colors">
+                  {summarySelection.length === pendingOrders.length ? "সব ডি-সিলেক্ট" : "সব সিলেক্ট"}
+                </button>
+              </div>
            </div>
         )}
 
