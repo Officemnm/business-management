@@ -169,22 +169,36 @@ export async function PUT(req: NextRequest) {
       return NextResponse.json({ error: "সামারি পাওয়া যায়নি" }, { status: 404 });
     }
 
-    // Update quantity in all orders that have this product
+    // Update quantity: distribute the new total quantity proportionally across orders
+    // First, find the current total quantity for this product across all orders
+    let currentTotalQty = 0;
+    summary.orders.forEach((order) => {
+      order.items.forEach((item) => {
+        if (item.productName === productName) {
+          currentTotalQty += item.quantity;
+        }
+      });
+    });
+
+    if (currentTotalQty === 0) {
+      return NextResponse.json({ error: "পণ্য পাওয়া যায়নি" }, { status: 404 });
+    }
+
+    // Calculate the ratio to apply
+    const ratio = newQuantity / currentTotalQty;
     let totalAmountDiff = 0;
-    let totalPaidDiff = 0;
-    let totalDueDiff = 0;
 
     summary.orders.forEach((order) => {
       order.items.forEach((item) => {
         if (item.productName === productName) {
           const oldTotal = item.total;
-          const newTotal = newQuantity * item.unitPrice;
+          const newItemQty = Math.round(item.quantity * ratio);
+          const newTotal = newItemQty * item.unitPrice;
           const diff = newTotal - oldTotal;
 
-          item.quantity = newQuantity;
+          item.quantity = newItemQty;
           item.total = newTotal;
 
-          // Update order totals proportionally
           order.totalAmount += diff;
           totalAmountDiff += diff;
         }
@@ -193,7 +207,6 @@ export async function PUT(req: NextRequest) {
 
     // Update summary totals
     summary.totalAmount += totalAmountDiff;
-    // Recalculate paid and due proportionally is complex, just update totalAmount
     summary.orderCount = summary.orders.length;
 
     await summary.save();
