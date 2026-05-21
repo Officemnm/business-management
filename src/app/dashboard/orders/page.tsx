@@ -65,6 +65,7 @@ export default function OrdersPage() {
   const [showSummary, setShowSummary] = useState(false);
   const [summarySelection, setSummarySelection] = useState<string[]>([]);
   const [deleteConfirmation, setDeleteConfirmation] = useState<string | null>(null);
+  const [orderSearch, setOrderSearch] = useState("");
 
   // Delivery action state
   const [deliveryAction, setDeliveryAction] = useState<"none" | "complete" | "not_delivered">("none");
@@ -1431,58 +1432,38 @@ export default function OrdersPage() {
             )}
 
             <div className="flex items-center justify-end sm:justify-start">
-              <button 
-                onClick={() => setShowSummary(true)}
-                className="w-12 h-12 rounded-[14px] flex items-center justify-center bg-slate-900 text-white relative shadow-md cursor-pointer hover:bg-slate-800 transition-colors">
-                 <BarChart3 size={18} />
-                 {deliveryTab === "pending" && summarySelection.length > 0 && (
-                    <span className="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-rose-500 text-[11px] font-bold flex items-center justify-center border-2 border-white shadow-sm">
-                      {summarySelection.length}
-                    </span>
-                 )}
-              </button>
             </div>
         </div>
 
-        {/* Action Bar for Pending Tab */}
+        {/* Select All for Pending Tab */}
         {deliveryTab === "pending" && (
-           <div className="flex items-center justify-between px-4 py-3 mt-1 bg-slate-50/80 rounded-[14px] border border-slate-200/60">
-              <span className="text-[12px] font-semibold text-slate-500">ব্যাচ একশন</span>
-              <div className="flex items-center gap-3">
-                {summarySelection.length > 0 && (
-                  <button
-                    onClick={async () => {
-                      try {
-                        const res = await fetch("/api/dashboard/summary", {
-                          method: "POST",
-                          headers: { "Content-Type": "application/json" },
-                          body: JSON.stringify({ orderIds: summarySelection }),
-                        });
-                        if (res.status === 409) {
-                          toast.error("এই অর্ডারগুলো আগেই সামারিতে আছে");
-                          return;
-                        }
-                        if (!res.ok) throw new Error();
-                        toast.success(`${summarySelection.length} টি অর্ডার সামারিতে পাঠানো হয়েছে`);
-                        setSummarySelection([]);
-                      } catch { toast.error("সামারি তৈরিতে সমস্যা হয়েছে"); }
-                    }}
-                    className="px-4 py-2 rounded-[10px] text-[12px] font-bold text-white bg-indigo-600 hover:bg-indigo-700 transition-colors shadow-sm active:scale-95 flex items-center gap-1.5"
-                  >
-                    <BarChart3 size={14} />
-                    সামারিতে পাঠান ({summarySelection.length})
-                  </button>
-                )}
-                <button onClick={() => {
-                  const pending = orders.filter((o) => (o.deliveryStatus || "pending") === "pending");
-                  setSummarySelection(summarySelection.length === pending.length ? [] : pending.map(o => o._id));
-                }}
-                  className="text-[12px] font-bold text-emerald-600 hover:text-emerald-700 transition-colors">
-                  {summarySelection.length === pendingOrders.length ? "সব ডি-সিলেক্ট" : "সব সিলেক্ট"}
-                </button>
-              </div>
+           <div className="flex items-center justify-end px-1 mt-1">
+              <button onClick={() => {
+                const pending = orders.filter((o) => (o.deliveryStatus || "pending") === "pending");
+                setSummarySelection(summarySelection.length === pending.length ? [] : pending.map(o => o._id));
+              }}
+                className="text-[12px] font-bold text-emerald-600 hover:text-emerald-700 transition-colors">
+                {summarySelection.length === pendingOrders.length ? "সব ডি-সিলেক্ট" : "সব সিলেক্ট"}
+              </button>
            </div>
         )}
+
+        {/* Search Input */}
+        <div className="relative mt-2">
+          <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+          <input
+            type="text"
+            value={orderSearch}
+            onChange={(e) => setOrderSearch(e.target.value)}
+            placeholder="অর্ডার নং বা কাস্টমার নাম দিয়ে খুঁজুন..."
+            className="w-full h-11 pl-11 pr-4 rounded-[14px] text-[13px] font-medium outline-none bg-white text-slate-900 border border-slate-200 focus:border-indigo-300 focus:ring-4 focus:ring-indigo-500/10 transition-all shadow-sm"
+          />
+          {orderSearch && (
+            <button onClick={() => setOrderSearch("")} className="absolute right-3 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors">
+              <X size={14} />
+            </button>
+          )}
+        </div>
 
         {/* Modern Tabs */}
         <div className="flex bg-slate-100/80 p-1.5 rounded-[16px]">
@@ -1507,11 +1488,19 @@ export default function OrdersPage() {
 
       {/* Orders List (Card Style) */}
       {(() => {
-        const filteredOrders = orders.filter((o) => {
+        let filteredOrders = orders.filter((o) => {
           if (deliveryTab === "pending") return (o.deliveryStatus || "pending") === "pending";
           if (deliveryTab === "delivered") return o.deliveryStatus === "delivered";
           return o.deliveryStatus === "not_delivered";
         });
+        // Apply search filter
+        if (orderSearch.trim()) {
+          const q = orderSearch.trim().toLowerCase();
+          filteredOrders = filteredOrders.filter((o) =>
+            o.customerName.toLowerCase().includes(q) ||
+            (o.orderNumber && o.orderNumber.toLowerCase().includes(q))
+          );
+        }
         return filteredOrders.length === 0 ? (
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="rounded-[20px] py-20 text-center bg-white shadow-[0_2px_10px_-4px_rgba(0,0,0,0.04)] border border-slate-200/60">
           <div className="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center bg-slate-50 border border-slate-100">
@@ -2172,6 +2161,50 @@ export default function OrdersPage() {
           </div>
         </div>
       </AnimatedModal>
+
+      {/* Floating Summary Bar */}
+      <AnimatePresence>
+        {summarySelection.length > 0 && (
+          <motion.div
+            initial={{ y: 100, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: 100, opacity: 0 }}
+            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+            className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[80] w-[calc(100%-2rem)] max-w-md"
+          >
+            <div className="flex items-center justify-between gap-3 px-5 py-4 bg-slate-900 rounded-[18px] shadow-[0_10px_40px_-10px_rgba(0,0,0,0.4)] border border-slate-700">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-full bg-indigo-500 flex items-center justify-center">
+                  <span className="text-[13px] font-black text-white">{summarySelection.length}</span>
+                </div>
+                <span className="text-[13px] font-bold text-slate-200">অর্ডার সিলেক্টেড</span>
+              </div>
+              <button
+                onClick={async () => {
+                  try {
+                    const res = await fetch("/api/dashboard/summary", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ orderIds: summarySelection }),
+                    });
+                    if (res.status === 409) {
+                      toast.error("এই অর্ডারগুলো আগেই সামারিতে আছে");
+                      return;
+                    }
+                    if (!res.ok) throw new Error();
+                    toast.success(`${summarySelection.length} টি অর্ডার সামারিতে পাঠানো হয়েছে`);
+                    setSummarySelection([]);
+                  } catch { toast.error("সামারি তৈরিতে সমস্যা হয়েছে"); }
+                }}
+                className="px-5 py-2.5 rounded-[12px] text-[13px] font-bold text-white bg-indigo-500 hover:bg-indigo-400 transition-colors active:scale-95 flex items-center gap-2 shadow-md"
+              >
+                <BarChart3 size={15} />
+                সামারিতে পাঠান
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
