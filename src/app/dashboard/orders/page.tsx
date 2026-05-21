@@ -1649,6 +1649,42 @@ export default function OrdersPage() {
       {renderSummaryModal()}
       {renderInvoiceModal()}
 
+      {/* Floating Summary Bar */}
+      {summarySelection.length > 0 && (
+        <div className="sticky bottom-0 left-0 right-0 z-[50] -mb-12">
+          <div className="flex items-center justify-between gap-3 px-5 py-4 bg-slate-900 rounded-t-[18px] shadow-[0_-4px_30px_-10px_rgba(0,0,0,0.3)] border border-slate-700 border-b-0 max-w-md mx-auto">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-full bg-indigo-500 flex items-center justify-center">
+                <span className="text-[13px] font-black text-white">{summarySelection.length}</span>
+              </div>
+              <span className="text-[13px] font-bold text-slate-200">অর্ডার সিলেক্টেড</span>
+            </div>
+            <button
+              onClick={async () => {
+                try {
+                  const res = await fetch("/api/dashboard/summary", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ orderIds: summarySelection }),
+                  });
+                  if (res.status === 409) {
+                    toast.error("এই অর্ডারগুলো আগেই সামারিতে আছে");
+                    return;
+                  }
+                  if (!res.ok) throw new Error();
+                  toast.success(`${summarySelection.length} টি অর্ডার সামারিতে পাঠানো হয়েছে`);
+                  setSummarySelection([]);
+                } catch { toast.error("সামারি তৈরিতে সমস্যা হয়েছে"); }
+              }}
+              className="px-5 py-2.5 rounded-[12px] text-[13px] font-bold text-white bg-indigo-500 hover:bg-indigo-400 transition-colors active:scale-95 flex items-center gap-2 shadow-md cursor-pointer"
+            >
+              <BarChart3 size={15} />
+              সামারিতে পাঠান
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* ===================== DELETE CONFIRMATION MODAL ===================== */}
       <AnimatedModal
         open={!!deleteConfirmation}
@@ -2161,50 +2197,6 @@ export default function OrdersPage() {
           </div>
         </div>
       </AnimatedModal>
-
-      {/* Floating Summary Bar */}
-      <AnimatePresence>
-        {summarySelection.length > 0 && (
-          <motion.div
-            initial={{ y: 100, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            exit={{ y: 100, opacity: 0 }}
-            transition={{ type: "spring", stiffness: 300, damping: 30 }}
-            className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[80] w-[calc(100%-2rem)] max-w-md"
-          >
-            <div className="flex items-center justify-between gap-3 px-5 py-4 bg-slate-900 rounded-[18px] shadow-[0_10px_40px_-10px_rgba(0,0,0,0.4)] border border-slate-700">
-              <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-full bg-indigo-500 flex items-center justify-center">
-                  <span className="text-[13px] font-black text-white">{summarySelection.length}</span>
-                </div>
-                <span className="text-[13px] font-bold text-slate-200">অর্ডার সিলেক্টেড</span>
-              </div>
-              <button
-                onClick={async () => {
-                  try {
-                    const res = await fetch("/api/dashboard/summary", {
-                      method: "POST",
-                      headers: { "Content-Type": "application/json" },
-                      body: JSON.stringify({ orderIds: summarySelection }),
-                    });
-                    if (res.status === 409) {
-                      toast.error("এই অর্ডারগুলো আগেই সামারিতে আছে");
-                      return;
-                    }
-                    if (!res.ok) throw new Error();
-                    toast.success(`${summarySelection.length} টি অর্ডার সামারিতে পাঠানো হয়েছে`);
-                    setSummarySelection([]);
-                  } catch { toast.error("সামারি তৈরিতে সমস্যা হয়েছে"); }
-                }}
-                className="px-5 py-2.5 rounded-[12px] text-[13px] font-bold text-white bg-indigo-500 hover:bg-indigo-400 transition-colors active:scale-95 flex items-center gap-2 shadow-md"
-              >
-                <BarChart3 size={15} />
-                সামারিতে পাঠান
-              </button>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
     </div>
   );
 }
