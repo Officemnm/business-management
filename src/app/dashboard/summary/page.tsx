@@ -405,8 +405,7 @@ export default function SummaryPage() {
                               return (
                                 <div
                                   key={idx}
-                                  onClick={() => { setEditProduct({ summaryId: summary._id, productName: p.name, qty: p.qty, avgPrice }); setEditQty(p.qty); }}
-                                  className="flex items-center gap-3 p-4 rounded-[14px] bg-slate-50 border border-slate-100 hover:border-indigo-200 hover:bg-indigo-50/30 transition-all cursor-pointer active:scale-[0.98] group"
+                                  className="flex items-center gap-3 p-4 rounded-[14px] bg-slate-50 border border-slate-100 group"
                                 >
                                   <div className="w-8 h-8 rounded-full bg-white border border-slate-200 flex items-center justify-center shrink-0 shadow-sm">
                                     <span className="text-[12px] font-black text-slate-600">{idx + 1}</span>
@@ -421,7 +420,6 @@ export default function SummaryPage() {
                                   </div>
                                   <div className="text-right shrink-0">
                                     <p className="text-[16px] font-black text-slate-900 tabular-nums">৳{p.total.toLocaleString("en-US")}</p>
-                                    <Pencil size={12} className="text-slate-300 group-hover:text-indigo-500 transition-colors ml-auto mt-1" />
                                   </div>
                                 </div>
                               );
@@ -484,65 +482,6 @@ export default function SummaryPage() {
               </div>
             );
           })}
-        </div>
-      )}
-
-      {/* Edit Quantity Modal */}
-      {editProduct && (
-        <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center bg-slate-900/40 backdrop-blur-sm p-0 sm:p-4">
-          <div className="w-full sm:max-w-sm bg-white rounded-t-[28px] sm:rounded-[24px] overflow-hidden shadow-2xl">
-            <div className="w-full flex justify-center pt-3 pb-1 sm:hidden">
-              <div className="w-12 h-1.5 bg-slate-200 rounded-full"></div>
-            </div>
-            <div className="px-6 pt-5 sm:pt-8 pb-6">
-              <div className="flex items-center justify-between mb-5">
-                <div>
-                  <h3 className="text-[18px] font-bold text-slate-900">পরিমাণ এডিট</h3>
-                  <p className="text-[13px] font-medium text-slate-500 mt-1 break-words">{editProduct.productName}</p>
-                </div>
-                <button onClick={() => setEditProduct(null)} className="w-9 h-9 rounded-full flex items-center justify-center bg-slate-100 text-slate-500 hover:bg-slate-200 transition-colors">
-                  <X size={18} />
-                </button>
-              </div>
-
-              <div className="mb-5 p-4 rounded-[14px] bg-slate-50 border border-slate-100">
-                <div className="flex justify-between text-[13px] mb-2">
-                  <span className="font-medium text-slate-500">গড় দর</span>
-                  <span className="font-bold text-slate-800">৳{editProduct.avgPrice.toLocaleString("en-US")}</span>
-                </div>
-                <div className="flex justify-between text-[13px]">
-                  <span className="font-medium text-slate-500">বর্তমান পরিমাণ</span>
-                  <span className="font-bold text-slate-800">{editProduct.qty}</span>
-                </div>
-              </div>
-
-              <div className="mb-6">
-                <label className="block text-[12px] font-bold text-slate-600 uppercase tracking-wider mb-2">নতুন পরিমাণ</label>
-                <input
-                  type="number"
-                  value={editQty}
-                  onChange={(e) => setEditQty(e.target.value === "" ? "" : Number(e.target.value))}
-                  onFocus={(e) => e.target.select()}
-                  min={1}
-                  className="w-full h-14 px-5 rounded-[14px] text-[20px] font-black text-center outline-none bg-white border-2 border-indigo-200 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all tabular-nums shadow-sm"
-                />
-              </div>
-
-              {Number(editQty) > 0 && (
-                <div className="mb-5 p-3 rounded-[12px] bg-indigo-50 border border-indigo-100 flex items-center justify-between">
-                  <span className="text-[12px] font-bold text-indigo-600">নতুন মোট</span>
-                  <span className="text-[16px] font-black text-indigo-700 tabular-nums">৳{(Number(editQty) * editProduct.avgPrice).toLocaleString("en-US")}</span>
-                </div>
-              )}
-
-              <button
-                onClick={handleEditQuantity}
-                className="w-full h-13 py-3.5 rounded-[14px] text-[15px] font-bold text-white bg-indigo-600 hover:bg-indigo-700 transition-colors shadow-md active:scale-[0.98] flex items-center justify-center gap-2 cursor-pointer"
-              >
-                আপডেট করুন
-              </button>
-            </div>
-          </div>
         </div>
       )}
 
