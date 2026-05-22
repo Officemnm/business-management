@@ -75,6 +75,12 @@ export async function GET(req: NextRequest) {
         }).lean();
         const totalDeliveredAmount = deliveredToday.reduce((s: number, o: any) => s + o.totalAmount, 0);
 
+        // Calculate collection from summary orders that were delivered on this date
+        // (how much was paid when these specific orders were delivered)
+        const summaryOrderIds = summary.orders.map((o) => o.orderId);
+        const deliveredSummaryOrders = deliveredToday.filter((o: any) => summaryOrderIds.includes(o._id.toString()));
+        const orderCollectionAmount = deliveredSummaryOrders.reduce((s: number, o: any) => s + (o.paidAmount || 0), 0);
+
         return {
           _id: summary._id,
           date: summary.date,
@@ -83,6 +89,7 @@ export async function GET(req: NextRequest) {
           totalPaid,
           totalDue,
           totalDeliveredAmount,
+          orderCollectionAmount,
           orderCount: updatedOrders.length,
           createdBy: summary.createdBy,
           createdAt: summary.createdAt,

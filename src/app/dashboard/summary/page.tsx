@@ -30,6 +30,7 @@ interface Summary {
   totalPaid: number;
   totalDue: number;
   totalDeliveredAmount: number;
+  orderCollectionAmount: number;
   orderCount: number;
   createdBy: string;
   createdAt: string;
@@ -66,7 +67,7 @@ export default function SummaryPage() {
         setSummaries(summaryData);
         const daySummary = summaryData.find((s: Summary) => s.date === d);
         const summaryAmount = daySummary ? daySummary.totalAmount : 0;
-        const orderCollection = daySummary ? daySummary.totalPaid : 0;
+        const orderCollection = daySummary ? daySummary.orderCollectionAmount : 0;
         const dueCollection = Array.isArray(paymentsData)
           ? paymentsData.reduce((s: number, p: { amount: number }) => s + (p.amount || 0), 0)
           : 0;
