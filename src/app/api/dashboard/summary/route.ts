@@ -286,18 +286,13 @@ export async function PUT(req: NextRequest) {
   }
 }
 
-// DELETE a summary or a specific order from a summary (admin only)
+// DELETE a summary or a specific order from a summary
 export async function DELETE(req: NextRequest) {
   try {
     const token = req.cookies.get("token")?.value;
     if (!token) return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
     const payload = verifyToken(token);
     if (!payload || !payload.userId) return NextResponse.json({ error: "Invalid token" }, { status: 401 });
-
-    // Only admin can delete
-    if (payload.role !== "admin") {
-      return NextResponse.json({ error: "শুধুমাত্র এডমিন সামারি ডিলিট করতে পারবে" }, { status: 403 });
-    }
 
     await dbConnect();
 
@@ -312,6 +307,15 @@ export async function DELETE(req: NextRequest) {
     const summary = await Summary.findById(summaryId);
     if (!summary) {
       return NextResponse.json({ error: "সামারি পাওয়া যায়নি" }, { status: 404 });
+    }
+
+    // Non-admin users can only delete on the same day (BD time)
+    if (payload.role !== "admin") {
+      const now = new Date();
+      const bdToday = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Dhaka" }).format(now);
+      if (summary.date !== bdToday) {
+        return NextResponse.json({ error: "রাত ১২ টার পর সামারি ডিলিট করা যাবে না" }, { status: 403 });
+      }
     }
 
     // If orderId provided, remove only that order from the summary

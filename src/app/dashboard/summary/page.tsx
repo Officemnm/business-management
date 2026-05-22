@@ -151,6 +151,7 @@ export default function SummaryPage() {
   const totalCollection = todayStats.orderCollection + todayStats.dueCollection;
   const difference = totalCollection - todayStats.summaryAmount;
   const isAdmin = currentUser?.role === "admin";
+  const todayStr = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Dhaka" }).format(new Date());
 
   if (loading) {
     return (
@@ -324,7 +325,7 @@ export default function SummaryPage() {
                       <p className="text-[11px] font-bold text-emerald-500 uppercase tracking-wider">ডেলিভারড</p>
                       <p className="text-[18px] font-black text-emerald-600 tabular-nums">৳{summary.totalDeliveredAmount.toLocaleString("en-US")}</p>
                     </div>
-                    {isAdmin && (
+                    {(isAdmin || summary.date === todayStr) && (
                       <button
                         onClick={() => setDeleteConfirm({ summaryId: summary._id, label: formatDate(summary.date) })}
                         className="w-9 h-9 rounded-[10px] flex items-center justify-center text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
@@ -463,7 +464,7 @@ export default function SummaryPage() {
                                     <p className="text-[10px] sm:text-[11px] font-bold text-rose-500 mt-0.5">বাকি ৳{o.dueAmount.toLocaleString("en-US")}</p>
                                   )}
                                 </div>
-                                {isAdmin && (
+                                {(isAdmin || summary.date === todayStr) && (
                                   <button
                                     onClick={() => setDeleteConfirm({ summaryId: summary._id, orderId: o.orderId, label: o.customerName })}
                                     className="w-8 h-8 rounded-[8px] flex items-center justify-center text-slate-300 hover:text-rose-600 hover:bg-rose-50 transition-colors sm:opacity-0 sm:group-hover:opacity-100"
