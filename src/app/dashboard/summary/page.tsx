@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Calendar, Package, ChevronDown, Truck, Banknote, ShoppingBag, BarChart3, TrendingUp, TrendingDown, CreditCard, Trash2, X, Pencil } from "lucide-react";
+import { Calendar, Package, ChevronDown, Truck, Banknote, ShoppingBag, BarChart3, TrendingUp, TrendingDown, CreditCard, Trash2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import toast from "react-hot-toast";
 
@@ -174,47 +174,29 @@ export default function SummaryPage() {
 
   return (
     <div className="pb-10 max-w-6xl mx-auto">
-      {/* Hero Header Section */}
+      {/* Page Header - Clean & Minimal */}
       <motion.div
-        initial={{ opacity: 0, y: -20 }}
+        initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="relative mb-8 p-6 sm:p-8 rounded-3xl bg-gradient-to-br from-violet-50 via-white to-fuchsia-50 border border-violet-100/50 overflow-hidden"
+        transition={{ duration: 0.4 }}
+        className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-7"
       >
-        {/* Decorative circles */}
-        <div className="absolute -top-10 -right-10 w-40 h-40 rounded-full bg-violet-100/30 blur-2xl"></div>
-        <div className="absolute -bottom-8 -left-8 w-32 h-32 rounded-full bg-fuchsia-100/20 blur-2xl"></div>
-
-        <div className="relative flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-3xl sm:text-4xl font-extrabold bg-gradient-to-r from-violet-700 via-purple-600 to-fuchsia-600 bg-clip-text text-transparent">
-              সামারি
-            </h1>
-            <p className="text-sm text-gray-500 mt-1 font-medium">তারিখ ভিত্তিক অর্ডার সামারি ও বিশ্লেষণ</p>
-          </div>
-
-          {/* Date Picker */}
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2.5 bg-white rounded-2xl border border-violet-200/60 shadow-lg shadow-violet-100/30 px-4 py-3 hover:shadow-xl hover:shadow-violet-100/40 transition-all duration-300">
-              <Calendar size={18} className="text-violet-500" />
-              <input
-                type="date"
-                value={selectedDate}
-                onChange={(e) => handleDateChange(e.target.value)}
-                className="text-sm font-bold text-gray-700 outline-none bg-transparent cursor-pointer w-[140px]"
-              />
-            </div>
-          </div>
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">দৈনিক সামারি</h1>
+          <p className="text-sm text-gray-500 mt-0.5">{selectedDateLabel}</p>
         </div>
-
-        {/* Date Badge */}
-        <div className="relative mt-4 inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/80 border border-violet-100 shadow-sm">
-          <div className="w-2 h-2 rounded-full bg-violet-500 animate-pulse"></div>
-          <span className="text-xs font-bold text-gray-600">{selectedDateLabel}</span>
+        <div className="flex items-center gap-2.5 bg-white rounded-xl border border-gray-200 shadow-sm px-3.5 py-2.5 hover:border-violet-300 transition-colors">
+          <Calendar size={16} className="text-violet-500" />
+          <input
+            type="date"
+            value={selectedDate}
+            onChange={(e) => handleDateChange(e.target.value)}
+            className="text-sm font-semibold text-gray-700 outline-none bg-transparent cursor-pointer w-[140px]"
+          />
         </div>
       </motion.div>
 
-      {/* Stats Grid - Bento Style */}
+      {/* Stats Grid */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -222,7 +204,7 @@ export default function SummaryPage() {
         className="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4 mb-8"
       >
 
-        {/* Summary Amount - spans 2 cols on lg */}
+        {/* Summary Amount */}
         <motion.div
           whileHover={{ y: -4 }}
           transition={{ type: "spring" as const, stiffness: 400, damping: 17 }}
@@ -234,12 +216,11 @@ export default function SummaryPage() {
               <div className="w-8 h-8 rounded-lg bg-violet-100 flex items-center justify-center">
                 <BarChart3 size={15} className="text-violet-600" />
               </div>
-              <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">সামারি</span>
+              <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">মোট বিল</span>
             </div>
             <p className="text-2xl sm:text-3xl font-black text-gray-900 tabular-nums">
               ৳{todayStats.summaryAmount.toLocaleString("en-US")}
             </p>
-            <p className="text-[10px] text-gray-400 mt-1.5 font-medium">সিলেক্টেড অর্ডারের মোট</p>
           </div>
         </motion.div>
 
@@ -332,10 +313,10 @@ export default function SummaryPage() {
         </motion.div>
       </motion.div>
 
-      {/* Section Title */}
+      {/* Section Divider */}
       <div className="flex items-center gap-3 mb-5">
         <div className="w-1 h-6 rounded-full bg-gradient-to-b from-violet-500 to-fuchsia-500"></div>
-        <h2 className="text-lg font-bold text-gray-800">তারিখ ভিত্তিক সামারি</h2>
+        <h2 className="text-lg font-bold text-gray-800">সকল সামারি</h2>
         <div className="flex-1 h-px bg-gradient-to-r from-gray-200 to-transparent"></div>
       </div>
 
@@ -409,7 +390,7 @@ export default function SummaryPage() {
                     <div className="flex items-center gap-2 sm:gap-4 shrink-0">
                       <div className="hidden sm:flex items-center gap-4">
                         <div className="text-right">
-                          <p className="text-[10px] font-bold text-gray-400 uppercase">সামারি</p>
+                          <p className="text-[10px] font-bold text-gray-400 uppercase">মোট বিল</p>
                           <p className="text-lg font-black text-gray-900 tabular-nums leading-tight">৳{summary.totalAmount.toLocaleString("en-US")}</p>
                         </div>
                         <div className="w-px h-8 bg-gray-100"></div>
@@ -439,7 +420,7 @@ export default function SummaryPage() {
                   {/* Mobile stats row */}
                   <div className="flex sm:hidden items-center gap-2 mt-3">
                     <div className="flex-1 py-2 px-3 rounded-xl bg-gray-50 border border-gray-100 text-center">
-                      <p className="text-[9px] font-bold text-gray-400 uppercase">সামারি</p>
+                      <p className="text-[9px] font-bold text-gray-400 uppercase">মোট বিল</p>
                       <p className="text-sm font-black text-gray-900 tabular-nums">৳{summary.totalAmount.toLocaleString("en-US")}</p>
                     </div>
                     <div className="flex-1 py-2 px-3 rounded-xl bg-emerald-50 border border-emerald-100 text-center">
