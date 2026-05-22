@@ -198,7 +198,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Create new summary
-    const summary = await Summary.create({
+    const newSummary = await Summary.create({
       date: dateStr,
       orders: summaryOrders,
       totalAmount,
@@ -209,7 +209,7 @@ export async function POST(req: NextRequest) {
       createdBy,
     });
 
-    return NextResponse.json(summary, { status: 201 });
+    return NextResponse.json(newSummary, { status: 201 });
   } catch (error) {
     console.error("Create summary error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
@@ -233,15 +233,15 @@ export async function PUT(req: NextRequest) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
-    const summary = await Summary.findById(summaryId);
-    if (!summary) {
+    const summaryDoc = await Summary.findById(summaryId);
+    if (!summaryDoc) {
       return NextResponse.json({ error: "সামারি পাওয়া যায়নি" }, { status: 404 });
     }
 
     // Update quantity: distribute the new total quantity proportionally across orders
     // First, find the current total quantity for this product across all orders
     let currentTotalQty = 0;
-    summary.orders.forEach((order) => {
+    summaryDoc.orders.forEach((order) => {
       order.items.forEach((item) => {
         if (item.productName === productName) {
           currentTotalQty += item.quantity;
@@ -257,7 +257,7 @@ export async function PUT(req: NextRequest) {
     const ratio = newQuantity / currentTotalQty;
     let totalAmountDiff = 0;
 
-    summary.orders.forEach((order) => {
+    summaryDoc.orders.forEach((order) => {
       order.items.forEach((item) => {
         if (item.productName === productName) {
           const oldTotal = item.total;
@@ -275,11 +275,11 @@ export async function PUT(req: NextRequest) {
     });
 
     // Update summary totals
-    summary.totalAmount += totalAmountDiff;
-    summary.orderCount = summary.orders.length;
+    summaryDoc.totalAmount += totalAmountDiff;
+    summaryDoc.orderCount = summaryDoc.orders.length;
 
-    await summary.save();
-    return NextResponse.json(summary);
+    await summaryDoc.save();
+    return NextResponse.json(summaryDoc);
   } catch (error) {
     console.error("Update summary error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
@@ -304,8 +304,8 @@ export async function DELETE(req: NextRequest) {
       return NextResponse.json({ error: "Summary ID required" }, { status: 400 });
     }
 
-    const summary = await Summary.findById(summaryId);
-    if (!summary) {
+    const summaryToDelete = await Summary.findById(summaryId);
+    if (!summaryToDelete) {
       return NextResponse.json({ error: "সামারি পাওয়া যায়নি" }, { status: 404 });
     }
 
@@ -313,31 +313,31 @@ export async function DELETE(req: NextRequest) {
     if (payload.role !== "admin") {
       const now = new Date();
       const bdToday = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Dhaka" }).format(now);
-      if (summary.date !== bdToday) {
+      if (summaryToDelete.date !== bdToday) {
         return NextResponse.json({ error: "রাত ১২ টার পর সামারি ডিলিট করা যাবে না" }, { status: 403 });
       }
     }
 
     // If orderId provided, remove only that order from the summary
     if (orderId) {
-      const orderToRemove = summary.orders.find((o) => o.orderId === orderId);
+      const orderToRemove = summaryToDelete.orders.find((o) => o.orderId === orderId);
       if (!orderToRemove) {
         return NextResponse.json({ error: "অর্ডার পাওয়া যায়নি" }, { status: 404 });
       }
 
-      summary.orders = summary.orders.filter((o) => o.orderId !== orderId);
-      summary.totalAmount -= orderToRemove.totalAmount;
-      summary.totalPaid -= orderToRemove.paidAmount;
-      summary.totalDue -= orderToRemove.dueAmount;
-      summary.orderCount = summary.orders.length;
+      summaryToDelete.orders = summaryToDelete.orders.filter((o) => o.orderId !== orderId);
+      summaryToDelete.totalAmount -= orderToRemove.totalAmount;
+      summaryToDelete.totalPaid -= orderToRemove.paidAmount;
+      summaryToDelete.totalDue -= orderToRemove.dueAmount;
+      summaryToDelete.orderCount = summaryToDelete.orders.length;
 
       // If no orders left, delete the entire summary
-      if (summary.orders.length === 0) {
+      if (summaryToDelete.orders.length === 0) {
         await Summary.findByIdAndDelete(summaryId);
         return NextResponse.json({ message: "সামারি ডিলিট হয়েছে" });
       }
 
-      await summary.save();
+      await summaryToDelete.save();
       return NextResponse.json({ message: "অর্ডার সামারি থেকে সরানো হয়েছে" });
     }
 
