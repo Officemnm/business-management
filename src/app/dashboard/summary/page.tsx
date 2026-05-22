@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Calendar, Package, ChevronDown, Truck, Banknote, ShoppingBag, BarChart3, TrendingUp, TrendingDown, CreditCard, Trash2, X, Pencil, Layers, ArrowUpRight, ArrowDownRight, CircleDot } from "lucide-react";
+import { Calendar, Package, ChevronDown, Truck, Banknote, ShoppingBag, BarChart3, TrendingUp, TrendingDown, CreditCard, Trash2, X, Pencil } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import toast from "react-hot-toast";
 
@@ -41,27 +41,6 @@ interface TodayStats {
   orderCollection: number;
   dueCollection: number;
 }
-
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: { staggerChildren: 0.06, delayChildren: 0.1 }
-  }
-} as const;
-
-const itemVariants = {
-  hidden: { opacity: 0, y: 20, scale: 0.97 },
-  visible: {
-    opacity: 1, y: 0, scale: 1,
-    transition: { type: "spring" as const, stiffness: 300, damping: 24 }
-  }
-};
-
-const cardHover = {
-  scale: 1.015,
-  transition: { type: "spring" as const, stiffness: 400, damping: 20 }
-};
 
 export default function SummaryPage() {
   const [summaries, setSummaries] = useState<Summary[]>([]);
@@ -178,191 +157,209 @@ export default function SummaryPage() {
     return (
       <div className="flex items-center justify-center min-h-[70vh]">
         <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ type: "spring", stiffness: 200, damping: 20 }}
-          className="flex flex-col items-center gap-5"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="flex flex-col items-center gap-4"
         >
-          <div className="relative">
-            <div className="w-12 h-12 rounded-full border-[3px] border-gray-100 border-t-indigo-400 animate-spin"></div>
-            <div className="absolute inset-0 w-12 h-12 rounded-full border-[3px] border-transparent border-b-violet-300 animate-spin" style={{ animationDirection: "reverse", animationDuration: "1.5s" }}></div>
+          <div className="relative w-14 h-14">
+            <div className="absolute inset-0 rounded-full border-[3px] border-violet-100"></div>
+            <div className="absolute inset-0 rounded-full border-[3px] border-transparent border-t-violet-500 animate-spin"></div>
+            <div className="absolute inset-2 rounded-full border-[2px] border-transparent border-b-fuchsia-400 animate-spin" style={{ animationDuration: "1.5s", animationDirection: "reverse" }}></div>
           </div>
-          <div className="text-center">
-            <p className="text-sm font-semibold text-gray-600">লোড হচ্ছে...</p>
-            <p className="text-xs text-gray-400 mt-1">সামারি ডেটা প্রস্তুত করা হচ্ছে</p>
-          </div>
+          <p className="text-sm font-medium text-gray-500 animate-pulse">সামারি লোড হচ্ছে...</p>
         </motion.div>
       </div>
     );
   }
 
   return (
-    <motion.div
-      variants={containerVariants}
-      initial="hidden"
-      animate="visible"
-      className="pb-10 space-y-7"
-    >
-      {/* Page Header */}
-      <motion.div variants={itemVariants} className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-3 mb-1">
-            <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-indigo-50 to-violet-50 border border-indigo-100/50 flex items-center justify-center shadow-sm">
-              <Layers size={18} className="text-indigo-500" />
-            </div>
-            <div>
-              <h1 className="text-2xl font-bold text-gray-800 tracking-tight">সামারি</h1>
-              <p className="text-xs font-medium text-gray-400 mt-0.5">তারিখ ভিত্তিক অর্ডার সামারি</p>
+    <div className="pb-10 max-w-6xl mx-auto">
+      {/* Hero Header Section */}
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="relative mb-8 p-6 sm:p-8 rounded-3xl bg-gradient-to-br from-violet-50 via-white to-fuchsia-50 border border-violet-100/50 overflow-hidden"
+      >
+        {/* Decorative circles */}
+        <div className="absolute -top-10 -right-10 w-40 h-40 rounded-full bg-violet-100/30 blur-2xl"></div>
+        <div className="absolute -bottom-8 -left-8 w-32 h-32 rounded-full bg-fuchsia-100/20 blur-2xl"></div>
+
+        <div className="relative flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h1 className="text-3xl sm:text-4xl font-extrabold bg-gradient-to-r from-violet-700 via-purple-600 to-fuchsia-600 bg-clip-text text-transparent">
+              সামারি
+            </h1>
+            <p className="text-sm text-gray-500 mt-1 font-medium">তারিখ ভিত্তিক অর্ডার সামারি ও বিশ্লেষণ</p>
+          </div>
+
+          {/* Date Picker */}
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2.5 bg-white rounded-2xl border border-violet-200/60 shadow-lg shadow-violet-100/30 px-4 py-3 hover:shadow-xl hover:shadow-violet-100/40 transition-all duration-300">
+              <Calendar size={18} className="text-violet-500" />
+              <input
+                type="date"
+                value={selectedDate}
+                onChange={(e) => handleDateChange(e.target.value)}
+                className="text-sm font-bold text-gray-700 outline-none bg-transparent cursor-pointer w-[140px]"
+              />
             </div>
           </div>
         </div>
-        {/* Date Picker */}
-        <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-          <div className="flex items-center gap-3 bg-white/80 backdrop-blur-xl rounded-2xl border border-gray-100 shadow-[0_2px_12px_-3px_rgba(0,0,0,0.06)] px-4 py-2.5 hover:border-indigo-200 hover:shadow-[0_4px_16px_-4px_rgba(99,102,241,0.12)] transition-all duration-300">
-            <Calendar size={16} className="text-indigo-400 shrink-0" />
-            <input
-              type="date"
-              value={selectedDate}
-              onChange={(e) => handleDateChange(e.target.value)}
-              className="text-sm font-semibold text-gray-700 outline-none bg-transparent cursor-pointer w-[140px]"
-            />
-          </div>
-        </motion.div>
-      </motion.div>
 
-      {/* Selected Date Badge */}
-      <motion.div variants={itemVariants} className="flex items-center gap-3">
-        <div className="flex items-center gap-2.5 px-4 py-2 rounded-xl bg-gradient-to-r from-indigo-50/80 to-violet-50/60 border border-indigo-100/40">
-          <CircleDot size={14} className="text-indigo-400" />
-          <p className="text-sm font-semibold text-gray-700">{selectedDateLabel}</p>
+        {/* Date Badge */}
+        <div className="relative mt-4 inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/80 border border-violet-100 shadow-sm">
+          <div className="w-2 h-2 rounded-full bg-violet-500 animate-pulse"></div>
+          <span className="text-xs font-bold text-gray-600">{selectedDateLabel}</span>
         </div>
       </motion.div>
 
-      {/* Top 3 KPI Cards */}
-      <motion.div variants={itemVariants} className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        {/* Summary Amount */}
-        <motion.div whileHover={cardHover} className="group relative bg-white/70 backdrop-blur-xl rounded-2xl p-5 shadow-[0_1px_8px_-2px_rgba(0,0,0,0.05)] border border-gray-100/80 hover:border-indigo-100 hover:shadow-[0_8px_30px_-8px_rgba(99,102,241,0.1)] transition-all duration-300 overflow-hidden">
-          <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-indigo-50/50 to-transparent rounded-bl-[60px] opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+      {/* Stats Grid - Bento Style */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.1 }}
+        className="grid grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4 mb-8"
+      >
+
+        {/* Summary Amount - spans 2 cols on lg */}
+        <motion.div
+          whileHover={{ y: -4 }}
+          transition={{ type: "spring" as const, stiffness: 400, damping: 17 }}
+          className="col-span-2 lg:col-span-1 relative p-5 rounded-2xl bg-white border border-gray-100 shadow-sm hover:shadow-lg hover:shadow-violet-50 transition-all duration-300 group overflow-hidden"
+        >
+          <div className="absolute inset-0 bg-gradient-to-br from-violet-500/[0.03] to-fuchsia-500/[0.03] opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
           <div className="relative">
-            <div className="flex items-center justify-between mb-4">
-              <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">সামারি এমাউন্ট</p>
-              <div className="w-9 h-9 rounded-xl flex items-center justify-center bg-gradient-to-br from-indigo-50 to-indigo-100/50 border border-indigo-100/60 shadow-sm">
-                <BarChart3 size={15} strokeWidth={2.2} className="text-indigo-500" />
+            <div className="flex items-center gap-2 mb-3">
+              <div className="w-8 h-8 rounded-lg bg-violet-100 flex items-center justify-center">
+                <BarChart3 size={15} className="text-violet-600" />
               </div>
+              <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">সামারি</span>
             </div>
-            <p className="text-2xl font-extrabold text-gray-800 leading-none tabular-nums tracking-tight">
+            <p className="text-2xl sm:text-3xl font-black text-gray-900 tabular-nums">
               ৳{todayStats.summaryAmount.toLocaleString("en-US")}
             </p>
-            <p className="text-[11px] font-medium text-gray-400 mt-2.5">সিলেক্টেড অর্ডারের মোট</p>
+            <p className="text-[10px] text-gray-400 mt-1.5 font-medium">সিলেক্টেড অর্ডারের মোট</p>
           </div>
         </motion.div>
 
         {/* Order Collection */}
-        <motion.div whileHover={cardHover} className="group relative bg-white/70 backdrop-blur-xl rounded-2xl p-5 shadow-[0_1px_8px_-2px_rgba(0,0,0,0.05)] border border-gray-100/80 hover:border-emerald-100 hover:shadow-[0_8px_30px_-8px_rgba(16,185,129,0.1)] transition-all duration-300 overflow-hidden">
-          <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-emerald-50/50 to-transparent rounded-bl-[60px] opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+        <motion.div
+          whileHover={{ y: -4 }}
+          transition={{ type: "spring" as const, stiffness: 400, damping: 17 }}
+          className="relative p-5 rounded-2xl bg-white border border-gray-100 shadow-sm hover:shadow-lg hover:shadow-emerald-50 transition-all duration-300 group overflow-hidden"
+        >
+          <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/[0.03] to-teal-500/[0.03] opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
           <div className="relative">
-            <div className="flex items-center justify-between mb-4">
-              <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">অর্ডার থেকে আদায়</p>
-              <div className="w-9 h-9 rounded-xl flex items-center justify-center bg-gradient-to-br from-emerald-50 to-emerald-100/50 border border-emerald-100/60 shadow-sm">
-                <ShoppingBag size={15} strokeWidth={2.2} className="text-emerald-500" />
+            <div className="flex items-center gap-2 mb-3">
+              <div className="w-8 h-8 rounded-lg bg-emerald-100 flex items-center justify-center">
+                <ShoppingBag size={15} className="text-emerald-600" />
               </div>
+              <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">অর্ডার আদায়</span>
             </div>
-            <p className="text-2xl font-extrabold text-emerald-600 leading-none tabular-nums tracking-tight">
+            <p className="text-xl sm:text-2xl font-black text-emerald-600 tabular-nums">
               ৳{todayStats.orderCollection.toLocaleString("en-US")}
             </p>
-            <p className="text-[11px] font-medium text-gray-400 mt-2.5">অর্ডারে নগদ পরিশোধ</p>
           </div>
         </motion.div>
 
         {/* Due Collection */}
-        <motion.div whileHover={cardHover} className="group relative bg-white/70 backdrop-blur-xl rounded-2xl p-5 shadow-[0_1px_8px_-2px_rgba(0,0,0,0.05)] border border-gray-100/80 hover:border-amber-100 hover:shadow-[0_8px_30px_-8px_rgba(245,158,11,0.1)] transition-all duration-300 overflow-hidden">
-          <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-amber-50/50 to-transparent rounded-bl-[60px] opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+        <motion.div
+          whileHover={{ y: -4 }}
+          transition={{ type: "spring" as const, stiffness: 400, damping: 17 }}
+          className="relative p-5 rounded-2xl bg-white border border-gray-100 shadow-sm hover:shadow-lg hover:shadow-amber-50 transition-all duration-300 group overflow-hidden"
+        >
+          <div className="absolute inset-0 bg-gradient-to-br from-amber-500/[0.03] to-orange-500/[0.03] opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
           <div className="relative">
-            <div className="flex items-center justify-between mb-4">
-              <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">বাকি থেকে আদায়</p>
-              <div className="w-9 h-9 rounded-xl flex items-center justify-center bg-gradient-to-br from-amber-50 to-amber-100/50 border border-amber-100/60 shadow-sm">
-                <CreditCard size={15} strokeWidth={2.2} className="text-amber-500" />
+            <div className="flex items-center gap-2 mb-3">
+              <div className="w-8 h-8 rounded-lg bg-amber-100 flex items-center justify-center">
+                <CreditCard size={15} className="text-amber-600" />
               </div>
+              <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">বাকি আদায়</span>
             </div>
-            <p className="text-2xl font-extrabold text-amber-600 leading-none tabular-nums tracking-tight">
+            <p className="text-xl sm:text-2xl font-black text-amber-600 tabular-nums">
               ৳{todayStats.dueCollection.toLocaleString("en-US")}
             </p>
-            <p className="text-[11px] font-medium text-gray-400 mt-2.5">বকেয়া থেকে কালেক্ট</p>
           </div>
         </motion.div>
-      </motion.div>
 
-      {/* Bottom 2 Cards */}
-      <motion.div variants={itemVariants} className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {/* Total Collection */}
-        <motion.div whileHover={cardHover} className="group relative bg-white/70 backdrop-blur-xl rounded-2xl p-5 shadow-[0_1px_8px_-2px_rgba(0,0,0,0.05)] border border-gray-100/80 hover:border-emerald-100 hover:shadow-[0_8px_30px_-8px_rgba(16,185,129,0.08)] transition-all duration-300 overflow-hidden">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-emerald-50/40 to-transparent rounded-bl-[80px] opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+        <motion.div
+          whileHover={{ y: -4 }}
+          transition={{ type: "spring" as const, stiffness: 400, damping: 17 }}
+          className="relative p-5 rounded-2xl bg-white border border-gray-100 shadow-sm hover:shadow-lg hover:shadow-teal-50 transition-all duration-300 group overflow-hidden"
+        >
+          <div className="absolute inset-0 bg-gradient-to-br from-teal-500/[0.03] to-cyan-500/[0.03] opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
           <div className="relative">
-            <div className="flex items-center justify-between mb-4">
-              <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">মোট আদায়</p>
-              <div className="w-9 h-9 rounded-xl flex items-center justify-center bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-100/60 shadow-sm">
-                <Banknote size={15} strokeWidth={2.2} className="text-emerald-500" />
+            <div className="flex items-center gap-2 mb-3">
+              <div className="w-8 h-8 rounded-lg bg-teal-100 flex items-center justify-center">
+                <Banknote size={15} className="text-teal-600" />
               </div>
+              <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">মোট আদায়</span>
             </div>
-            <p className="text-[26px] font-extrabold text-gray-800 leading-none tabular-nums tracking-tight">
+            <p className="text-xl sm:text-2xl font-black text-gray-900 tabular-nums">
               ৳{totalCollection.toLocaleString("en-US")}
             </p>
-            <div className="flex items-center gap-3 mt-3">
-              <span className="text-xs font-medium text-gray-500 bg-gray-50 px-2.5 py-1 rounded-lg border border-gray-100">নগদ: ৳{todayStats.orderCollection.toLocaleString("en-US")}</span>
-              <span className="text-gray-300 text-xs">+</span>
-              <span className="text-xs font-medium text-gray-500 bg-gray-50 px-2.5 py-1 rounded-lg border border-gray-100">বাকি: ৳{todayStats.dueCollection.toLocaleString("en-US")}</span>
+            <div className="flex items-center gap-1.5 mt-1.5">
+              <span className="text-[9px] font-medium text-gray-400 bg-gray-50 px-1.5 py-0.5 rounded">৳{todayStats.orderCollection.toLocaleString("en-US")}</span>
+              <span className="text-[9px] text-gray-300">+</span>
+              <span className="text-[9px] font-medium text-gray-400 bg-gray-50 px-1.5 py-0.5 rounded">৳{todayStats.dueCollection.toLocaleString("en-US")}</span>
             </div>
           </div>
         </motion.div>
 
         {/* Difference */}
-        <motion.div whileHover={cardHover} className={`group relative bg-white/70 backdrop-blur-xl rounded-2xl p-5 shadow-[0_1px_8px_-2px_rgba(0,0,0,0.05)] border transition-all duration-300 overflow-hidden ${difference >= 0 ? "border-emerald-100/60 hover:shadow-[0_8px_30px_-8px_rgba(16,185,129,0.1)]" : "border-rose-100/60 hover:shadow-[0_8px_30px_-8px_rgba(244,63,94,0.1)]"}`}>
-          <div className={`absolute top-0 right-0 w-32 h-32 rounded-bl-[80px] opacity-0 group-hover:opacity-100 transition-opacity duration-500 ${difference >= 0 ? "bg-gradient-to-bl from-emerald-50/40 to-transparent" : "bg-gradient-to-bl from-rose-50/40 to-transparent"}`}></div>
+        <motion.div
+          whileHover={{ y: -4 }}
+          transition={{ type: "spring" as const, stiffness: 400, damping: 17 }}
+          className={`relative p-5 rounded-2xl bg-white border shadow-sm transition-all duration-300 group overflow-hidden ${difference >= 0 ? "border-emerald-100 hover:shadow-lg hover:shadow-emerald-50" : "border-rose-100 hover:shadow-lg hover:shadow-rose-50"}`}
+        >
+          <div className={`absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 ${difference >= 0 ? "bg-gradient-to-br from-emerald-500/[0.03] to-green-500/[0.03]" : "bg-gradient-to-br from-rose-500/[0.03] to-pink-500/[0.03]"}`}></div>
           <div className="relative">
-            <div className="flex items-center justify-between mb-4">
-              <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">সামারি থেকে পার্থক্য</p>
-              <div className={`w-9 h-9 rounded-xl flex items-center justify-center border shadow-sm ${difference >= 0 ? "bg-gradient-to-br from-emerald-50 to-green-50 border-emerald-100/60" : "bg-gradient-to-br from-rose-50 to-pink-50 border-rose-100/60"}`}>
-                {difference >= 0 ? <ArrowUpRight size={15} strokeWidth={2.2} className="text-emerald-500" /> : <ArrowDownRight size={15} strokeWidth={2.2} className="text-rose-500" />}
+            <div className="flex items-center gap-2 mb-3">
+              <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${difference >= 0 ? "bg-emerald-100" : "bg-rose-100"}`}>
+                {difference >= 0 ? <TrendingUp size={15} className="text-emerald-600" /> : <TrendingDown size={15} className="text-rose-600" />}
               </div>
+              <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">পার্থক্য</span>
             </div>
-            <p className={`text-[26px] font-extrabold leading-none tabular-nums tracking-tight ${difference >= 0 ? "text-emerald-600" : "text-rose-500"}`}>
+            <p className={`text-xl sm:text-2xl font-black tabular-nums ${difference >= 0 ? "text-emerald-600" : "text-rose-500"}`}>
               {difference >= 0 ? "+" : ""}৳{difference.toLocaleString("en-US")}
             </p>
-            <p className={`text-xs font-medium mt-2.5 ${difference >= 0 ? "text-emerald-500/80" : "text-rose-400"}`}>
-              {difference > 0 ? "সামারির চেয়ে বেশি আদায় হয়েছে" : difference < 0 ? "সামারির চেয়ে কম আদায় হয়েছে" : "সামারি ও আদায় সমান"}
+            <p className={`text-[9px] font-medium mt-1 ${difference >= 0 ? "text-emerald-500" : "text-rose-400"}`}>
+              {difference > 0 ? "বেশি আদায়" : difference < 0 ? "কম আদায়" : "সমান"}
             </p>
           </div>
         </motion.div>
       </motion.div>
 
-      {/* Divider */}
-      <motion.div variants={itemVariants} className="flex items-center gap-4 pt-2">
-        <div className="h-px flex-1 bg-gradient-to-r from-transparent via-gray-200 to-transparent"></div>
-        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.15em] flex items-center gap-2">
-          <Layers size={12} className="text-gray-300" />
-          তারিখ ভিত্তিক সামারি
-        </span>
-        <div className="h-px flex-1 bg-gradient-to-r from-transparent via-gray-200 to-transparent"></div>
-      </motion.div>
+      {/* Section Title */}
+      <div className="flex items-center gap-3 mb-5">
+        <div className="w-1 h-6 rounded-full bg-gradient-to-b from-violet-500 to-fuchsia-500"></div>
+        <h2 className="text-lg font-bold text-gray-800">তারিখ ভিত্তিক সামারি</h2>
+        <div className="flex-1 h-px bg-gradient-to-r from-gray-200 to-transparent"></div>
+      </div>
 
       {/* Summary List */}
       {summaries.length === 0 ? (
-        <motion.div variants={itemVariants} className="bg-white/60 backdrop-blur-xl rounded-3xl py-20 flex flex-col items-center justify-center text-center shadow-[0_2px_12px_-4px_rgba(0,0,0,0.04)] border border-gray-100/80">
-          <motion.div
-            initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ type: "spring", stiffness: 200, damping: 15, delay: 0.2 }}
-            className="w-20 h-20 rounded-3xl bg-gradient-to-br from-gray-50 to-gray-100/50 flex items-center justify-center mb-5 border border-gray-100 shadow-sm"
-          >
-            <BarChart3 size={32} strokeWidth={1.5} className="text-gray-300" />
-          </motion.div>
-          <p className="text-base font-bold text-gray-700 mb-1.5">কোনো সামারি নেই</p>
-          <p className="text-sm font-medium text-gray-400 max-w-xs">অর্ডার পেইজ থেকে অর্ডার সিলেক্ট করে সামারিতে পাঠান</p>
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="py-24 flex flex-col items-center justify-center text-center rounded-3xl border-2 border-dashed border-gray-200 bg-gray-50/50"
+        >
+          <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-violet-100 to-fuchsia-100 flex items-center justify-center mb-5 shadow-inner">
+            <BarChart3 size={36} strokeWidth={1.5} className="text-violet-400" />
+          </div>
+          <p className="text-lg font-bold text-gray-700 mb-2">কোনো সামারি নেই</p>
+          <p className="text-sm text-gray-400 max-w-sm">অর্ডার পেইজ থেকে অর্ডার সিলেক্ট করে সামারিতে পাঠান</p>
         </motion.div>
       ) : (
-
-        <div className="flex flex-col gap-4">
-          {summaries.map((summary, sIdx) => {
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ staggerChildren: 0.08 }}
+          className="space-y-4"
+        >
+          {summaries.map((summary) => {
             const isExpanded = expandedId === summary._id;
             const productMap: Record<string, { name: string; qty: number; total: number }> = {};
             summary.orders.forEach((o) => {
@@ -378,66 +375,77 @@ export default function SummaryPage() {
             return (
               <motion.div
                 key={summary._id}
-                variants={itemVariants}
-                layout
-                className="bg-white/70 backdrop-blur-xl rounded-2xl border border-gray-100/80 shadow-[0_1px_8px_-2px_rgba(0,0,0,0.04)] overflow-hidden hover:shadow-[0_4px_20px_-6px_rgba(0,0,0,0.06)] transition-shadow duration-300"
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="rounded-2xl border border-gray-100 bg-white shadow-sm hover:shadow-md transition-shadow duration-300 overflow-hidden"
               >
-                {/* Header */}
-                <div className="flex items-center gap-3 sm:gap-4 p-4 sm:p-5">
-                  <button onClick={() => toggleExpand(summary._id)} className="flex items-center gap-3 sm:gap-4 flex-1 min-w-0 text-left cursor-pointer">
-                    <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-gradient-to-br from-indigo-50 to-violet-50 border border-indigo-100/50 flex items-center justify-center shrink-0 shadow-sm">
-                      <Calendar size={17} className="text-indigo-500 sm:hidden" strokeWidth={2} />
-                      <Calendar size={19} className="text-indigo-500 hidden sm:block" strokeWidth={2} />
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-[14px] sm:text-[15px] font-bold text-gray-800 break-words">{formatDate(summary.date)}</p>
-                      <p className="text-[11px] sm:text-xs font-medium text-gray-400 mt-0.5">
-                        {summary.orderCount} টি অর্ডার
-                        {isAdmin && summary.createdBy && <span className="ml-2 text-indigo-400 font-semibold">· {summary.createdBy}</span>}
-                      </p>
-                    </div>
-                  </button>
+                {/* Card Header */}
+                <div className="p-4 sm:p-5">
+                  <div className="flex items-center gap-3 sm:gap-4">
+                    <button onClick={() => toggleExpand(summary._id)} className="flex items-center gap-3 sm:gap-4 flex-1 min-w-0 text-left cursor-pointer">
+                      {/* Date Icon */}
+                      <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-gradient-to-br from-violet-100 to-purple-50 flex flex-col items-center justify-center shrink-0 border border-violet-200/50">
+                        <span className="text-[10px] font-bold text-violet-500 uppercase leading-none">
+                          {new Date(Number(summary.date.split("-")[0]), Number(summary.date.split("-")[1]) - 1, Number(summary.date.split("-")[2])).toLocaleDateString("bn-BD", { weekday: "short" })}
+                        </span>
+                        <span className="text-lg font-black text-violet-700 leading-tight">
+                          {new Date(Number(summary.date.split("-")[0]), Number(summary.date.split("-")[1]) - 1, Number(summary.date.split("-")[2])).toLocaleDateString("bn-BD", { day: "2-digit" })}
+                        </span>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-[14px] sm:text-[15px] font-bold text-gray-800 break-words">{formatDate(summary.date)}</p>
+                        <div className="flex items-center gap-2 mt-1 flex-wrap">
+                          <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-violet-600 bg-violet-50 px-2 py-0.5 rounded-full">
+                            <ShoppingBag size={10} /> {summary.orderCount} অর্ডার
+                          </span>
+                          {isAdmin && summary.createdBy && (
+                            <span className="text-[11px] font-medium text-gray-400">· {summary.createdBy}</span>
+                          )}
+                        </div>
+                      </div>
+                    </button>
 
-                  <div className="flex items-center gap-3 shrink-0">
-                    <div className="text-right hidden sm:block">
-                      <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">সামারি</p>
-                      <p className="text-[17px] font-extrabold text-gray-800 tabular-nums">৳{summary.totalAmount.toLocaleString("en-US")}</p>
-                    </div>
-                    <div className="text-right hidden sm:block">
-                      <p className="text-[10px] font-bold text-emerald-400 uppercase tracking-wider">ডেলিভারড</p>
-                      <p className="text-[17px] font-extrabold text-emerald-600 tabular-nums">৳{summary.totalDeliveredAmount.toLocaleString("en-US")}</p>
-                    </div>
-                    {(isAdmin || summary.date === todayStr) && (
-                      <motion.button
-                        whileHover={{ scale: 1.1 }}
-                        whileTap={{ scale: 0.9 }}
-                        onClick={() => setDeleteConfirm({ summaryId: summary._id, label: formatDate(summary.date) })}
-                        className="w-8 h-8 rounded-xl flex items-center justify-center text-gray-300 hover:text-rose-500 hover:bg-rose-50 transition-all duration-200"
-                        title="সামারি ডিলিট"
+                    {/* Right side stats & actions */}
+                    <div className="flex items-center gap-2 sm:gap-4 shrink-0">
+                      <div className="hidden sm:flex items-center gap-4">
+                        <div className="text-right">
+                          <p className="text-[10px] font-bold text-gray-400 uppercase">সামারি</p>
+                          <p className="text-lg font-black text-gray-900 tabular-nums leading-tight">৳{summary.totalAmount.toLocaleString("en-US")}</p>
+                        </div>
+                        <div className="w-px h-8 bg-gray-100"></div>
+                        <div className="text-right">
+                          <p className="text-[10px] font-bold text-emerald-500 uppercase">ডেলিভারড</p>
+                          <p className="text-lg font-black text-emerald-600 tabular-nums leading-tight">৳{summary.totalDeliveredAmount.toLocaleString("en-US")}</p>
+                        </div>
+                      </div>
+                      {(isAdmin || summary.date === todayStr) && (
+                        <button
+                          onClick={() => setDeleteConfirm({ summaryId: summary._id, label: formatDate(summary.date) })}
+                          className="w-8 h-8 rounded-xl flex items-center justify-center text-gray-300 hover:text-rose-500 hover:bg-rose-50 transition-all"
+                          title="সামারি ডিলিট"
+                        >
+                          <Trash2 size={15} />
+                        </button>
+                      )}
+                      <button
+                        onClick={() => toggleExpand(summary._id)}
+                        className={`w-9 h-9 rounded-xl flex items-center justify-center border transition-all duration-300 cursor-pointer ${isExpanded ? "bg-violet-50 border-violet-200 rotate-180" : "bg-gray-50 border-gray-200"}`}
                       >
-                        <Trash2 size={15} />
-                      </motion.button>
-                    )}
-                    <motion.button
-                      onClick={() => toggleExpand(summary._id)}
-                      animate={{ rotate: isExpanded ? 180 : 0 }}
-                      transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                      className={`w-8 h-8 rounded-xl flex items-center justify-center cursor-pointer transition-colors duration-200 ${isExpanded ? "bg-indigo-50 border border-indigo-100/50" : "bg-gray-50 border border-gray-100"}`}
-                    >
-                      <ChevronDown size={16} className={isExpanded ? "text-indigo-500" : "text-gray-400"} />
-                    </motion.button>
+                        <ChevronDown size={16} className={isExpanded ? "text-violet-600" : "text-gray-400"} />
+                      </button>
+                    </div>
                   </div>
-                </div>
 
-                {/* Mobile stats */}
-                <div className="flex sm:hidden items-center gap-2.5 px-4 pb-4 -mt-1">
-                  <div className="flex-1 p-2.5 rounded-xl bg-gradient-to-br from-gray-50 to-slate-50 border border-gray-100/80 text-center">
-                    <p className="text-[9px] font-bold text-gray-400 uppercase tracking-wider">সামারি</p>
-                    <p className="text-[14px] font-extrabold text-gray-800 tabular-nums mt-0.5">৳{summary.totalAmount.toLocaleString("en-US")}</p>
-                  </div>
-                  <div className="flex-1 p-2.5 rounded-xl bg-gradient-to-br from-emerald-50/80 to-teal-50/50 border border-emerald-100/60 text-center">
-                    <p className="text-[9px] font-bold text-emerald-400 uppercase tracking-wider">ডেলিভারড</p>
-                    <p className="text-[14px] font-extrabold text-emerald-600 tabular-nums mt-0.5">৳{summary.totalDeliveredAmount.toLocaleString("en-US")}</p>
+                  {/* Mobile stats row */}
+                  <div className="flex sm:hidden items-center gap-2 mt-3">
+                    <div className="flex-1 py-2 px-3 rounded-xl bg-gray-50 border border-gray-100 text-center">
+                      <p className="text-[9px] font-bold text-gray-400 uppercase">সামারি</p>
+                      <p className="text-sm font-black text-gray-900 tabular-nums">৳{summary.totalAmount.toLocaleString("en-US")}</p>
+                    </div>
+                    <div className="flex-1 py-2 px-3 rounded-xl bg-emerald-50 border border-emerald-100 text-center">
+                      <p className="text-[9px] font-bold text-emerald-500 uppercase">ডেলিভারড</p>
+                      <p className="text-sm font-black text-emerald-600 tabular-nums">৳{summary.totalDeliveredAmount.toLocaleString("en-US")}</p>
+                    </div>
                   </div>
                 </div>
 
@@ -448,135 +456,132 @@ export default function SummaryPage() {
                       initial={{ height: 0, opacity: 0 }}
                       animate={{ height: "auto", opacity: 1 }}
                       exit={{ height: 0, opacity: 0 }}
-                      transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }}
+                      transition={{ duration: 0.4, ease: [0.25, 0.8, 0.25, 1] }}
                       className="overflow-hidden"
                     >
-                      <div className="px-4 sm:px-5 pb-6 border-t border-gray-100/60">
-
-                        {/* KPI Cards inside expanded */}
-                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-5 mb-6">
-                          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }} className="p-3.5 rounded-xl bg-gradient-to-br from-gray-50 to-slate-50 border border-gray-100/80">
-                            <div className="flex items-center gap-2 mb-2">
-                              <ShoppingBag size={13} className="text-gray-400" />
-                              <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">মোট বিল</p>
-                            </div>
-                            <p className="text-lg font-extrabold text-gray-800 tabular-nums">৳{summary.totalAmount.toLocaleString("en-US")}</p>
-                          </motion.div>
-                          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="p-3.5 rounded-xl bg-gradient-to-br from-emerald-50/80 to-green-50/50 border border-emerald-100/60">
-                            <div className="flex items-center gap-2 mb-2">
-                              <Banknote size={13} className="text-emerald-400" />
-                              <p className="text-[9px] font-bold text-emerald-500 uppercase tracking-widest">পরিশোধ</p>
-                            </div>
-                            <p className="text-lg font-extrabold text-emerald-600 tabular-nums">৳{summary.totalPaid.toLocaleString("en-US")}</p>
-                          </motion.div>
-                          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className={`p-3.5 rounded-xl border ${summary.totalDue > 0 ? "bg-gradient-to-br from-rose-50/80 to-pink-50/50 border-rose-100/60" : "bg-gradient-to-br from-gray-50 to-slate-50 border-gray-100/80"}`}>
-                            <div className="flex items-center gap-2 mb-2">
-                              <Banknote size={13} className={summary.totalDue > 0 ? "text-rose-400" : "text-gray-400"} />
-                              <p className={`text-[9px] font-bold uppercase tracking-widest ${summary.totalDue > 0 ? "text-rose-400" : "text-gray-400"}`}>বাকি</p>
-                            </div>
-                            <p className={`text-lg font-extrabold tabular-nums ${summary.totalDue > 0 ? "text-rose-500" : "text-gray-800"}`}>৳{summary.totalDue.toLocaleString("en-US")}</p>
-                          </motion.div>
-                          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="p-3.5 rounded-xl bg-gradient-to-br from-blue-50/80 to-sky-50/50 border border-blue-100/60">
-                            <div className="flex items-center gap-2 mb-2">
-                              <Truck size={13} className="text-blue-400" />
-                              <p className="text-[9px] font-bold text-blue-500 uppercase tracking-widest">ডেলিভারড</p>
-                            </div>
-                            <p className="text-lg font-extrabold text-blue-600 tabular-nums">৳{summary.totalDeliveredAmount.toLocaleString("en-US")}</p>
-                          </motion.div>
+                      <div className="px-4 sm:px-5 pb-6 border-t border-gray-100">
+                        {/* Mini KPI Row */}
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 mt-5 mb-6">
+                          <div className="p-3 rounded-xl bg-gradient-to-br from-gray-50 to-white border border-gray-100">
+                            <p className="text-[9px] font-bold text-gray-400 uppercase mb-1">মোট বিল</p>
+                            <p className="text-base font-black text-gray-900 tabular-nums">৳{summary.totalAmount.toLocaleString("en-US")}</p>
+                          </div>
+                          <div className="p-3 rounded-xl bg-gradient-to-br from-emerald-50 to-white border border-emerald-100">
+                            <p className="text-[9px] font-bold text-emerald-500 uppercase mb-1">পরিশোধ</p>
+                            <p className="text-base font-black text-emerald-600 tabular-nums">৳{summary.totalPaid.toLocaleString("en-US")}</p>
+                          </div>
+                          <div className={`p-3 rounded-xl border ${summary.totalDue > 0 ? "bg-gradient-to-br from-rose-50 to-white border-rose-100" : "bg-gradient-to-br from-gray-50 to-white border-gray-100"}`}>
+                            <p className={`text-[9px] font-bold uppercase mb-1 ${summary.totalDue > 0 ? "text-rose-500" : "text-gray-400"}`}>বাকি</p>
+                            <p className={`text-base font-black tabular-nums ${summary.totalDue > 0 ? "text-rose-500" : "text-gray-900"}`}>৳{summary.totalDue.toLocaleString("en-US")}</p>
+                          </div>
+                          <div className="p-3 rounded-xl bg-gradient-to-br from-blue-50 to-white border border-blue-100">
+                            <p className="text-[9px] font-bold text-blue-500 uppercase mb-1">ডেলিভারড</p>
+                            <p className="text-base font-black text-blue-600 tabular-nums">৳{summary.totalDeliveredAmount.toLocaleString("en-US")}</p>
+                          </div>
                         </div>
 
-                        {/* Product breakdown */}
-                        <h4 className="text-[11px] font-bold uppercase tracking-widest text-gray-500 mb-3 flex items-center gap-2">
-                          <Package size={13} className="text-gray-300" /> পণ্য ভিত্তিক বিবরণ
-                        </h4>
-                        <div className="rounded-2xl overflow-hidden border border-gray-100/80 bg-white/50 backdrop-blur-sm">
-                          <div className="flex flex-col gap-2 p-2">
+                        {/* Product Breakdown - Table Style */}
+                        <div className="mb-6">
+                          <div className="flex items-center gap-2 mb-3">
+                            <Package size={14} className="text-violet-500" />
+                            <h4 className="text-xs font-bold text-gray-700 uppercase tracking-wider">পণ্য ভিত্তিক বিবরণ</h4>
+                          </div>
+                          <div className="rounded-2xl border border-gray-100 overflow-hidden">
+                            {/* Table Header */}
+                            <div className="grid grid-cols-12 gap-2 px-4 py-2.5 bg-gray-50 border-b border-gray-100">
+                              <div className="col-span-1 text-[9px] font-bold text-gray-400 uppercase">#</div>
+                              <div className="col-span-5 text-[9px] font-bold text-gray-400 uppercase">পণ্য</div>
+                              <div className="col-span-2 text-[9px] font-bold text-gray-400 uppercase text-center">পরিমাণ</div>
+                              <div className="col-span-2 text-[9px] font-bold text-gray-400 uppercase text-right">দর</div>
+                              <div className="col-span-2 text-[9px] font-bold text-gray-400 uppercase text-right">মোট</div>
+                            </div>
+                            {/* Table Body */}
                             {productList.map((p, idx) => {
                               const avgPrice = p.qty > 0 ? Math.round(p.total / p.qty) : 0;
                               return (
-                                <motion.div
+                                <div
                                   key={idx}
-                                  initial={{ opacity: 0, x: -10 }}
-                                  animate={{ opacity: 1, x: 0 }}
-                                  transition={{ delay: idx * 0.04 }}
-                                  className="flex items-center gap-3 p-3.5 rounded-xl bg-gradient-to-r from-gray-50/80 to-slate-50/40 border border-gray-100/60 group hover:border-indigo-100/60 hover:from-indigo-50/30 hover:to-violet-50/20 transition-all duration-200"
+                                  className="grid grid-cols-12 gap-2 px-4 py-3 border-b border-gray-50 last:border-b-0 hover:bg-violet-50/30 transition-colors group"
                                 >
-                                  <div className="w-8 h-8 rounded-lg bg-white border border-gray-200/60 flex items-center justify-center shrink-0 shadow-sm group-hover:border-indigo-200/60 transition-colors">
-                                    <span className="text-[11px] font-extrabold text-gray-500 group-hover:text-indigo-500 transition-colors">{idx + 1}</span>
+                                  <div className="col-span-1 flex items-center">
+                                    <span className="w-6 h-6 rounded-full bg-gray-100 group-hover:bg-violet-100 flex items-center justify-center text-[10px] font-bold text-gray-500 group-hover:text-violet-600 transition-colors">{idx + 1}</span>
                                   </div>
-                                  <div className="flex-1 min-w-0">
-                                    <p className="text-[13px] font-bold text-gray-800 break-words leading-snug">{p.name}</p>
-                                    <div className="flex items-center gap-2.5 mt-1 flex-wrap">
-                                      <span className="text-[11px] font-medium text-gray-400">দর: ৳{avgPrice.toLocaleString("en-US")}</span>
-                                      <span className="text-gray-200">·</span>
-                                      <span className="text-[11px] font-bold text-indigo-500 bg-indigo-50/80 px-2 py-0.5 rounded-md border border-indigo-100/40">{p.qty} টি</span>
-                                    </div>
+                                  <div className="col-span-5 flex items-center">
+                                    <p className="text-[13px] font-semibold text-gray-800 truncate">{p.name}</p>
                                   </div>
-                                  <div className="text-right shrink-0">
-                                    <p className="text-[15px] font-extrabold text-gray-800 tabular-nums">৳{p.total.toLocaleString("en-US")}</p>
+                                  <div className="col-span-2 flex items-center justify-center">
+                                    <span className="text-xs font-bold text-violet-600 bg-violet-50 px-2 py-0.5 rounded-md">{p.qty} টি</span>
                                   </div>
-                                </motion.div>
+                                  <div className="col-span-2 flex items-center justify-end">
+                                    <span className="text-xs font-medium text-gray-500">৳{avgPrice.toLocaleString("en-US")}</span>
+                                  </div>
+                                  <div className="col-span-2 flex items-center justify-end">
+                                    <span className="text-sm font-bold text-gray-900 tabular-nums">৳{p.total.toLocaleString("en-US")}</span>
+                                  </div>
+                                </div>
                               );
                             })}
 
+                            {/* Total Row */}
                             {productList.length > 0 && (
-                              <div className="flex items-center justify-between p-3.5 rounded-xl bg-gradient-to-r from-indigo-50/80 to-violet-50/60 border border-indigo-100/50">
-                                <div className="flex items-center gap-2">
-                                  <span className="text-[12px] font-bold text-indigo-600 uppercase tracking-wider">সর্বমোট</span>
-                                  <span className="text-[12px] font-extrabold text-indigo-600 bg-white/80 px-2.5 py-0.5 rounded-lg border border-indigo-100/50 shadow-sm">
+                              <div className="grid grid-cols-12 gap-2 px-4 py-3 bg-gradient-to-r from-violet-50 to-fuchsia-50 border-t border-violet-100">
+                                <div className="col-span-1"></div>
+                                <div className="col-span-5 flex items-center">
+                                  <span className="text-xs font-bold text-violet-700 uppercase">সর্বমোট</span>
+                                </div>
+                                <div className="col-span-2 flex items-center justify-center">
+                                  <span className="text-xs font-black text-violet-700 bg-white px-2 py-0.5 rounded-md border border-violet-200 shadow-sm">
                                     {productList.reduce((s, p) => s + p.qty, 0)} টি
                                   </span>
                                 </div>
-                                <span className="text-[17px] font-extrabold text-indigo-600 tabular-nums">৳{summary.totalAmount.toLocaleString("en-US")}</span>
+                                <div className="col-span-2"></div>
+                                <div className="col-span-2 flex items-center justify-end">
+                                  <span className="text-base font-black text-violet-700 tabular-nums">৳{summary.totalAmount.toLocaleString("en-US")}</span>
+                                </div>
                               </div>
                             )}
                           </div>
                         </div>
 
-                        {/* Order list */}
-                        <h4 className="text-[11px] font-bold uppercase tracking-widest text-gray-500 mt-6 mb-3 flex items-center gap-2">
-                          <ShoppingBag size={13} className="text-gray-300" /> অর্ডার তালিকা ({summary.orderCount} টি)
-                        </h4>
-                        <div className="flex flex-col gap-2">
-                          {summary.orders.map((o, idx) => (
-                            <motion.div
-                              key={idx}
-                              initial={{ opacity: 0, x: -10 }}
-                              animate={{ opacity: 1, x: 0 }}
-                              transition={{ delay: idx * 0.03 }}
-                              className="flex items-center gap-3 p-3 rounded-xl bg-gradient-to-r from-gray-50/60 to-slate-50/30 border border-gray-100/60 group hover:border-indigo-100/50 hover:bg-gradient-to-r hover:from-indigo-50/20 hover:to-violet-50/10 transition-all duration-200"
-                            >
-                              <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-gray-100 to-gray-50 border border-gray-200/60 flex items-center justify-center shrink-0">
-                                <span className="text-[10px] font-extrabold text-gray-500">{idx + 1}</span>
-                              </div>
-                              <div className="flex-1 min-w-0">
-                                <p className="text-[13px] font-bold text-gray-800 break-words">{o.customerName}</p>
-                                <p className="text-[11px] font-medium text-gray-400 mt-0.5 break-words">
-                                  {o.orderNumber || "—"} · {o.items.length} পণ্য
-                                </p>
-                              </div>
+                        {/* Order List */}
+                        <div>
+                          <div className="flex items-center gap-2 mb-3">
+                            <ShoppingBag size={14} className="text-violet-500" />
+                            <h4 className="text-xs font-bold text-gray-700 uppercase tracking-wider">অর্ডার তালিকা ({summary.orderCount} টি)</h4>
+                          </div>
+                          <div className="space-y-2">
+                            {summary.orders.map((o, idx) => (
+                              <div key={idx} className="flex items-center gap-3 p-3 rounded-xl border border-gray-100 hover:border-violet-100 hover:bg-violet-50/20 transition-all group">
+                                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-100 to-purple-50 flex items-center justify-center shrink-0 border border-violet-200/50">
+                                  <span className="text-[11px] font-black text-violet-600">{idx + 1}</span>
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-[13px] font-bold text-gray-800 truncate">{o.customerName}</p>
+                                  <p className="text-[11px] text-gray-400 mt-0.5">
+                                    {o.orderNumber || "—"} · {o.items.length} পণ্য
+                                  </p>
+                                </div>
 
-                              <div className="flex items-center gap-2 shrink-0">
-                                <div className="text-right">
-                                  <p className="text-[13px] sm:text-[14px] font-extrabold text-gray-800 tabular-nums">৳{o.totalAmount.toLocaleString("en-US")}</p>
-                                  {o.dueAmount > 0 && (
-                                    <p className="text-[10px] sm:text-[11px] font-bold text-rose-400 mt-0.5">বাকি ৳{o.dueAmount.toLocaleString("en-US")}</p>
+                                <div className="flex items-center gap-2 shrink-0">
+                                  <div className="text-right">
+                                    <p className="text-[13px] font-black text-gray-900 tabular-nums">৳{o.totalAmount.toLocaleString("en-US")}</p>
+                                    {o.dueAmount > 0 && (
+                                      <p className="text-[10px] font-bold text-rose-500 mt-0.5">বাকি ৳{o.dueAmount.toLocaleString("en-US")}</p>
+                                    )}
+                                  </div>
+                                  {(isAdmin || summary.date === todayStr) && (
+                                    <button
+                                      onClick={() => setDeleteConfirm({ summaryId: summary._id, orderId: o.orderId, label: o.customerName })}
+                                      className="w-7 h-7 rounded-lg flex items-center justify-center text-gray-300 hover:text-rose-500 hover:bg-rose-50 transition-all sm:opacity-0 sm:group-hover:opacity-100"
+                                      title="সামারি থেকে সরান"
+                                    >
+                                      <Trash2 size={13} />
+                                    </button>
                                   )}
                                 </div>
-                                {(isAdmin || summary.date === todayStr) && (
-                                  <motion.button
-                                    whileHover={{ scale: 1.1 }}
-                                    whileTap={{ scale: 0.9 }}
-                                    onClick={() => setDeleteConfirm({ summaryId: summary._id, orderId: o.orderId, label: o.customerName })}
-                                    className="w-7 h-7 rounded-lg flex items-center justify-center text-gray-300 hover:text-rose-500 hover:bg-rose-50 transition-all duration-200 sm:opacity-0 sm:group-hover:opacity-100"
-                                    title="সামারি থেকে সরান"
-                                  >
-                                    <Trash2 size={13} />
-                                  </motion.button>
-                                )}
                               </div>
-                            </motion.div>
-                          ))}
+                            ))}
+                          </div>
                         </div>
                       </div>
                     </motion.div>
@@ -585,7 +590,7 @@ export default function SummaryPage() {
               </motion.div>
             );
           })}
-        </div>
+        </motion.div>
       )}
 
       {/* Delete Confirmation Modal */}
@@ -595,54 +600,46 @@ export default function SummaryPage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-[100] flex items-center justify-center bg-gray-900/30 backdrop-blur-md p-4"
+            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/20 backdrop-blur-sm p-4"
+            onClick={() => setDeleteConfirm(null)}
           >
             <motion.div
-              initial={{ scale: 0.9, opacity: 0, y: 20 }}
+              initial={{ scale: 0.85, opacity: 0, y: 30 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
-              exit={{ scale: 0.9, opacity: 0, y: 20 }}
-              transition={{ type: "spring", stiffness: 300, damping: 25 }}
-              className="w-full max-w-sm bg-white/95 backdrop-blur-xl rounded-3xl overflow-hidden shadow-[0_25px_60px_-15px_rgba(0,0,0,0.15)] border border-gray-100/50"
+              exit={{ scale: 0.85, opacity: 0, y: 30 }}
+              transition={{ type: "spring" as const, stiffness: 350, damping: 25 }}
+              onClick={(e) => e.stopPropagation()}
+              className="w-full max-w-sm bg-white rounded-3xl overflow-hidden shadow-2xl border border-gray-100"
             >
-              <div className="flex flex-col items-center justify-center pt-8 pb-4 px-6 text-center">
-                <motion.div
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  transition={{ type: "spring", stiffness: 400, damping: 15, delay: 0.1 }}
-                  className="w-16 h-16 rounded-2xl bg-gradient-to-br from-rose-50 to-pink-50 border border-rose-100/60 flex items-center justify-center mb-5 shrink-0 shadow-sm"
-                >
-                  <Trash2 size={24} className="text-rose-400" strokeWidth={2} />
-                </motion.div>
-                <h3 className="text-lg font-extrabold text-gray-800 mb-2">ডিলিট নিশ্চিত করুন</h3>
-                <p className="text-sm font-medium text-gray-400 leading-relaxed">
+              <div className="p-8 text-center">
+                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-rose-100 to-pink-50 flex items-center justify-center mx-auto mb-5 border border-rose-200/50">
+                  <Trash2 size={28} className="text-rose-500" strokeWidth={1.8} />
+                </div>
+                <h3 className="text-xl font-black text-gray-900 mb-2">ডিলিট নিশ্চিত করুন</h3>
+                <p className="text-sm text-gray-500 leading-relaxed">
                   {deleteConfirm.orderId
                     ? `"${deleteConfirm.label}" কে সামারি থেকে সরাতে চান?`
                     : `"${deleteConfirm.label}" সামারি ডিলিট করতে চান?`}
                 </p>
               </div>
-              <div className="flex gap-3 p-6 pt-3">
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
+              <div className="flex border-t border-gray-100">
+                <button
                   onClick={() => setDeleteConfirm(null)}
-                  className="flex-1 h-12 rounded-2xl text-sm font-bold text-gray-600 bg-gray-100/80 hover:bg-gray-200/80 transition-colors border border-gray-200/50"
+                  className="flex-1 py-4 text-sm font-bold text-gray-600 hover:bg-gray-50 transition-colors border-r border-gray-100"
                 >
                   বাতিল
-                </motion.button>
-                <motion.button
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
+                </button>
+                <button
                   onClick={handleDelete}
-                  className="flex-1 h-12 rounded-2xl text-sm font-bold text-white bg-gradient-to-r from-rose-400 to-rose-500 hover:from-rose-500 hover:to-rose-600 transition-all shadow-[0_4px_15px_-3px_rgba(244,63,94,0.3)]"
+                  className="flex-1 py-4 text-sm font-bold text-rose-600 hover:bg-rose-50 transition-colors"
                 >
                   ডিলিট করুন
-                </motion.button>
+                </button>
               </div>
             </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
-    </motion.div>
+    </div>
   );
 }
