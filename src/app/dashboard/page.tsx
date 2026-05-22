@@ -199,23 +199,24 @@ export default function DashboardPage() {
 
   return (
     <motion.div className="pb-12 max-w-6xl mx-auto" variants={containerVariants} initial="hidden" animate="show">
-      {/* Page Header — clean greeting, no duplicate page name (sidebar already shows it) */}
-      <motion.div variants={itemVariants} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-7">
-        <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-gray-900">{greeting}</h1>
-          <p className="text-sm text-gray-500 mt-0.5">{todayLabel}</p>
+      {/* Compact Page Header — single row, minimal vertical space */}
+      <motion.div variants={itemVariants} className="flex items-center justify-between gap-3 mb-5 sm:mb-6">
+        <div className="flex items-center gap-2 min-w-0">
+          <h1 className="text-base sm:text-lg font-bold text-gray-900 truncate">{greeting}</h1>
+          <span className="hidden sm:inline text-gray-300">·</span>
+          <p className="hidden sm:block text-xs text-gray-500 truncate">{todayLabel}</p>
         </div>
-        <div className="flex items-center gap-2.5 bg-white rounded-xl border border-gray-200 shadow-sm px-3.5 py-2.5">
+        <div className="flex items-center gap-2 bg-white rounded-lg border border-gray-200 shadow-sm px-2.5 py-1.5 shrink-0">
           <div className="relative">
-            <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
-            <div className="absolute inset-0 w-2 h-2 rounded-full bg-emerald-500 animate-ping opacity-60"></div>
+            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500"></div>
+            <div className="absolute inset-0 w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping opacity-60"></div>
           </div>
-          <p className="text-sm text-gray-600">আজকের অর্ডার</p>
-          <p className="text-sm font-bold text-gray-900 tabular-nums">{stats?.todayOrders || 0}</p>
+          <p className="text-[11px] sm:text-xs text-gray-500">আজকের অর্ডার</p>
+          <p className="text-xs sm:text-sm font-bold text-gray-900 tabular-nums">{stats?.todayOrders || 0}</p>
         </div>
       </motion.div>
 
-      {/* KPI Stats Grid — clean, monochrome with subtle accents */}
+      {/* KPI Stats Grid — soft coloured icon backgrounds */}
       <motion.div variants={itemVariants} className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
         {/* Total Revenue */}
         <motion.div whileHover={{ y: -3 }} transition={{ type: "spring" as const, stiffness: 400, damping: 17 }}
@@ -223,12 +224,12 @@ export default function DashboardPage() {
           className="relative p-5 rounded-2xl bg-white border border-gray-100 shadow-sm hover:shadow-md hover:border-gray-200 transition-all duration-300 group cursor-pointer">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-gray-50 border border-gray-100 flex items-center justify-center">
-                <Banknote size={15} className="text-gray-700" />
+              <div className="w-8 h-8 rounded-lg bg-emerald-50 border border-emerald-100 flex items-center justify-center">
+                <Banknote size={15} className="text-emerald-600" />
               </div>
               <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">মোট বিক্রি</span>
             </div>
-            <ArrowUpRight size={14} className="text-gray-300 group-hover:text-gray-700 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
+            <ArrowUpRight size={14} className="text-gray-300 group-hover:text-emerald-500 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
           </div>
           <p className="text-xl sm:text-2xl font-black text-gray-900 tabular-nums leading-tight">
             ৳{(stats?.totalRevenue || 0).toLocaleString("en-US")}
@@ -244,18 +245,18 @@ export default function DashboardPage() {
           className="relative p-5 rounded-2xl bg-white border border-gray-100 shadow-sm hover:shadow-md hover:border-gray-200 transition-all duration-300 group cursor-pointer">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-gray-50 border border-gray-100 flex items-center justify-center">
-                <Wallet size={15} className="text-gray-700" />
+              <div className="w-8 h-8 rounded-lg bg-blue-50 border border-blue-100 flex items-center justify-center">
+                <Wallet size={15} className="text-blue-600" />
               </div>
               <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">মোট আদায়</span>
             </div>
-            <ArrowUpRight size={14} className="text-gray-300 group-hover:text-gray-700 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
+            <ArrowUpRight size={14} className="text-gray-300 group-hover:text-blue-500 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
           </div>
           <p className="text-xl sm:text-2xl font-black text-gray-900 tabular-nums leading-tight">
             ৳{(stats?.totalCollection || 0).toLocaleString("en-US")}
           </p>
           <p className="text-[10px] font-semibold text-gray-500 mt-1.5">
-            আজকে: <span className="text-emerald-600">৳{(stats?.todayCollection || 0).toLocaleString("en-US")}</span>
+            আজকে: <span className="text-blue-600">৳{(stats?.todayCollection || 0).toLocaleString("en-US")}</span>
           </p>
         </motion.div>
 
@@ -264,8 +265,8 @@ export default function DashboardPage() {
           className="relative p-5 rounded-2xl bg-white border border-gray-100 shadow-sm hover:shadow-md hover:border-gray-200 transition-all duration-300 group">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-gray-50 border border-gray-100 flex items-center justify-center">
-                <CreditCard size={15} className="text-gray-700" />
+              <div className="w-8 h-8 rounded-lg bg-rose-50 border border-rose-100 flex items-center justify-center">
+                <CreditCard size={15} className="text-rose-600" />
               </div>
               <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">মোট বাকি</span>
             </div>
@@ -282,8 +283,8 @@ export default function DashboardPage() {
           className="relative p-5 rounded-2xl bg-white border border-gray-100 shadow-sm hover:shadow-md hover:border-gray-200 transition-all duration-300 group">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-gray-50 border border-gray-100 flex items-center justify-center">
-                <ShoppingCart size={15} className="text-gray-700" />
+              <div className="w-8 h-8 rounded-lg bg-violet-50 border border-violet-100 flex items-center justify-center">
+                <ShoppingCart size={15} className="text-violet-600" />
               </div>
               <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">মোট অর্ডার</span>
             </div>
@@ -291,7 +292,7 @@ export default function DashboardPage() {
           <p className="text-xl sm:text-2xl font-black text-gray-900 tabular-nums leading-tight">
             {(stats?.totalOrders || 0).toLocaleString("en-US")} <span className="text-sm text-gray-400 font-bold">টি</span>
           </p>
-          <p className="text-[10px] font-semibold text-gray-500 mt-1.5">আজকে: {stats?.todayOrders || 0} টি</p>
+          <p className="text-[10px] font-semibold text-gray-500 mt-1.5">আজকে: <span className="text-violet-600">{stats?.todayOrders || 0}</span> টি</p>
         </motion.div>
       </motion.div>
 
@@ -301,7 +302,7 @@ export default function DashboardPage() {
         <div className="lg:col-span-2 bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
           <div className="px-5 py-3.5 border-b border-gray-100 flex items-center justify-between">
             <div className="flex items-center gap-2.5">
-              <div className="w-1 h-4 rounded-full bg-gray-800"></div>
+              <div className="w-1 h-4 rounded-full bg-gradient-to-b from-violet-500 to-blue-500"></div>
               <h3 className="text-sm font-bold text-gray-800">আজকের পারফরম্যান্স</h3>
             </div>
             <span className="text-[10px] font-medium text-gray-400 flex items-center gap-1">
@@ -311,16 +312,16 @@ export default function DashboardPage() {
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-4 divide-x divide-y sm:divide-y-0 divide-gray-100">
             {[
-              { label: "নতুন অর্ডার", value: stats?.todayOrders || 0, icon: ShoppingCart },
-              { label: "ডেলিভারড", value: stats?.todayDelivered || 0, icon: CheckCircle2, accent: "text-emerald-600" },
-              { label: "পেন্ডিং", value: stats?.todayPending || 0, icon: Truck, accent: "text-amber-600" },
-              { label: "আজকের বিক্রি", value: `৳${(stats?.todayRevenue || 0).toLocaleString("en-US")}`, icon: TrendingUp },
+              { label: "নতুন অর্ডার", value: stats?.todayOrders || 0, icon: ShoppingCart, iconBg: "bg-violet-50 border-violet-100", iconColor: "text-violet-600" },
+              { label: "ডেলিভারড", value: stats?.todayDelivered || 0, icon: CheckCircle2, iconBg: "bg-emerald-50 border-emerald-100", iconColor: "text-emerald-600", accent: "text-emerald-600" },
+              { label: "পেন্ডিং", value: stats?.todayPending || 0, icon: Truck, iconBg: "bg-amber-50 border-amber-100", iconColor: "text-amber-600", accent: "text-amber-600" },
+              { label: "আজকের বিক্রি", value: `৳${(stats?.todayRevenue || 0).toLocaleString("en-US")}`, icon: TrendingUp, iconBg: "bg-blue-50 border-blue-100", iconColor: "text-blue-600" },
             ].map((s) => {
               const Icon = s.icon;
               return (
                 <div key={s.label} className="p-4 sm:p-5 hover:bg-gray-50 transition-colors">
-                  <div className="w-7 h-7 rounded-lg bg-gray-50 border border-gray-100 flex items-center justify-center mb-2.5">
-                    <Icon size={13} className="text-gray-600" />
+                  <div className={`w-7 h-7 rounded-lg ${s.iconBg} border flex items-center justify-center mb-2.5`}>
+                    <Icon size={13} className={s.iconColor} />
                   </div>
                   <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">{s.label}</p>
                   <p className={`text-lg sm:text-xl font-black tabular-nums leading-none ${s.accent || "text-gray-900"}`}>{s.value}</p>
@@ -335,8 +336,8 @@ export default function DashboardPage() {
           <motion.div whileHover={{ y: -3 }} transition={{ type: "spring" as const, stiffness: 400, damping: 17 }}
             className="rounded-2xl p-5 bg-white border border-gray-100 shadow-sm hover:shadow-md hover:border-gray-200 transition-all">
             <div className="flex items-center gap-2 mb-3">
-              <div className="w-8 h-8 rounded-lg bg-gray-50 border border-gray-100 flex items-center justify-center">
-                <Users size={15} className="text-gray-700" />
+              <div className="w-8 h-8 rounded-lg bg-indigo-50 border border-indigo-100 flex items-center justify-center">
+                <Users size={15} className="text-indigo-600" />
               </div>
               <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">কাস্টমার</span>
             </div>
@@ -347,8 +348,8 @@ export default function DashboardPage() {
           <motion.div whileHover={{ y: -3 }} transition={{ type: "spring" as const, stiffness: 400, damping: 17 }}
             className="rounded-2xl p-5 bg-white border border-gray-100 shadow-sm hover:shadow-md hover:border-gray-200 transition-all">
             <div className="flex items-center gap-2 mb-3">
-              <div className="w-8 h-8 rounded-lg bg-gray-50 border border-gray-100 flex items-center justify-center">
-                <Package size={15} className="text-gray-700" />
+              <div className="w-8 h-8 rounded-lg bg-amber-50 border border-amber-100 flex items-center justify-center">
+                <Package size={15} className="text-amber-600" />
               </div>
               <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">প্রডাক্ট</span>
             </div>
@@ -382,8 +383,8 @@ export default function DashboardPage() {
               <AreaChart data={chartData} margin={{ top: 5, right: 5, left: 0, bottom: 0 }}>
                 <defs>
                   <linearGradient id="colorRev" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#1f2937" stopOpacity={0.18} />
-                    <stop offset="95%" stopColor="#1f2937" stopOpacity={0} />
+                    <stop offset="5%" stopColor="#10b981" stopOpacity={0.22} />
+                    <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f3f4f6" />
@@ -393,10 +394,10 @@ export default function DashboardPage() {
                   contentStyle={{ background: "#fff", border: "1px solid #e5e7eb", borderRadius: "10px", boxShadow: "0 6px 20px -4px rgba(0,0,0,0.08)", padding: "8px 12px" }}
                   labelStyle={{ color: "#6b7280", fontSize: "11px", marginBottom: "4px", fontWeight: 600 }}
                   itemStyle={{ color: "#111827", fontSize: "13px", fontWeight: 700 }}
-                  cursor={{ stroke: "#d1d5db", strokeWidth: 1, strokeDasharray: "4 4" }}
+                  cursor={{ stroke: "#a7f3d0", strokeWidth: 1, strokeDasharray: "4 4" }}
                   formatter={(value) => [`৳${Number(value).toLocaleString("en-US")}`, "বিক্রি"]}
                 />
-                <Area type="monotone" dataKey="revenue" stroke="#1f2937" strokeWidth={2} fillOpacity={1} fill="url(#colorRev)" activeDot={{ r: 5, fill: "#1f2937", strokeWidth: 2.5, stroke: "#fff" }} />
+                <Area type="monotone" dataKey="revenue" stroke="#10b981" strokeWidth={2.2} fillOpacity={1} fill="url(#colorRev)" activeDot={{ r: 5, fill: "#10b981", strokeWidth: 2.5, stroke: "#fff" }} />
               </AreaChart>
             </ResponsiveContainer>
           </div>
@@ -428,7 +429,7 @@ export default function DashboardPage() {
                 />
                 <Bar dataKey="orders" radius={[4, 4, 0, 0]} maxBarSize={28}>
                   {chartData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={index === chartData.length - 1 ? "#1f2937" : "#e5e7eb"} />
+                    <Cell key={`cell-${index}`} fill={index === chartData.length - 1 ? "#8b5cf6" : "#ede9fe"} />
                   ))}
                 </Bar>
               </BarChart>
@@ -441,7 +442,7 @@ export default function DashboardPage() {
       <motion.div variants={itemVariants} className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
         <div className="px-5 py-3.5 border-b border-gray-100 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <div className="w-1 h-4 rounded-full bg-gray-800"></div>
+            <div className="w-1 h-4 rounded-full bg-gradient-to-b from-violet-500 to-blue-500"></div>
             <h3 className="text-sm font-bold text-gray-800">সাম্প্রতিক কার্যক্রম</h3>
           </div>
           <span className="text-[10px] font-bold text-gray-500 bg-gray-50 px-2.5 py-1 rounded-md border border-gray-100">{activity.length} টি</span>
@@ -456,75 +457,124 @@ export default function DashboardPage() {
             <p className="text-xs text-gray-400 mt-1">নতুন অর্ডার বা পেমেন্ট এখানে দেখা যাবে</p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse min-w-[640px]">
-              <thead>
-                <tr className="border-b border-gray-100 bg-gray-50/40">
-                  <th className="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">বিবরণ</th>
-                  <th className="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider text-center">স্ট্যাটাস</th>
-                  <th className="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider text-right">পরিমাণ</th>
-                  <th className="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider text-right">সময়</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-50">
-                {activity.map((item, idx) => {
-                  const isPayment = item.type === "payment";
-                  const ds = item.deliveryStatus || "pending";
-                  const statusLabel = isPayment ? "আদায়" : ds === "delivered" ? "ডেলিভারড" : ds === "not_delivered" ? "অনডেলিভারড" : "পেন্ডিং";
-                  const statusStyles = isPayment || ds === "delivered"
-                    ? "bg-emerald-50 text-emerald-600 border-emerald-100"
-                    : ds === "not_delivered"
-                    ? "bg-rose-50 text-rose-600 border-rose-100"
-                    : "bg-amber-50 text-amber-600 border-amber-100";
-
-                  return (
-                    <motion.tr
-                      key={item._id}
-                      initial={{ opacity: 0, x: -8 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: idx * 0.025 }}
-                      className="hover:bg-gray-50/60 transition-colors group"
-                    >
-                      <td className="px-5 py-3.5">
-                        <div className="flex items-center gap-3">
-                          <div className="w-9 h-9 rounded-xl bg-gray-50 border border-gray-100 flex items-center justify-center shrink-0">
-                            {isPayment ? <Banknote size={15} className="text-emerald-600" /> : <Package size={15} className="text-gray-700" />}
-                          </div>
-                          <div>
-                            <p className="text-[13px] font-bold text-gray-800">{item.customerName}</p>
-                            <p className="text-[11px] text-gray-400 mt-0.5">
-                              {isPayment ? "বাকি আদায়" : `${item.itemCount} টি প্রডাক্ট`}
-                            </p>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-5 py-3.5 text-center">
-                        <span className={`inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold border ${statusStyles}`}>
+          <>
+            {/* Mobile: Card list */}
+            <div className="sm:hidden divide-y divide-gray-50">
+              {activity.map((item, idx) => {
+                const isPayment = item.type === "payment";
+                const ds = item.deliveryStatus || "pending";
+                const statusLabel = isPayment ? "আদায়" : ds === "delivered" ? "ডেলিভারড" : ds === "not_delivered" ? "অনডেলিভারড" : "পেন্ডিং";
+                const statusStyles = isPayment || ds === "delivered"
+                  ? "bg-emerald-50 text-emerald-600 border-emerald-100"
+                  : ds === "not_delivered"
+                  ? "bg-rose-50 text-rose-600 border-rose-100"
+                  : "bg-amber-50 text-amber-600 border-amber-100";
+                return (
+                  <motion.div
+                    key={item._id}
+                    initial={{ opacity: 0, x: -8 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: idx * 0.025 }}
+                    className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50/60 transition-colors"
+                  >
+                    <div className="w-10 h-10 rounded-xl bg-gray-50 border border-gray-100 flex items-center justify-center shrink-0">
+                      {isPayment ? <Banknote size={16} className="text-emerald-600" /> : <Package size={16} className="text-gray-700" />}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-0.5">
+                        <p className="text-[13px] font-bold text-gray-800 truncate">{item.customerName}</p>
+                        <span className={`inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-bold border shrink-0 ${statusStyles}`}>
                           {statusLabel}
                         </span>
-                      </td>
-                      <td className="px-5 py-3.5 text-right">
-                        <p className={`text-sm font-extrabold tabular-nums ${isPayment ? "text-emerald-600" : "text-gray-900"}`}>
-                          {isPayment ? "+" : ""}৳{item.totalAmount.toLocaleString("en-US")}
-                        </p>
-                        {!isPayment && item.dueAmount > 0 && (
-                          <p className="text-[10px] font-bold text-rose-500 mt-0.5">বাকি ৳{item.dueAmount.toLocaleString("en-US")}</p>
-                        )}
-                      </td>
-                      <td className="px-5 py-3.5 text-right">
-                        <p className="text-xs font-semibold text-gray-700">
-                          {new Date(item.createdAt).toLocaleTimeString("bn-BD", { hour: "2-digit", minute: "2-digit" })}
-                        </p>
-                        <p className="text-[10px] text-gray-400 mt-0.5">
-                          {new Date(item.createdAt).toLocaleDateString("en-GB", { day: "2-digit", month: "short", timeZone: "Asia/Dhaka" })}
-                        </p>
-                      </td>
-                    </motion.tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+                      </div>
+                      <p className="text-[10px] text-gray-400">
+                        {isPayment ? "বাকি আদায়" : `${item.itemCount} টি প্রডাক্ট`} · {new Date(item.createdAt).toLocaleTimeString("bn-BD", { hour: "2-digit", minute: "2-digit" })}
+                      </p>
+                    </div>
+                    <div className="text-right shrink-0">
+                      <p className={`text-sm font-extrabold tabular-nums ${isPayment ? "text-emerald-600" : "text-gray-900"}`}>
+                        {isPayment ? "+" : ""}৳{item.totalAmount.toLocaleString("en-US")}
+                      </p>
+                      {!isPayment && item.dueAmount > 0 && (
+                        <p className="text-[9px] font-bold text-rose-500 mt-0.5">বাকি ৳{item.dueAmount.toLocaleString("en-US")}</p>
+                      )}
+                    </div>
+                  </motion.div>
+                );
+              })}
+            </div>
+
+            {/* Desktop: Table */}
+            <div className="hidden sm:block">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="border-b border-gray-100 bg-gray-50/40">
+                    <th className="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">বিবরণ</th>
+                    <th className="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider text-center">স্ট্যাটাস</th>
+                    <th className="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider text-right">পরিমাণ</th>
+                    <th className="px-5 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider text-right">সময়</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-50">
+                  {activity.map((item, idx) => {
+                    const isPayment = item.type === "payment";
+                    const ds = item.deliveryStatus || "pending";
+                    const statusLabel = isPayment ? "আদায়" : ds === "delivered" ? "ডেলিভারড" : ds === "not_delivered" ? "অনডেলিভারড" : "পেন্ডিং";
+                    const statusStyles = isPayment || ds === "delivered"
+                      ? "bg-emerald-50 text-emerald-600 border-emerald-100"
+                      : ds === "not_delivered"
+                      ? "bg-rose-50 text-rose-600 border-rose-100"
+                      : "bg-amber-50 text-amber-600 border-amber-100";
+
+                    return (
+                      <motion.tr
+                        key={item._id}
+                        initial={{ opacity: 0, x: -8 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: idx * 0.025 }}
+                        className="hover:bg-gray-50/60 transition-colors group"
+                      >
+                        <td className="px-5 py-3.5">
+                          <div className="flex items-center gap-3">
+                            <div className="w-9 h-9 rounded-xl bg-gray-50 border border-gray-100 flex items-center justify-center shrink-0">
+                              {isPayment ? <Banknote size={15} className="text-emerald-600" /> : <Package size={15} className="text-gray-700" />}
+                            </div>
+                            <div>
+                              <p className="text-[13px] font-bold text-gray-800">{item.customerName}</p>
+                              <p className="text-[11px] text-gray-400 mt-0.5">
+                                {isPayment ? "বাকি আদায়" : `${item.itemCount} টি প্রডাক্ট`}
+                              </p>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-5 py-3.5 text-center">
+                          <span className={`inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold border ${statusStyles}`}>
+                            {statusLabel}
+                          </span>
+                        </td>
+                        <td className="px-5 py-3.5 text-right">
+                          <p className={`text-sm font-extrabold tabular-nums ${isPayment ? "text-emerald-600" : "text-gray-900"}`}>
+                            {isPayment ? "+" : ""}৳{item.totalAmount.toLocaleString("en-US")}
+                          </p>
+                          {!isPayment && item.dueAmount > 0 && (
+                            <p className="text-[10px] font-bold text-rose-500 mt-0.5">বাকি ৳{item.dueAmount.toLocaleString("en-US")}</p>
+                          )}
+                        </td>
+                        <td className="px-5 py-3.5 text-right">
+                          <p className="text-xs font-semibold text-gray-700">
+                            {new Date(item.createdAt).toLocaleTimeString("bn-BD", { hour: "2-digit", minute: "2-digit" })}
+                          </p>
+                          <p className="text-[10px] text-gray-400 mt-0.5">
+                            {new Date(item.createdAt).toLocaleDateString("en-GB", { day: "2-digit", month: "short", timeZone: "Asia/Dhaka" })}
+                          </p>
+                        </td>
+                      </motion.tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </>
         )}
       </motion.div>
 
