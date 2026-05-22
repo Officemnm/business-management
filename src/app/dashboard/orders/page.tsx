@@ -1300,96 +1300,75 @@ export default function OrdersPage() {
 
   // ===================== MAIN ORDER PAGE =====================
   return (
-    <div className="pb-12 space-y-6 max-w-[1400px] mx-auto font-sans w-full">
-      {/* App-like Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+    <div className="pb-12 space-y-6 max-w-6xl mx-auto font-sans w-full">
+      {/* Page Header - Clean & Minimal */}
+      <motion.div
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4 }}
+        className="flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+      >
         <div>
-          <h1 className="text-[28px] md:text-[32px] font-bold tracking-tight text-slate-900 leading-tight">অর্ডার সমূহ</h1>
-          <p className="text-[14px] text-slate-500 mt-1 flex items-center gap-2">
-            <span>{todayLabel}</span>
-          </p>
+          <h1 className="text-2xl font-bold text-gray-900">অর্ডার সমূহ</h1>
+          <p className="text-sm text-gray-500 mt-0.5">{todayLabel}</p>
         </div>
-        <div className="flex items-center">
-          <Link href="/dashboard/orders/add"
-            className="flex items-center gap-2 h-11 px-5 rounded-full text-[14px] font-semibold text-white transition-all shadow-[0_4px_15px_-3px_rgba(16,185,129,0.3)] hover:shadow-[0_6px_20px_-3px_rgba(16,185,129,0.4)] active:scale-95"
-            style={{ background: "#10b981" }}>
-            <Plus size={18} strokeWidth={2.5} />
-            নতুন অর্ডার
-          </Link>
-        </div>
-      </div>
-
-      {/* KPI Cards (Premium Clean Style) */}
-      <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ type: "spring", stiffness: 300, damping: 24 }} className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
-        {/* Today's Delivery Count */}
-        <div className="bg-white border border-slate-200/60 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.04)] rounded-[20px] transition-all duration-300 hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.08)] p-6 flex flex-col justify-between group">
-          <div className="flex items-start justify-between mb-4">
-            <div className="w-10 h-10 rounded-xl bg-slate-900 flex items-center justify-center border border-slate-700 shadow-md">
-              <ShoppingBag size={20} className="text-white" />
-            </div>
-            <span className="flex items-center gap-1 text-[11px] font-semibold text-slate-500 bg-slate-50 px-2 py-1 rounded-md border border-slate-100">
-              <Clock size={12} /> {filterDate ? "নির্বাচিত তারিখ" : "আজকে"}
-            </span>
-          </div>
-          <div>
-            <p className="text-[13px] font-medium text-slate-500 mb-1">ডেলিভারি সংখ্যা</p>
-            <p className="text-[28px] md:text-[32px] font-bold text-slate-900 tracking-tight leading-none tabular-nums">
-              {todaysDeliveredCount.toLocaleString("en-US")} <span className="text-[16px] text-slate-500">টি</span>
-            </p>
-          </div>
-        </div>
-
-        {/* Today's Delivery Amount */}
-        <div className="bg-white border border-slate-200/60 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.04)] rounded-[20px] transition-all duration-300 hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.08)] p-6 flex flex-col justify-between group">
-          <div className="flex items-start justify-between mb-4">
-            <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center border border-emerald-100 group-hover:bg-emerald-100 transition-colors">
-              <BarChart3 size={20} className="text-emerald-600" />
-            </div>
-            <span className="flex items-center gap-1 text-[11px] font-semibold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-md border border-emerald-100">
-              <TrendingUp size={12} /> {filterDate ? "নির্বাচিত তারিখ" : "আজকে"}
-            </span>
-          </div>
-          <div>
-            <p className="text-[13px] font-medium text-slate-500 mb-1">মোট এমাউন্ট</p>
-            <p className="text-[28px] md:text-[32px] font-bold text-slate-900 tracking-tight leading-none tabular-nums truncate">
-              ৳{todaysDeliveredAmount.toLocaleString("en-US")}
-            </p>
-          </div>
-        </div>
-
-        {/* Today's Delivery Paid */}
-        <div className="bg-white border border-slate-200/60 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.04)] rounded-[20px] transition-all duration-300 hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.08)] p-6 flex flex-col justify-between group">
-          <div className="flex items-start justify-between mb-4">
-            <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center border border-blue-100 group-hover:bg-blue-100 transition-colors">
-              <CheckCircle2 size={20} className="text-blue-600" />
-            </div>
-          </div>
-          <div>
-            <p className="text-[13px] font-medium text-slate-500 mb-1">মোট আদায়</p>
-            <p className="text-[28px] md:text-[32px] font-bold text-slate-900 tracking-tight leading-none tabular-nums">
-              ৳{todaysDeliveredPaid.toLocaleString("en-US")}
-            </p>
-          </div>
-        </div>
-
-        {/* Today's Delivery Due */}
-        <div className="bg-white border border-slate-200/60 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.04)] rounded-[20px] transition-all duration-300 hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.08)] p-6 flex flex-col justify-between group">
-          <div className="flex items-start justify-between mb-4">
-            <div className="w-10 h-10 rounded-xl bg-rose-50 flex items-center justify-center border border-rose-100">
-              <CreditCard size={20} className="text-rose-600" />
-            </div>
-          </div>
-          <div>
-            <p className="text-[13px] font-medium text-slate-500 mb-1">মোট বাকি</p>
-            <p className="text-[28px] md:text-[32px] font-bold text-rose-600 tracking-tight leading-none tabular-nums">
-              ৳{todaysDeliveredDue.toLocaleString("en-US")}
-            </p>
-          </div>
-        </div>
+        <Link href="/dashboard/orders/add"
+          className="inline-flex items-center gap-2 h-11 px-5 rounded-xl text-sm font-bold text-white bg-violet-600 hover:bg-violet-700 transition-all shadow-sm active:scale-95">
+          <Plus size={18} strokeWidth={2.5} />
+          নতুন অর্ডার
+        </Link>
       </motion.div>
 
+      {/* KPI Stats Grid */}
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, delay: 0.1 }} className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        <motion.div whileHover={{ y: -4 }} transition={{ type: "spring" as const, stiffness: 400, damping: 17 }} className="relative p-5 rounded-2xl bg-white border border-gray-100 shadow-sm hover:shadow-lg hover:shadow-violet-50 transition-all duration-300 group overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-br from-violet-500/[0.03] to-fuchsia-500/[0.03] opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+          <div className="relative">
+            <div className="flex items-center gap-2 mb-3">
+              <div className="w-8 h-8 rounded-lg bg-violet-100 flex items-center justify-center"><ShoppingBag size={15} className="text-violet-600" /></div>
+              <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">ডেলিভারি</span>
+            </div>
+            <p className="text-2xl font-black text-gray-900 tabular-nums">{todaysDeliveredCount} <span className="text-sm text-gray-400 font-bold">টি</span></p>
+          </div>
+        </motion.div>
+
+        <motion.div whileHover={{ y: -4 }} transition={{ type: "spring" as const, stiffness: 400, damping: 17 }} className="relative p-5 rounded-2xl bg-white border border-gray-100 shadow-sm hover:shadow-lg hover:shadow-emerald-50 transition-all duration-300 group overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/[0.03] to-teal-500/[0.03] opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+          <div className="relative">
+            <div className="flex items-center gap-2 mb-3">
+              <div className="w-8 h-8 rounded-lg bg-emerald-100 flex items-center justify-center"><BarChart3 size={15} className="text-emerald-600" /></div>
+              <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">মোট এমাউন্ট</span>
+            </div>
+            <p className="text-xl sm:text-2xl font-black text-gray-900 tabular-nums">৳{todaysDeliveredAmount.toLocaleString("en-US")}</p>
+          </div>
+        </motion.div>
+
+        <motion.div whileHover={{ y: -4 }} transition={{ type: "spring" as const, stiffness: 400, damping: 17 }} className="relative p-5 rounded-2xl bg-white border border-gray-100 shadow-sm hover:shadow-lg hover:shadow-blue-50 transition-all duration-300 group overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-br from-blue-500/[0.03] to-cyan-500/[0.03] opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+          <div className="relative">
+            <div className="flex items-center gap-2 mb-3">
+              <div className="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center"><CheckCircle2 size={15} className="text-blue-600" /></div>
+              <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">মোট আদায়</span>
+            </div>
+            <p className="text-xl sm:text-2xl font-black text-gray-900 tabular-nums">৳{todaysDeliveredPaid.toLocaleString("en-US")}</p>
+          </div>
+        </motion.div>
+
+        <motion.div whileHover={{ y: -4 }} transition={{ type: "spring" as const, stiffness: 400, damping: 17 }} className={`relative p-5 rounded-2xl bg-white border shadow-sm transition-all duration-300 group overflow-hidden ${todaysDeliveredDue > 0 ? "border-rose-100 hover:shadow-lg hover:shadow-rose-50" : "border-gray-100 hover:shadow-lg"}`}>
+          <div className={`absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 ${todaysDeliveredDue > 0 ? "bg-gradient-to-br from-rose-500/[0.03] to-pink-500/[0.03]" : "bg-gradient-to-br from-gray-500/[0.03] to-slate-500/[0.03]"}`}></div>
+          <div className="relative">
+            <div className="flex items-center gap-2 mb-3">
+              <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${todaysDeliveredDue > 0 ? "bg-rose-100" : "bg-gray-100"}`}><CreditCard size={15} className={todaysDeliveredDue > 0 ? "text-rose-600" : "text-gray-600"} /></div>
+              <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">মোট বাকি</span>
+            </div>
+            <p className={`text-xl sm:text-2xl font-black tabular-nums ${todaysDeliveredDue > 0 ? "text-rose-500" : "text-gray-900"}`}>৳{todaysDeliveredDue.toLocaleString("en-US")}</p>
+          </div>
+        </motion.div>
+      </motion.div>
+
+
       {/* Filter and Tab Section */}
-      <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="bg-white rounded-[20px] p-3 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.04)] border border-slate-200/60 space-y-3">
+      <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="bg-white rounded-2xl p-3 shadow-sm border border-gray-100 space-y-3">
         
         {/* Date Filter & User Filter */}
         <div className="flex flex-col sm:flex-row gap-3 px-2 pt-2">
@@ -1502,23 +1481,23 @@ export default function OrdersPage() {
           );
         }
         return filteredOrders.length === 0 ? (
-        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="rounded-[20px] py-20 text-center bg-white shadow-[0_2px_10px_-4px_rgba(0,0,0,0.04)] border border-slate-200/60">
-          <div className="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center bg-slate-50 border border-slate-100">
-            <ShoppingBag size={24} strokeWidth={1.5} className="text-slate-400" />
+        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="rounded-2xl py-20 text-center bg-white shadow-sm border border-gray-100">
+          <div className="w-16 h-16 rounded-2xl mx-auto mb-4 flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100/50 border border-gray-100">
+            <ShoppingBag size={24} strokeWidth={1.5} className="text-gray-400" />
           </div>
           <p className="text-[14px] font-medium text-slate-500">
             {deliveryTab === "pending" ? "কোনো পেন্ডিং অর্ডার নেই" : deliveryTab === "delivered" ? "কোনো ডেলিভারড অর্ডার নেই" : "কোনো ব্যর্থ অর্ডার নেই"}
           </p>
         </motion.div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 gap-5">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 gap-4">
           {filteredOrders.map((order, index) => (
             <motion.div 
               initial={{ opacity: 0, y: 15 }} 
               animate={{ opacity: 1, y: 0 }} 
               transition={{ delay: index * 0.05 }}
               key={order._id} 
-              className="bg-white rounded-[20px] p-5 shadow-[0_2px_10px_-4px_rgba(0,0,0,0.04)] border border-slate-200/60 hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.08)] hover:border-slate-300/80 transition-all duration-300 relative flex flex-col h-full"
+              className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 hover:shadow-md hover:border-gray-200 transition-all duration-300 relative flex flex-col h-full"
             >
               {/* Order Header / Top Section */}
               <div className="flex justify-between items-start mb-4">
