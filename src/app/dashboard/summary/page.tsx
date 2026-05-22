@@ -174,7 +174,7 @@ export default function SummaryPage() {
 
   return (
     <div className="pb-10 max-w-6xl mx-auto">
-      {/* Page Header - Clean & Minimal */}
+      {/* Page Header — date label only (sidebar shows the page name) */}
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
@@ -182,8 +182,7 @@ export default function SummaryPage() {
         className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-7"
       >
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">দৈনিক সামারি</h1>
-          <p className="text-sm text-gray-500 mt-0.5">{selectedDateLabel}</p>
+          <p className="text-sm text-gray-500">{selectedDateLabel}</p>
         </div>
         <div className="flex items-center gap-2.5 bg-white rounded-xl border border-gray-200 shadow-sm px-3.5 py-2.5 hover:border-violet-300 transition-colors">
           <Calendar size={16} className="text-violet-500" />

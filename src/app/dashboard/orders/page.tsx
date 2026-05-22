@@ -1301,7 +1301,7 @@ export default function OrdersPage() {
   // ===================== MAIN ORDER PAGE =====================
   return (
     <div className="pb-12 space-y-6 max-w-6xl mx-auto font-sans w-full">
-      {/* Page Header - Clean & Minimal */}
+      {/* Page Header — date label + new order button (sidebar shows page name) */}
       <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
@@ -1309,11 +1309,10 @@ export default function OrdersPage() {
         className="flex flex-col sm:flex-row sm:items-center justify-between gap-4"
       >
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">অর্ডার সমূহ</h1>
-          <p className="text-sm text-gray-500 mt-0.5">{todayLabel}</p>
+          <p className="text-sm text-gray-500">{todayLabel}</p>
         </div>
         <Link href="/dashboard/orders/add"
-          className="inline-flex items-center gap-2 h-11 px-5 rounded-xl text-sm font-bold text-white bg-violet-600 hover:bg-violet-700 transition-all shadow-sm active:scale-95">
+          className="inline-flex items-center gap-2 h-11 px-5 rounded-xl text-sm font-bold text-white bg-gray-900 hover:bg-gray-800 transition-all shadow-sm active:scale-95">
           <Plus size={18} strokeWidth={2.5} />
           নতুন অর্ডার
         </Link>
