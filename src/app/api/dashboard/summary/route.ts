@@ -5,7 +5,7 @@ import Summary from "@/models/Summary";
 import Order from "@/models/Order";
 import User from "@/models/User";
 
-// GET all summaries
+// GET all summaries - fetches live order data
 export async function GET(req: NextRequest) {
   try {
     const token = req.cookies.get("token")?.value;
@@ -29,7 +29,69 @@ export async function GET(req: NextRequest) {
     }
 
     const summaries = await Summary.find(filter).sort({ date: -1 }).limit(100);
-    return NextResponse.json(summaries);
+
+    // For each summary, refresh order data from live orders
+    const refreshedSummaries = await Promise.all(
+      summaries.map(async (summary) => {
+        const orderIds = summary.orders.map((o) => o.orderId);
+        const liveOrders = await Order.find({ _id: { $in: orderIds } }).lean();
+
+        let totalAmount = 0;
+        let totalPaid = 0;
+        let totalDue = 0;
+
+        const updatedOrders = summary.orders.map((so) => {
+          const liveOrder = liveOrders.find((lo: any) => lo._id.toString() === so.orderId);
+          if (liveOrder) {
+            totalAmount += liveOrder.totalAmount;
+            totalPaid += liveOrder.paidAmount;
+            totalDue += liveOrder.dueAmount;
+            return {
+              orderId: so.orderId,
+              orderNumber: liveOrder.orderNumber || so.orderNumber,
+              customerName: liveOrder.customerName,
+              items: liveOrder.items.map((item: any) => ({
+                productName: item.productName,
+                quantity: item.quantity,
+                unitPrice: item.unitPrice,
+                total: item.total,
+              })),
+              totalAmount: liveOrder.totalAmount,
+              paidAmount: liveOrder.paidAmount,
+              dueAmount: liveOrder.dueAmount,
+            };
+          }
+          // Order was deleted, skip it
+          return null;
+        }).filter(Boolean);
+
+        // Calculate delivered amount for this date
+        const dayStart = new Date(`${summary.date}T00:00:00.000+06:00`);
+        const dayEnd = new Date(`${summary.date}T23:59:59.999+06:00`);
+        const deliveredToday = await Order.find({
+          createdBy: summary.createdBy,
+          deliveryStatus: "delivered",
+          deliveryDate: { $gte: dayStart, $lte: dayEnd },
+        }).lean();
+        const totalDeliveredAmount = deliveredToday.reduce((s: number, o: any) => s + o.totalAmount, 0);
+
+        return {
+          _id: summary._id,
+          date: summary.date,
+          orders: updatedOrders,
+          totalAmount,
+          totalPaid,
+          totalDue,
+          totalDeliveredAmount,
+          orderCount: updatedOrders.length,
+          createdBy: summary.createdBy,
+          createdAt: summary.createdAt,
+          updatedAt: summary.updatedAt,
+        };
+      })
+    );
+
+    return NextResponse.json(refreshedSummaries);
   } catch (error) {
     console.error("Get summaries error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });

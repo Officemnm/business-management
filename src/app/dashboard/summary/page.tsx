@@ -196,7 +196,7 @@ export default function SummaryPage() {
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="bg-white rounded-[18px] p-5 shadow-sm border border-slate-200/60">
           <div className="flex items-center justify-between mb-3">
-            <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">আজকের সামারি</p>
+            <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">সামারি এমাউন্ট</p>
             <div className="w-9 h-9 rounded-xl flex items-center justify-center bg-indigo-50 border border-indigo-100">
               <BarChart3 size={16} strokeWidth={2.2} className="text-indigo-600" />
             </div>
@@ -204,7 +204,7 @@ export default function SummaryPage() {
           <p className="text-[26px] font-black text-slate-900 leading-none tabular-nums tracking-tight">
             ৳{todayStats.summaryAmount.toLocaleString("en-US")}
           </p>
-          <p className="text-[11px] font-medium text-slate-400 mt-2">পেন্ডিং অর্ডারের মোট</p>
+          <p className="text-[11px] font-medium text-slate-400 mt-2">সিলেক্টেড অর্ডারের মোট</p>
         </div>
         <div className="bg-white rounded-[18px] p-5 shadow-sm border border-slate-200/60">
           <div className="flex items-center justify-between mb-3">
