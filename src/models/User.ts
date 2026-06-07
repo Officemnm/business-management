@@ -12,6 +12,7 @@ export interface IUser extends Document {
     canDelete: boolean;
   };
   assignedASR?: string;
+  categoryTargets?: Record<string, number>;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -55,6 +56,11 @@ const UserSchema: Schema<IUser> = new Schema(
     assignedASR: {
       type: String,
       default: "",
+    },
+    // Per-category sales targets, e.g. { "শিউলী": 50000, "চায়না": 30000 }
+    categoryTargets: {
+      type: Schema.Types.Mixed,
+      default: {},
     },
   },
   {

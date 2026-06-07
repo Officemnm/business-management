@@ -29,6 +29,7 @@ export async function GET(req: NextRequest) {
         role: user.role,
         permissions: user.permissions || { canEdit: true, canDelete: true },
         assignedASR: user.assignedASR || "",
+        categoryTargets: user.categoryTargets || {},
       },
     });
   } catch (error) {

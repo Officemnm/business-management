@@ -52,6 +52,7 @@ export async function POST(req: NextRequest) {
           username: user.username,
           displayName: user.displayName,
           role: user.role,
+          categoryTargets: user.categoryTargets || {},
         },
       },
       { status: 200 }
