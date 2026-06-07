@@ -5,6 +5,7 @@ import Order from "@/models/Order";
 import Customer from "@/models/Customer";
 import Product from "@/models/Product";
 import Payment from "@/models/Payment";
+import Return from "@/models/Return";
 import User from "@/models/User";
 
 export async function GET(req: NextRequest) {
@@ -82,7 +83,7 @@ export async function GET(req: NextRequest) {
     const userFilter = { ...((shouldFilterByUser) ? { createdBy: queryUsername } : {}) };
     const customerFilter = { ...((shouldFilterByUser) ? { createdBy: queryUsername } : {}), active: true };
 
-    const [totalOrders, totalCustomers, totalProducts, allOrders, dueCustomers, todayOrders, todayDeliveredOrders, allPayments, todayPayments] = await Promise.all([
+    const [totalOrders, totalCustomers, totalProducts, allOrders, dueCustomers, todayOrders, todayDeliveredOrders, allPayments, todayPayments, allReturns, todayReturns] = await Promise.all([
       Order.countDocuments(userFilter),
       Customer.countDocuments(customerFilter),
       Product.countDocuments({ active: true }),
@@ -92,6 +93,8 @@ export async function GET(req: NextRequest) {
       Order.find({ ...userFilter, deliveryDate: { $gte: todayStart, $lte: todayEnd } }).lean(),
       Payment.find({ ...((shouldFilterByUser) ? { collectedBy: queryUsername } : {}) }).sort({ createdAt: -1 }).lean(),
       Payment.find({ ...((shouldFilterByUser) ? { collectedBy: queryUsername } : {}), createdAt: { $gte: todayStart, $lte: todayEnd } }).lean(),
+      Return.find({ ...((shouldFilterByUser) ? { returnedBy: queryUsername } : {}) }).sort({ createdAt: -1 }).lean(),
+      Return.find({ ...((shouldFilterByUser) ? { returnedBy: queryUsername } : {}), createdAt: { $gte: todayStart, $lte: todayEnd } }).lean(),
     ]);
 
 
@@ -99,11 +102,13 @@ export async function GET(req: NextRequest) {
     const totalDue = dueCustomers.reduce((sum, c) => sum + (c.totalDue || 0), 0);
 
     // Calculate total collection (order paidAmount + payment collections)
+    // Product returns reduce the effective cash collection by their cash-portion.
     const totalOrderPaid = allOrders.reduce((sum, o) => sum + (o.paidAmount || 0), 0);
     const totalPaymentCollection = allPayments
       .filter(p => p.amount > 0)
       .reduce((sum, p) => sum + (p.amount || 0), 0);
-    const totalCollection = totalOrderPaid + totalPaymentCollection;
+    const totalReturnCash = allReturns.reduce((sum, r) => sum + (r.fromCash || 0), 0);
+    const totalCollection = totalOrderPaid + totalPaymentCollection - totalReturnCash;
 
     // Today's stats
     const todayRevenue = todayOrders.reduce((sum, o) => sum + (o.totalAmount || 0), 0);
@@ -125,7 +130,8 @@ export async function GET(req: NextRequest) {
     const todayPaymentCollection = todayPayments
       .filter(p => p.amount > 0)
       .reduce((sum, p) => sum + (p.amount || 0), 0);
-    const todayCollection = todayOrderPaid + todayPaymentCollection;
+    const todayReturnCash = todayReturns.reduce((sum, r) => sum + (r.fromCash || 0), 0);
+    const todayCollection = todayOrderPaid + todayPaymentCollection - todayReturnCash;
 
     const todayDelivered = todayDeliveredOrders.filter((o) => o.deliveryStatus === "delivered").length;
     const todayPending = todayOrders.filter((o) => o.deliveryStatus !== "delivered" && o.deliveryStatus !== "not_delivered").length;
@@ -158,17 +164,23 @@ export async function GET(req: NextRequest) {
         return ct >= dayStart && ct <= dayEnd;
       });
 
+      const dayReturnsList = allReturns.filter((r) => {
+        const ct = new Date(r.createdAt);
+        return ct >= dayStart && ct <= dayEnd;
+      });
+
       last7Days.push({
         date: d.toLocaleDateString("bn-BD", { day: "numeric", month: "short" }),
         revenue: dayOrders.reduce((s, o) => s + (o.totalAmount || 0), 0),
         orders: dayOrders.length,
-        collection: dayCollectionsFromOrders.reduce((s, o) => s + (o.paidAmount || 0), 0) + dayPaymentsList.reduce((s, p) => s + (p.amount || 0), 0)
+        collection: dayCollectionsFromOrders.reduce((s, o) => s + (o.paidAmount || 0), 0) + dayPaymentsList.reduce((s, p) => s + (p.amount || 0), 0) - dayReturnsList.reduce((s, r) => s + (r.fromCash || 0), 0)
       });
     }
 
     // Recent activity - combine orders and payments
     const recentOrders = await Order.find({ ...((shouldFilterByUser) ? { createdBy: queryUsername } : {}) }).sort({ createdAt: -1 }).limit(10).lean();
     const recentPayments = await Payment.find({ ...((shouldFilterByUser) ? { collectedBy: queryUsername } : {}), amount: { $gt: 0 } }).sort({ createdAt: -1 }).limit(10).lean();
+    const recentReturns = await Return.find({ ...((shouldFilterByUser) ? { returnedBy: queryUsername } : {}) }).sort({ createdAt: -1 }).limit(10).lean();
 
     // Combine and sort by date
     const combinedActivity = [
@@ -197,6 +209,20 @@ export async function GET(req: NextRequest) {
         deliveryStatus: "payment",
         createdBy: p.collectedBy,
         createdAt: p.createdAt,
+      })),
+      ...recentReturns.map((r) => ({
+        _id: r._id,
+        type: "return" as const,
+        customerName: r.customerName,
+        totalAmount: r.amount,
+        paidAmount: r.amount,
+        dueAmount: 0,
+        itemCount: r.quantity,
+        productName: r.productName,
+        status: "completed",
+        deliveryStatus: "return",
+        createdBy: r.returnedBy,
+        createdAt: r.createdAt,
       })),
     ]
       .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
