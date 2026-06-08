@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
     }
 
     await dbConnect();
-    const { username, password, displayName, role: userRole } = await req.json();
+    const { username, password, displayName, role: userRole, phone, address } = await req.json();
 
     if (!username || !password || !displayName) {
       return NextResponse.json({ error: "সকল ফিল্ড পূরণ করুন" }, { status: 400 });
@@ -44,11 +44,13 @@ export async function POST(req: NextRequest) {
       password: hashedPassword,
       displayName,
       role: userRole || "user",
+      phone: phone || "",
+      address: address || "",
       active: true,
     });
 
     return NextResponse.json(
-      { _id: user._id, username: user.username, displayName: user.displayName, role: user.role, active: user.active },
+      { _id: user._id, username: user.username, displayName: user.displayName, role: user.role, active: user.active, phone: user.phone, address: user.address },
       { status: 201 }
     );
   } catch (error) {
