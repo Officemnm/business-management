@@ -52,7 +52,10 @@ export async function POST(req: NextRequest) {
           username: user.username,
           displayName: user.displayName,
           role: user.role,
+          permissions: user.permissions || { canEdit: true, canDelete: true },
+          assignedASR: user.assignedASR || "",
           categoryTargets: user.categoryTargets || {},
+          locationSharingEnabled: user.locationSharingEnabled ?? false,
         },
       },
       { status: 200 }
