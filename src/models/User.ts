@@ -13,6 +13,17 @@ export interface IUser extends Document {
   };
   assignedASR?: string;
   categoryTargets?: Record<string, number>;
+  /** Whether the user has consented to work-time location sharing (set from the app). */
+  locationSharingEnabled?: boolean;
+  /** Last reported location. Updated by the field user's device while sharing is on. */
+  lastLocation?: {
+    lat: number;
+    lng: number;
+    accuracy?: number;
+    speed?: number;
+    batteryLevel?: number;
+    updatedAt: Date;
+  };
   createdAt: Date;
   updatedAt: Date;
 }
@@ -61,6 +72,20 @@ const UserSchema: Schema<IUser> = new Schema(
     categoryTargets: {
       type: Schema.Types.Mixed,
       default: {},
+    },
+    // Work-time location sharing consent (toggled from the mobile app).
+    locationSharingEnabled: {
+      type: Boolean,
+      default: false,
+    },
+    // Latest reported position from the user's device.
+    lastLocation: {
+      lat: { type: Number },
+      lng: { type: Number },
+      accuracy: { type: Number },
+      speed: { type: Number },
+      batteryLevel: { type: Number },
+      updatedAt: { type: Date },
     },
   },
   {
