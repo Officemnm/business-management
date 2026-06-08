@@ -19,6 +19,7 @@ import {
   UserCheck,
   BarChart3,
   ChevronRight,
+  Download,
 } from "lucide-react";
 import toast from "react-hot-toast";
 
@@ -204,6 +205,29 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             </>
           )}
         </nav>
+
+        {/* App download */}
+        <div className="shrink-0 px-3 pb-1">
+          <a
+            href="/downloads/varieties-cosmetics.apk"
+            download
+            className="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-gray-900 text-white hover:bg-gray-800 transition-colors group"
+          >
+            <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center shrink-0">
+              <Download size={16} strokeWidth={2.2} className="text-white" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-[13px] font-bold leading-tight">অ্যাপ ডাউনলোড</p>
+              <p className="text-[10px] font-medium text-white/60 mt-0.5">
+                অ্যান্ড্রয়েড APK
+              </p>
+            </div>
+            <ChevronRight
+              size={14}
+              className="text-white/50 group-hover:translate-x-0.5 transition-transform"
+            />
+          </a>
+        </div>
 
         {/* User Info */}
         <div className="shrink-0 p-3 border-t border-gray-100">
