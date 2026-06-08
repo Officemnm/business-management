@@ -30,6 +30,7 @@ export async function GET(req: NextRequest) {
         permissions: user.permissions || { canEdit: true, canDelete: true },
         assignedASR: user.assignedASR || "",
         categoryTargets: user.categoryTargets || {},
+        locationSharingEnabled: user.locationSharingEnabled ?? false,
       },
     });
   } catch (error) {
