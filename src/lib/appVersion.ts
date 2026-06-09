@@ -13,13 +13,13 @@
  */
 export const APP_VERSION = {
   /** Build number — MUST be increased on every release. Compared as an integer. */
-  latestVersionCode: 2,
+  latestVersionCode: 3,
   /** Human-readable version name shown in the popup. */
-  latestVersion: "1.0.1",
+  latestVersion: "1.0.2",
   /** Relative path to the APK served from /public. */
   apkPath: "/downloads/varieties-cosmetics.apk",
   /** If true the user cannot keep using the app without updating. */
   mandatory: true,
   /** Short "what's new" note shown in the update popup. */
-  notes: "নতুন বারকোড ফিচার, উন্নত থিম এবং পারফরম্যান্স আপডেট।",
+  notes: "অর্ডার ডিলিট করার সময় স্ক্রিন কালো হয়ে যাওয়ার সমস্যা সমাধান এবং স্থিতিশীলতা উন্নয়ন।",
 } as const;
