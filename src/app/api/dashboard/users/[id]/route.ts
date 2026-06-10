@@ -41,6 +41,27 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
 
     await dbConnect();
     const { id } = await params;
+
+    const permanent = req.nextUrl.searchParams.get("permanent") === "true";
+
+    // Permanent (hard) delete — completely removes the user document.
+    if (permanent) {
+      const target = await User.findById(id).select("role");
+      if (!target) {
+        return NextResponse.json({ error: "User not found" }, { status: 404 });
+      }
+      // Administrator accounts can NEVER be deleted.
+      if (target.role === "admin") {
+        return NextResponse.json(
+          { error: "অ্যাডমিনিস্ট্রেটর ইউজার মুছে ফেলা যাবে না" },
+          { status: 403 },
+        );
+      }
+      await User.findByIdAndDelete(id);
+      return NextResponse.json({ message: "User permanently deleted" });
+    }
+
+    // Default behaviour — soft deactivate (kept for backward compatibility).
     await User.findByIdAndUpdate(id, { active: false });
     return NextResponse.json({ message: "User deactivated" });
   } catch (error) {
