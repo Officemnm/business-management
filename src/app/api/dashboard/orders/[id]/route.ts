@@ -56,6 +56,24 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
       return NextResponse.json({ error: "ডেলিভারি সম্পন্ন অর্ডার শুধুমাত্র এডমিন মুছতে পারবে" }, { status: 403 });
     }
 
+    // Reverse the due this order contributed to the customer's running balance.
+    // Due is added to the customer ONLY when the order is delivered (see PUT),
+    // so on delete we must subtract it back — otherwise the customer keeps a
+    // phantom due even though the order (and its collection) is gone.
+    if (
+      order.deliveryStatus === "delivered" &&
+      order.dueAmount > 0 &&
+      order.customer
+    ) {
+      const customer = await Customer.findById(order.customer);
+      if (customer) {
+        const newTotalDue = Math.max(0, (customer.totalDue || 0) - order.dueAmount);
+        await Customer.findByIdAndUpdate(order.customer, {
+          $set: { totalDue: newTotalDue },
+        });
+      }
+    }
+
     await Order.findByIdAndDelete(id);
     return NextResponse.json({ message: "Deleted" });
   } catch (error) {
