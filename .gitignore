@@ -37,3 +37,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# app APK — hosted on GitHub Releases, never committed (see src/lib/appVersion.ts)
+public/downloads/*.apk
