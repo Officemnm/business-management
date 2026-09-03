@@ -124,6 +124,11 @@ export async function GET(req: NextRequest) {
     // Sort stock history by date (newest first)
     stockHistory.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
+    console.log("=== FINAL RESULTS ===");
+    console.log("Total Sold:", totalSold);
+    console.log("Revenue:", revenue);
+    console.log("Stock History Count:", stockHistory.length);
+
     return NextResponse.json({
       totalSold,
       totalStock,
