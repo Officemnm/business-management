@@ -41,9 +41,9 @@
  */
 export const APP_VERSION = {
   /** Build number — MUST be increased on every release. Compared as an integer. */
-  latestVersionCode: 12,
+  latestVersionCode: 13,
   /** Human-readable version name shown in the popup. */
-  latestVersion: "1.0.11",
+  latestVersion: "1.0.12",
   /**
    * Full URL to the APK. Points at GitHub's "latest release" asset, so it
    * auto-resolves to the newest published release and never needs editing.
@@ -57,5 +57,5 @@ export const APP_VERSION = {
   /** Short "what's new" note shown in the update popup. Keep it brief/empty —
    * an empty string shows a clean generic message instead of a detailed list. */
   notes:
-    "পণ্য পেজে ছবিতে ট্যাপ করে ফুল ভিউ ও জুম; এডিট এখন শুধু অ্যাডমিন/ম্যানেজার। দোকানদার রিপোর্টে ব্র্যান্ড ফিল্টার ও উন্নত ডিজাইন।",
+    "নতুন ফিচার: প্রোডাক্ট রিপোর্ট - সামারি পেজ থেকে যেকোনো পণ্যের বিক্রয় ও স্টক ইতিহাস দেখুন তারিখ অনুযায়ী।",
 } as const;

@@ -62,30 +62,14 @@ export async function GET(req: NextRequest) {
       ...(shouldFilterByUser ? { createdBy: queryUsername } : {}),
       createdAt: { $gte: fromDate, $lte: toDate },
     }).lean();
-
-    console.log("=== PRODUCT REPORT DEBUG ===");
-    console.log("Product ID:", productId);
-    console.log("Date range:", { fromDate, toDate });
-    console.log("Query username:", queryUsername);
-    console.log("Should filter by user:", shouldFilterByUser);
-    console.log("All orders found:", allOrders.length);
     
     // Filter orders that contain this product
     const orders = allOrders.filter(order => {
       return order.items?.some((item: any) => {
         const itemProduct = item.product?.toString() || item.productId?.toString();
-        const matches = itemProduct === productId;
-        if (matches) {
-          console.log("Match found! Item product:", itemProduct, "Looking for:", productId);
-        }
-        return matches;
+        return itemProduct === productId;
       });
     });
-    
-    console.log("Orders with this product:", orders.length);
-    if (orders.length > 0) {
-      console.log("First order items:", JSON.stringify(orders[0].items, null, 2));
-    }
 
     // Calculate total sold quantity and revenue
     let totalSold = 0;
@@ -123,11 +107,6 @@ export async function GET(req: NextRequest) {
 
     // Sort stock history by date (newest first)
     stockHistory.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-
-    console.log("=== FINAL RESULTS ===");
-    console.log("Total Sold:", totalSold);
-    console.log("Revenue:", revenue);
-    console.log("Stock History Count:", stockHistory.length);
 
     return NextResponse.json({
       totalSold,
