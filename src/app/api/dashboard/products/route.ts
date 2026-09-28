@@ -24,8 +24,10 @@ export async function POST(req: NextRequest) {
 
     await dbConnect();
     const currentUser = await User.findById(payload.userId);
-    if (currentUser?.permissions && !currentUser.permissions.canEdit) {
-      return NextResponse.json({ error: "তোমার এই পারমিশন নেই (অনলি ভিউ)" }, { status: 403 });
+    
+    // Only admin can create products
+    if (payload.role !== "admin") {
+      return NextResponse.json({ error: "শুধুমাত্র এডমিন প্রোডাক্ট যোগ করতে পারবে" }, { status: 403 });
     }
 
     const body = await req.json();

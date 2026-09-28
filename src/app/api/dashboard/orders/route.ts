@@ -80,16 +80,8 @@ export async function POST(req: NextRequest) {
       deliveryStatus: "pending",
     });
 
-    // Update product stock (skip manual products)
-    if (body.items && body.items.length > 0) {
-      for (const item of body.items) {
-        if (item.product && !item.product.startsWith("manual-") && mongoose.isValidObjectId(item.product)) {
-          await Product.findByIdAndUpdate(item.product, {
-            $inc: { stock: -item.quantity },
-          });
-        }
-      }
-    }
+    // Stock will be deducted only when order is delivered (not at creation)
+    // See PUT route in [id]/route.ts for stock deduction logic
 
     return NextResponse.json(order, { status: 201 });
   } catch (error) {

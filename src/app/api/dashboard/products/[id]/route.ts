@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { verifyToken } from "@/lib/jwt";
 import dbConnect from "@/lib/db";
 import Product from "@/models/Product";
-import User from "@/models/User";
 
 export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -12,9 +11,10 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
     if (!payload || !payload.userId) return NextResponse.json({ error: "Invalid token" }, { status: 401 });
 
     await dbConnect();
-    const currentUser = await User.findById(payload.userId);
-    if (currentUser?.permissions && !currentUser.permissions.canEdit) {
-      return NextResponse.json({ error: "তোমার এডিট করার পারমিশন নেই (অনলি ভিউ)" }, { status: 403 });
+    
+    // Only admin can edit products
+    if (payload.role !== "admin") {
+      return NextResponse.json({ error: "শুধুমাত্র এডমিন প্রোডাক্ট এডিট করতে পারবে" }, { status: 403 });
     }
 
     const { id } = await params;
@@ -36,9 +36,10 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
     if (!payload || !payload.userId) return NextResponse.json({ error: "Invalid token" }, { status: 401 });
 
     await dbConnect();
-    const currentUser = await User.findById(payload.userId);
-    if (currentUser?.permissions && !currentUser.permissions.canDelete) {
-      return NextResponse.json({ error: "তোমার মুছে ফেলার পারমিশন নেই (অনলি ভিউ)" }, { status: 403 });
+    
+    // Only admin can delete products
+    if (payload.role !== "admin") {
+      return NextResponse.json({ error: "শুধুমাত্র এডমিন প্রোডাক্ট মুছতে পারবে" }, { status: 403 });
     }
 
     const { id } = await params;

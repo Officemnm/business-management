@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
+import mongoose from "mongoose";
 import { verifyToken } from "@/lib/jwt";
 import dbConnect from "@/lib/db";
 import Order from "@/models/Order";
 import Customer from "@/models/Customer";
+import Product from "@/models/Product";
 import User from "@/models/User";
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -74,6 +76,17 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
       }
     }
 
+    // Restore stock if order was delivered (stock is deducted only on delivery)
+    if (order.deliveryStatus === "delivered" && order.items && order.items.length > 0) {
+      for (const item of order.items) {
+        if (item.product && !item.product.startsWith("manual-") && mongoose.isValidObjectId(item.product)) {
+          await Product.findByIdAndUpdate(item.product, {
+            $inc: { stock: item.quantity }, // Add stock back
+          });
+        }
+      }
+    }
+
     await Order.findByIdAndDelete(id);
     return NextResponse.json({ message: "Deleted" });
   } catch (error) {
@@ -122,6 +135,17 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
         await Customer.findByIdAndUpdate(oldOrder.customer, {
           $inc: { totalDue: newDue },
         });
+      }
+
+      // Deduct stock when order is delivered (skip manual products)
+      if (oldOrder.items && oldOrder.items.length > 0) {
+        for (const item of oldOrder.items) {
+          if (item.product && !item.product.startsWith("manual-") && mongoose.isValidObjectId(item.product)) {
+            await Product.findByIdAndUpdate(item.product, {
+              $inc: { stock: -item.quantity },
+            });
+          }
+        }
       }
     }
 
