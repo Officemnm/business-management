@@ -41,9 +41,9 @@
  */
 export const APP_VERSION = {
   /** Build number — MUST be increased on every release. Compared as an integer. */
-  latestVersionCode: 15,
+  latestVersionCode: 16,
   /** Human-readable version name shown in the popup. */
-  latestVersion: "1.0.14",
+  latestVersion: "1.0.15",
   /**
    * Full URL to the APK. Points at GitHub's "latest release" asset, so it
    * auto-resolves to the newest published release and never needs editing.
@@ -57,5 +57,5 @@ export const APP_VERSION = {
   /** Short "what's new" note shown in the update popup. Keep it brief/empty —
    * an empty string shows a clean generic message instead of a detailed list. */
   notes:
-    "বাগ ফিক্স এবং পারফরম্যান্স উন্নতি। স্টক ম্যানেজমেন্ট এবং প্রোডাক্ট ফিচার আরো উন্নত করা হয়েছে।",
+    "প্রোডাক্ট পেজে স্টক ট্যাগ যুক্ত করা হয়েছে। এখন প্রতিটি প্রোডাক্টে রিয়েল-টাইম স্টক দেখা যাবে।",
 } as const;
